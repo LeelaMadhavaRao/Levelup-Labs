@@ -326,6 +326,18 @@ CREATE POLICY "Service role can insert leaderboard entries" ON leaderboard
     FOR INSERT WITH CHECK (true);
 
 -- ==============================================
+-- STEP 5.5: Grant Schema/Table Access
+-- ==============================================
+-- Ensure anon/authenticated roles can access public schema
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT SELECT ON TABLES TO anon;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO authenticated;
+
+-- ==============================================
 -- STEP 6: Create Initial Admin User
 -- ==============================================
 -- IMPORTANT: First create auth user manually in Supabase Dashboard

@@ -318,3 +318,57 @@ export async function generateProblemsForTopic(
     }
   }
 }
+
+// Get all problems with optional filtering
+export async function getAllProblems(filters?: {
+  difficulty?: 'easy' | 'medium' | 'hard'
+  userId?: string
+}) {
+  const supabase = createClient()
+  
+  let query = supabase
+    .from('coding_problems')
+    .select(`
+      *,
+      topics!inner(
+        id,
+        name,
+        modules!inner(
+          id,
+          title,
+          courses!inner(
+            id,
+            name
+          )
+        )
+      )
+    `)
+    .order('created_at', { ascending: false })
+  
+  if (filters?.difficulty) {
+    query = query.eq('difficulty', filters.difficulty)
+  }
+  
+  const { data, error } = await query
+  
+  if (error) throw error
+  
+  // If userId provided, also fetch user's solutions
+  if (filters?.userId && data) {
+    const problemIds = data.map(p => p.id)
+    const { data: solutions } = await supabase
+      .from('problem_solutions')
+      .select('problem_id, status')
+      .eq('user_id', filters.userId)
+      .in('problem_id', problemIds)
+    
+    // Merge solution status
+    return data.map(problem => ({
+      ...problem,
+      user_status: solutions?.find(s => s.problem_id === problem.id)?.status || null
+    }))
+  }
+  
+  return data
+}
+

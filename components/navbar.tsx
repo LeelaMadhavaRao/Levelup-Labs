@@ -52,12 +52,14 @@ export default function Navbar() {
     ? [
         { href: '/', label: 'Home' },
         { href: '/admin/dashboard', label: 'Admin Dashboard' },
+        { href: '/admin/courses', label: 'Manage Courses' },
         { href: '/courses', label: 'Courses' },
       ]
     : [
         { href: '/', label: 'Home' },
+        { href: '/dashboard', label: 'Dashboard' },
         { href: '/courses', label: 'Courses' },
-        { href: '/my-courses', label: 'My Courses' },
+        { href: '/practice', label: 'Practice' },
         { href: '/leaderboard', label: 'Leaderboard' },
       ];
 

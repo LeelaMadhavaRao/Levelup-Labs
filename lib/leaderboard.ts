@@ -94,32 +94,3 @@ export async function updateLeaderboardRanks() {
   }
 }
 
-export async function searchLeaderboard(
-  searchTerm: string,
-  limit: number = 10
-) {
-  const supabase = createClient()
-  
-  const { data, error } = await supabase
-    .from('leaderboard')
-    .select(`
-      rank,
-      total_points,
-      users:user_id (
-        id,
-        full_name,
-        avatar_url
-      )
-    `)
-    .ilike('users.full_name', `%${searchTerm}%`)
-    .order('rank', { ascending: true })
-    .limit(limit)
-  
-  if (error) throw error
-  
-  return data?.map((entry: any) => ({
-    rank: entry.rank,
-    user: entry.users,
-    total_points: entry.total_points,
-  })) || []
-}

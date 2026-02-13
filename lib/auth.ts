@@ -78,36 +78,6 @@ export async function loginWithEmail(email: string, password: string) {
   return data
 }
 
-export async function signupWithEmail(email: string, password: string, fullName: string) {
-  const supabase = createClient()
-  
-  // Sign up the user
-  const { data: authData, error: authError } = await supabase.auth.signUp({
-    email,
-    password,
-  })
-  
-  if (authError) throw authError
-  
-  // Create user profile
-  if (authData.user) {
-    const { error: profileError } = await supabase
-      .from('users')
-      .insert([
-        {
-          id: authData.user.id,
-          email,
-          full_name: fullName,
-          role: 'user',
-        },
-      ])
-    
-    if (profileError) throw profileError
-  }
-  
-  return authData
-}
-
 export async function loginWithGoogle() {
   const supabase = createClient()
   
@@ -144,7 +114,13 @@ export async function getUserProfile(userId: string) {
     .eq('id', userId)
     .single()
   
-  if (error) throw error
+  if (error) {
+    const message = error.message?.toLowerCase() || ''
+    if (error.code === '42501' || message.includes('permission denied')) {
+      return null
+    }
+    throw error
+  }
   return data
 }
 
