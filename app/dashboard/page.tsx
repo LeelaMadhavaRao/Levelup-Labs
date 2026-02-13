@@ -235,7 +235,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {leaderboard.map((leader, index) => (
-                <div key={leader.user_id} className="flex items-center gap-4">
+                <div key={`${leader.user_id ?? leader.full_name ?? 'leader'}-${index}`} className="flex items-center gap-4">
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted font-semibold text-sm">
                     {index === 0 && '🥇'}
                     {index === 1 && '🥈'}

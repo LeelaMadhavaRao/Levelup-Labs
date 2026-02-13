@@ -46,10 +46,10 @@ CodeQuest AI is a gamified AI-powered coding learning platform. This guide walks
 
 1. Go to **SQL Editor** in your Supabase dashboard
 2. Click **"New Query"**
-3. Copy and paste the contents from `supabase/migrations/001_initial_schema.sql`
+3. Copy and paste the contents from `supabase/database_setup.sql`
 4. Click **"Run"** and wait for completion
-5. Repeat for `supabase/migrations/002_rls_policies.sql`
-6. Repeat for `supabase/migrations/003_initial_admin.sql`
+5. Repeat for `supabase/database_functions.sql`
+6. Repeat for `supabase/seed_data.sql`
 
 ### Step 4: Verify Tables Created
 
@@ -103,8 +103,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
 NEXT_PUBLIC_GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
 
-# Gemini API (for client-side calls)
-NEXT_PUBLIC_GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+# Gemini API keys are configured as Supabase Edge Function secrets (server-side)
 ```
 
 ### Step 3: Project Structure
@@ -148,10 +147,9 @@ codequest-ai/
 │   │   ├── generateProblems/
 │   │   ├── verifyAlgorithm/
 │   │   └── verifyCode/
-│   └── migrations/
-│       ├── 001_initial_schema.sql
-│       ├── 002_rls_policies.sql
-│       └── 003_initial_admin.sql
+│   ├── database_setup.sql
+│   ├── database_functions.sql
+│   └── seed_data.sql
 ├── public/
 ├── .env.local
 ├── package.json

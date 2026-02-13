@@ -51,13 +51,13 @@ export default function LeaderboardPage() {
   const getRankBadgeClass = (rank: number) => {
     switch (rank) {
       case 1:
-        return 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white';
+        return 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40';
       case 2:
-        return 'bg-gradient-to-r from-gray-400 to-gray-500 text-white';
+        return 'bg-slate-500/20 text-slate-200 border border-slate-400/40';
       case 3:
-        return 'bg-gradient-to-r from-amber-700 to-amber-800 text-white';
+        return 'bg-amber-600/20 text-amber-200 border border-amber-500/40';
       default:
-        return 'bg-muted';
+        return 'bg-muted border border-border';
     }
   };
 
@@ -122,7 +122,7 @@ export default function LeaderboardPage() {
 
       {/* Top 3 Podium */}
       {leaderboard.length >= 3 && (
-        <div className="grid grid-cols-3 gap-4 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
           {/* 2nd Place */}
           <Card className="border-gray-400/50 bg-gray-400/5">
             <CardContent className="pt-6 text-center space-y-3">
@@ -142,7 +142,7 @@ export default function LeaderboardPage() {
           </Card>
 
           {/* 1st Place */}
-          <Card className="border-yellow-500/50 bg-yellow-500/5 transform scale-105">
+          <Card className="border-yellow-500/50 bg-yellow-500/5 sm:scale-105">
             <CardContent className="pt-6 text-center space-y-3">
               <div className="flex justify-center">
                 <Trophy className="h-16 w-16 text-yellow-500" />
@@ -211,12 +211,12 @@ export default function LeaderboardPage() {
                     </Avatar>
                     
                     <div>
-                      <p className="font-semibold flex items-center gap-2">
+                      <div className="font-semibold flex items-center gap-2 mb-1">
                         {leader.full_name}
                         {isCurrentUser && (
                           <Badge variant="secondary" className="text-xs">You</Badge>
                         )}
-                      </p>
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         {leader.courses_completed} courses • {leader.problems_solved} problems
                       </p>

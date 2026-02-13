@@ -54,16 +54,16 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+    <div className="min-h-screen">
       {/* Hero Section */}
       <section className="container px-4 py-20 md:py-32">
         <div className="mx-auto max-w-4xl text-center space-y-8">
-          <div className="inline-flex items-center rounded-full border px-4 py-1.5 text-sm bg-muted/50">
-            <Sparkles className="mr-2 h-4 w-4 text-cyan-500" />
+          <div className="inline-flex items-center rounded-full border border-muted-foreground/20 px-4 py-1.5 text-sm bg-muted/40">
+            <Sparkles className="mr-2 h-4 w-4 text-cyan-300" />
             <span>Powered by Gemini AI</span>
           </div>
           
-          <h1 className="text-4xl font-bold tracking-tight sm:text-6xl bg-clip-text text-transparent bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500">
+          <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-foreground">
             Master Coding with AI-Powered Learning
           </h1>
           
@@ -105,7 +105,7 @@ export default function HomePage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((stat, index) => (
             <div key={index} className="text-center space-y-2">
-              <div className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-500 to-purple-500">
+              <div className="text-3xl md:text-4xl font-bold text-foreground">
                 {stat.value}
               </div>
               <div className="text-sm text-muted-foreground">{stat.label}</div>
@@ -141,7 +141,7 @@ export default function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section className="container px-4 py-20 bg-muted/30">
+      <section className="container px-4 py-20 bg-muted/40">
         <div className="text-center space-y-4 mb-12">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             Your Learning Journey
@@ -159,7 +159,7 @@ export default function HomePage() {
             { step: '4', title: 'Solve Problems', desc: 'Code solutions and earn points' },
           ].map((item, index) => (
             <div key={index} className="text-center space-y-3">
-              <div className="mx-auto w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl">
+              <div className="mx-auto w-12 h-12 rounded-full bg-neutral-900 border border-neutral-700 flex items-center justify-center text-cyan-300 font-bold text-xl">
                 {item.step}
               </div>
               <h3 className="font-semibold">{item.title}</h3>
@@ -172,7 +172,7 @@ export default function HomePage() {
       {/* CTA Section */}
       {!user && (
         <section className="container px-4 py-20">
-          <Card className="max-w-3xl mx-auto border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+          <Card className="max-w-3xl mx-auto border border-neutral-800 bg-card/80">
             <CardHeader className="text-center space-y-4 pb-8">
               <CardTitle className="text-3xl">Ready to Start Your Journey?</CardTitle>
               <CardDescription className="text-lg">

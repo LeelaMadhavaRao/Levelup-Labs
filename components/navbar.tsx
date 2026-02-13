@@ -68,10 +68,10 @@ export default function Navbar() {
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center">
-            <span className="text-white font-bold text-lg">LL</span>
+          <div className="h-8 w-8 rounded-lg bg-neutral-900 border border-neutral-700 flex items-center justify-center">
+            <span className="text-cyan-300 font-bold text-lg">LL</span>
           </div>
-          <span className="font-bold text-xl hidden sm:inline-block">Levelup-Labs</span>
+          <span className="font-bold text-xl hidden sm:inline-block tracking-tight">Levelup-Labs</span>
         </Link>
 
         {/* Desktop Navigation */}

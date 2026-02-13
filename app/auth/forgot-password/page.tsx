@@ -44,21 +44,21 @@ export default function ForgotPasswordPage() {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-gray-900 border-cyan-500 p-8">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-neutral-800 bg-card/80 p-8">
           <div className="text-center space-y-6">
             <div className="flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-cyan-600 flex items-center justify-center">
-                <Mail className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center border border-neutral-800">
+                <Mail className="w-8 h-8 text-cyan-300" />
               </div>
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-cyan-400 mb-2">Check Your Email</h1>
-              <p className="text-gray-400">
-                We've sent a password reset link to <strong className="text-cyan-400">{email}</strong>
+              <h1 className="text-3xl font-bold mb-2">Check Your Email</h1>
+              <p className="text-muted-foreground">
+                We've sent a password reset link to <strong className="text-foreground">{email}</strong>
               </p>
             </div>
-            <div className="space-y-3 text-sm text-gray-400">
+            <div className="space-y-3 text-sm text-muted-foreground">
               <p>Click the link in the email to reset your password.</p>
               <p>If you don't see the email, check your spam folder.</p>
             </div>
@@ -69,13 +69,13 @@ export default function ForgotPasswordPage() {
                   setEmail('')
                 }}
                 variant="outline"
-                className="w-full border-cyan-500 text-cyan-400 hover:bg-cyan-950"
+                className="w-full"
               >
                 Try Another Email
               </Button>
               <Button
                 onClick={() => router.push('/auth/login')}
-                className="w-full bg-cyan-600 hover:bg-cyan-700"
+                className="w-full"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Login
@@ -88,13 +88,13 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-gray-900 border-cyan-500 p-8">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-md border-neutral-800 bg-card/80 p-8">
         <div className="space-y-6">
           {/* Header */}
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-cyan-400 mb-2">Forgot Password?</h1>
-            <p className="text-gray-400">
+            <h1 className="text-3xl font-bold mb-2">Forgot Password?</h1>
+            <p className="text-muted-foreground">
               Enter your email address and we'll send you a link to reset your password.
             </p>
           </div>
@@ -102,7 +102,7 @@ export default function ForgotPasswordPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="email" className="text-cyan-400">
+              <Label htmlFor="email">
                 Email Address
               </Label>
               <Input
@@ -111,17 +111,13 @@ export default function ForgotPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@levelup-labs.com"
-                className="bg-black border-cyan-500 text-cyan-400 placeholder:text-gray-600"
+                className="bg-background"
                 disabled={loading}
                 required
               />
             </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-cyan-600 hover:bg-cyan-700"
-              disabled={loading}
-            >
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Sending...' : 'Send Reset Link'}
             </Button>
           </form>
@@ -130,7 +126,7 @@ export default function ForgotPasswordPage() {
           <div className="text-center">
             <Link
               href="/auth/login"
-              className="text-sm text-cyan-400 hover:text-cyan-300 flex items-center justify-center gap-2"
+              className="text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to Login

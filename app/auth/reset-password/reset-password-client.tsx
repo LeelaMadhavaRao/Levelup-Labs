@@ -76,14 +76,14 @@ export default function ResetPasswordClient() {
 
   if (!tokenValid) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-gray-900 border-red-500 p-8">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-red-500/40 bg-card/80 p-8">
           <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto">
+            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle2 className="h-8 w-8 text-red-500" />
             </div>
-            <h1 className="text-2xl font-bold text-white">Invalid Reset Link</h1>
-            <p className="text-gray-400">
+            <h1 className="text-2xl font-bold">Invalid Reset Link</h1>
+            <p className="text-muted-foreground">
               This password reset link is invalid or has expired. Please request a new one.
             </p>
             <Button
@@ -100,14 +100,14 @@ export default function ResetPasswordClient() {
 
   if (resetSuccess) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-gray-900 border-green-500 p-8">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-emerald-500/40 bg-card/80 p-8">
           <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle2 className="h-8 w-8 text-green-500" />
+            <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle2 className="h-8 w-8 text-emerald-500" />
             </div>
-            <h1 className="text-2xl font-bold text-white">Password Reset!</h1>
-            <p className="text-gray-400">
+            <h1 className="text-2xl font-bold">Password Reset!</h1>
+            <p className="text-muted-foreground">
               Your password has been successfully reset. You can now log in with your new password.
             </p>
             <Button
@@ -123,18 +123,18 @@ export default function ResetPasswordClient() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-gray-900 border-gray-800 p-8">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-md border-neutral-800 bg-card/80 p-8">
         <div className="text-center space-y-2 mb-8">
-          <h1 className="text-2xl font-bold text-white">Reset Password</h1>
-          <p className="text-gray-400">
+          <h1 className="text-2xl font-bold">Reset Password</h1>
+          <p className="text-muted-foreground">
             Enter your new password below
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-gray-200">New Password</Label>
+            <Label htmlFor="password">New Password</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -142,14 +142,14 @@ export default function ResetPasswordClient() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter new password"
-                className="bg-gray-800 border-gray-700 text-white pr-10"
+                className="bg-background pr-10"
                 disabled={loading}
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -157,7 +157,7 @@ export default function ResetPasswordClient() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-gray-200">Confirm Password</Label>
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
             <div className="relative">
               <Input
                 id="confirmPassword"
@@ -165,14 +165,14 @@ export default function ResetPasswordClient() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password"
-                className="bg-gray-800 border-gray-700 text-white pr-10"
+                className="bg-background pr-10"
                 disabled={loading}
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>

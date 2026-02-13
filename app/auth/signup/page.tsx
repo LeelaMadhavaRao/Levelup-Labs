@@ -77,8 +77,8 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900 p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md border-neutral-800 bg-card/80">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
           <CardDescription className="text-center">
@@ -94,7 +94,7 @@ export default function SignupPage() {
             )}
             
             {success && (
-              <Alert className="bg-green-50 text-green-900 border-green-200">
+              <Alert className="bg-emerald-500/10 text-emerald-200 border-emerald-500/30">
                 <AlertDescription>{success}</AlertDescription>
               </Alert>
             )}

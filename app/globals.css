@@ -3,12 +3,18 @@
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: inherit;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  .page-shell {
+    background-color: hsl(var(--background));
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cpath fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='1' d='M0 0H160V160H0z M40 0V160 M80 0V160 M120 0V160 M0 40H160 M0 80H160 M0 120H160'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+    background-position: 0 0;
   }
 }
 
@@ -81,6 +87,12 @@ body {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer utilities {
+  .dark .page-shell {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cpath fill='none' stroke='rgba(255,255,255,0.06)' stroke-width='1' d='M0 0H160V160H0z M40 0V160 M80 0V160 M120 0V160 M0 40H160 M0 80H160 M0 120H160'/%3E%3C/svg%3E");
   }
 }
 

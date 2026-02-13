@@ -17,13 +17,8 @@ Copy `.env.example` to `.env.local` and add your credentials:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-
-# Optional: Add your Gemini API keys for AI features
-NEXT_PUBLIC_GEMINI_API_KEY_1=your_key_1
-NEXT_PUBLIC_GEMINI_API_KEY_2=your_key_2
-NEXT_PUBLIC_GEMINI_API_KEY_3=your_key_3
-NEXT_PUBLIC_GEMINI_API_KEY_4=your_key_4
 ```
+Gemini keys are configured as Supabase Edge Function secrets (server-side only).
 
 ### 2. Setup Database
 Go to [Supabase Dashboard](https://supabase.com/dashboard) → SQL Editor:
@@ -31,6 +26,8 @@ Go to [Supabase Dashboard](https://supabase.com/dashboard) → SQL Editor:
    - Email: `admin@levelup-labs.com`
    - Password: `admin123`
 2. **Run Database Setup**: Copy and execute `supabase/database_setup.sql`
+3. **Run Functions & Triggers**: Copy and execute `supabase/database_functions.sql`
+4. **Insert Seed Data**: Copy and execute `supabase/seed_data.sql`
 
 ### 3. Start Development
 ```bash
@@ -49,7 +46,7 @@ npm run dev
 - **AI-Powered Quizzes**: Auto-generated MCQ quizzes using Gemini AI
 - **Code Challenges**: Submit algorithms and code solutions with AI verification
 - **Gamification**: Points, rankings, XP system, and real-time leaderboard
-- **Dark Theme**: Neon-accented dark UI with shadcn/ui components
+- **Dark Theme**: Clean, high-contrast UI with subtle accents
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
 
 ### 🎨 User Interface

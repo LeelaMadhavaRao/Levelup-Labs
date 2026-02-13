@@ -1,5 +1,28 @@
 import { createClient } from './supabase'
 
+function normalizeError(error: unknown) {
+  if (!error) return null
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+    }
+  }
+  if (typeof error === 'object') {
+    const record = error as Record<string, unknown>
+    const code = typeof record.code === 'string' ? record.code : undefined
+    const message = typeof record.message === 'string' ? record.message : undefined
+    const hint = typeof record.hint === 'string' ? record.hint : undefined
+    const details = typeof record.details === 'string' ? record.details : undefined
+
+    if (code || message || hint || details) {
+      return { code, message, hint, details }
+    }
+  }
+
+  return null
+}
+
 // Sign in with email and password
 export async function signInWithEmail(email: string, password: string) {
   const supabase = createClient()
@@ -53,11 +76,19 @@ export async function signUpWithEmail(email: string, password: string, fullName:
 export async function getCurrentUser() {
   const supabase = createClient()
   
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) return null
-  
-  return await getUserProfile(user.id)
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) return null
+    
+    return await getUserProfile(user.id)
+  } catch (error) {
+    const normalized = normalizeError(error)
+    if (normalized) {
+      console.error('Error getting current user:', normalized)
+    }
+    return null
+  }
 }
 
 // Sign out
@@ -112,7 +143,7 @@ export async function getUserProfile(userId: string) {
     .from('users')
     .select('*')
     .eq('id', userId)
-    .single()
+    .maybeSingle()
   
   if (error) {
     const message = error.message?.toLowerCase() || ''
@@ -121,7 +152,59 @@ export async function getUserProfile(userId: string) {
     }
     throw error
   }
-  return data
+  
+  if (data) return data
+  
+  // If profile missing, create it from auth user metadata
+  const { data: authData } = await supabase.auth.getUser()
+  const authUser = authData.user
+  if (!authUser) return null
+  
+  const fullName =
+    (authUser.user_metadata?.full_name as string) ||
+    (authUser.user_metadata?.fullName as string) ||
+    authUser.email?.split('@')[0] ||
+    'User'
+  
+  const { error: insertError } = await supabase
+    .from('users')
+    .insert([
+      {
+        id: authUser.id,
+        email: authUser.email,
+        full_name: fullName,
+        role: 'user',
+      },
+    ])
+  
+  if (insertError) {
+    const message = insertError.message?.toLowerCase() || ''
+    
+    // Handle permission denied
+    if (insertError.code === '42501' || message.includes('permission denied')) {
+      return null
+    }
+    
+    // Handle duplicate key (profile already exists from another request/trigger)
+    if (insertError.code === '23505' || message.includes('duplicate')) {
+      const { data: existing } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', authUser.id)
+        .maybeSingle()
+      return existing || null
+    }
+    
+    throw insertError
+  }
+  
+  const { data: refreshed } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', authUser.id)
+    .maybeSingle()
+  
+  return refreshed || null
 }
 
 // Update user profile
