@@ -67,9 +67,9 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center">
-            <span className="text-white font-bold text-lg">CQ</span>
+            <span className="text-white font-bold text-lg">LL</span>
           </div>
-          <span className="font-bold text-xl hidden sm:inline-block">CodeQuest AI</span>
+          <span className="font-bold text-xl hidden sm:inline-block">Levelup-Labs</span>
         </Link>
 
         {/* Desktop Navigation */}

@@ -118,7 +118,7 @@ export default function HomePage() {
       <section className="container px-4 py-20">
         <div className="text-center space-y-4 mb-12">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Why Choose CodeQuest AI?
+            Why Choose Levelup-Labs?
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Experience the future of coding education with AI-powered personalization and gamification

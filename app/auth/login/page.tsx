@@ -49,7 +49,7 @@ export default function LoginPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
           <CardDescription className="text-center">
-            Sign in to your CodeQuest AI account
+            Sign in to your Levelup-Labs account
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>

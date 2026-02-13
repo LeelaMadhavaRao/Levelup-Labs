@@ -9,7 +9,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'CodeQuest AI - Gamified AI-Powered Learning',
+  title: 'Levelup-Labs - Gamified AI-Powered Learning',
   description: 'Master coding with AI-powered courses, quizzes, and challenges',
 }
 

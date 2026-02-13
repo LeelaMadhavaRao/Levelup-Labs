@@ -72,7 +72,7 @@ export default function SignupPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
           <CardDescription className="text-center">
-            Join CodeQuest AI and start your coding journey
+            Join Levelup-Labs and start your coding journey
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSignup}>

@@ -1,4 +1,4 @@
-# 🎯 CodeQuest AI - Gamified Coding Learning Platform
+# 🎯 Levelup-Labs - Gamified Coding Learning Platform
 
 ![Status](https://img.shields.io/badge/Status-Ready%20to%20Deploy-brightgreen)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
@@ -28,7 +28,7 @@ NEXT_PUBLIC_GEMINI_API_KEY_4=your_key_4
 ### 2. Setup Database
 Go to [Supabase Dashboard](https://supabase.com/dashboard) → SQL Editor:
 1. **Create Admin Auth User**: Authentication → Users → Add User
-   - Email: `admin@codequest.ai`
+   - Email: `admin@levelup-labs.com`
    - Password: `admin123`
 2. **Run Database Setup**: Copy and execute `supabase/database_setup.sql`
 
@@ -108,7 +108,7 @@ PostgreSQL (Supabase)
 ## 📂 Project Structure
 
 ```
-code-quest-ai/
+levelup-labs/
 ├── app/                    # Next.js App Router pages
 │   ├── page.tsx           # Landing page
 │   ├── layout.tsx         # Root layout
@@ -368,7 +368,7 @@ This project is open source and available for educational purposes.
 3. **Setup database**: Run `supabase/database_setup.sql` in Supabase SQL Editor
 4. **Install dependencies**: `npm install --legacy-peer-deps`
 5. **Start dev server**: `npm run dev`
-6. **Login as admin**: `admin@codequest.ai` / `admin123`
+6. **Login as admin**: `admin@levelup-labs.com` / `admin123`
 
 ### For Development:
 - Create courses in admin dashboard
