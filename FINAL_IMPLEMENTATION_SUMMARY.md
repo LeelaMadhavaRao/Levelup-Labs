@@ -187,13 +187,13 @@ Navigate to your Supabase project dashboard and execute the SQL scripts:
 Update `.env.local` with your Supabase credentials:
 
 ```env
-# Gemini API Keys (ALREADY CONFIGURED ✅)
-NEXT_PUBLIC_GEMINI_API_KEY_1=AIzaSyA9_8mJJeLVFR9pT0Yg8_XGi77ivFqEsTQ
-NEXT_PUBLIC_GEMINI_API_KEY_2=AIzaSyAr0vDJKLcN3tgne1EJKPR_c16oR7NDvi8
-NEXT_PUBLIC_GEMINI_API_KEY_3=AIzaSyCU4eq4-8fX3PxNUAx_5kMN4mBUIfCwv0c
-NEXT_PUBLIC_GEMINI_API_KEY_4=AIzaSyDP2pkywY_Uw9Jrm3sv44g31TurwnLgDdU
+# Gemini API Keys (Get from: https://makersuite.google.com/app/apikey)
+NEXT_PUBLIC_GEMINI_API_KEY_1=your_gemini_api_key_1_here
+NEXT_PUBLIC_GEMINI_API_KEY_2=your_gemini_api_key_2_here
+NEXT_PUBLIC_GEMINI_API_KEY_3=your_gemini_api_key_3_here
+NEXT_PUBLIC_GEMINI_API_KEY_4=your_gemini_api_key_4_here
 
-# Supabase (UPDATE THESE ⚠️)
+# Supabase (Get from: Supabase Dashboard → Settings → API)
 NEXT_PUBLIC_SUPABASE_URL=your-project-url.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 ```
