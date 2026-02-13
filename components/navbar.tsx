@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Menu, X, Trophy, User, LogOut, Settings } from 'lucide-react';
+import { Menu, X, Trophy, User, LogOut } from 'lucide-react';
 
 export default function Navbar() {
   const router = useRouter();
@@ -65,7 +65,7 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-16 items-center justify-between gap-3">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
           <div className="h-8 w-8 rounded-lg bg-neutral-900 border border-neutral-700 flex items-center justify-center">
@@ -90,7 +90,7 @@ export default function Navbar() {
         </div>
 
         {/* User Menu / Auth Buttons */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           {loading ? (
             <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
           ) : user ? (
@@ -131,11 +131,11 @@ export default function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="flex items-center space-x-2">
-              <Button variant="ghost" onClick={() => router.push('/auth/login')}>
+            <div className="hidden sm:flex items-center space-x-2">
+              <Button variant="ghost" size="sm" onClick={() => router.push('/auth/login')}>
                 Sign In
               </Button>
-              <Button onClick={() => router.push('/auth/signup')}>Get Started</Button>
+              <Button size="sm" onClick={() => router.push('/auth/signup')}>Get Started</Button>
             </div>
           )}
 
@@ -155,6 +155,16 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t bg-background">
           <div className="container py-4 space-y-2">
+            {!loading && !user && (
+              <div className="grid grid-cols-2 gap-2 pb-2">
+                <Button variant="outline" size="sm" onClick={() => { setMobileMenuOpen(false); router.push('/auth/login'); }}>
+                  Sign In
+                </Button>
+                <Button size="sm" onClick={() => { setMobileMenuOpen(false); router.push('/auth/signup'); }}>
+                  Get Started
+                </Button>
+              </div>
+            )}
             {navLinks.map((link) => (
               <Link
                 key={link.href}

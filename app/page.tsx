@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { getCurrentUser } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trophy, Code, Zap, Target, Sparkles, GraduationCap } from 'lucide-react';
+import { Trophy, Code, Zap, Target, Sparkles, GraduationCap, CheckCircle2 } from 'lucide-react';
 
 export default function HomePage() {
   const router = useRouter();
@@ -18,9 +18,14 @@ export default function HomePage() {
   }, []);
 
   const loadUser = async () => {
-    const currentUser = await getCurrentUser();
-    setUser(currentUser);
-    setLoading(false);
+    try {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    } catch {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const features = [
@@ -53,11 +58,17 @@ export default function HomePage() {
     { label: 'Success Rate', value: '92%' },
   ];
 
+  const checklist = [
+    'AI-generated quizzes',
+    'Coding practice with feedback',
+    'Leaderboard and progress tracking',
+  ];
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="container px-4 py-20 md:py-32">
-        <div className="mx-auto max-w-4xl text-center space-y-8">
+      <section className="container px-4 py-14 md:py-24">
+        <div className="mx-auto max-w-5xl text-center space-y-8">
           <div className="inline-flex items-center rounded-full border border-muted-foreground/20 px-4 py-1.5 text-sm bg-muted/40">
             <Sparkles className="mr-2 h-4 w-4 text-cyan-300" />
             <span>Powered by Gemini AI</span>
@@ -72,30 +83,39 @@ export default function HomePage() {
             Track your progress, earn rewards, and compete on the leaderboard.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center w-full">
             {loading ? (
               <div className="h-10 w-40 bg-muted animate-pulse rounded-md" />
             ) : user ? (
               <>
-                <Button size="lg" onClick={() => router.push('/courses')} className="min-w-[200px]">
+                <Button size="lg" onClick={() => router.push('/courses')} className="w-full sm:w-auto sm:min-w-[200px]">
                   <GraduationCap className="mr-2 h-5 w-5" />
                   Browse Courses
                 </Button>
-                <Button size="lg" variant="outline" onClick={() => router.push('/my-courses')} className="min-w-[200px]">
+                <Button size="lg" variant="outline" onClick={() => router.push('/my-courses')} className="w-full sm:w-auto sm:min-w-[200px]">
                   Continue Learning
                 </Button>
               </>
             ) : (
               <>
-                <Button size="lg" onClick={() => router.push('/auth/signup')} className="min-w-[200px]">
+                <Button size="lg" onClick={() => router.push('/auth/signup')} className="w-full sm:w-auto sm:min-w-[200px]">
                   <Zap className="mr-2 h-5 w-5" />
                   Get Started Free
                 </Button>
-                <Button size="lg" variant="outline" onClick={() => router.push('/auth/login')} className="min-w-[200px]">
+                <Button size="lg" variant="outline" onClick={() => router.push('/auth/login')} className="w-full sm:w-auto sm:min-w-[200px]">
                   Sign In
                 </Button>
               </>
             )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto text-left">
+            {checklist.map((item) => (
+              <div key={item} className="rb-card flex items-center gap-2 rounded-lg border border-border/60 bg-card/70 p-3">
+                <CheckCircle2 className="h-4 w-4 text-cyan-300 shrink-0" />
+                <span className="text-sm text-foreground/90">{item}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -125,14 +145,14 @@ export default function HomePage() {
           </p>
         </div>
         
-        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto items-stretch">
           {features.map((feature, index) => (
-            <Card key={index} className="border-2 hover:border-primary/50 transition-colors">
-              <CardHeader>
+            <Card key={index} className="rb-card border hover:border-primary/40 transition-colors h-full">
+              <CardHeader className="pb-3">
                 <div className="mb-4">{feature.icon}</div>
                 <CardTitle>{feature.title}</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 <CardDescription className="text-base">{feature.description}</CardDescription>
               </CardContent>
             </Card>
@@ -170,26 +190,45 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      {!user && (
-        <section className="container px-4 py-20">
-          <Card className="max-w-3xl mx-auto border border-neutral-800 bg-card/80">
+      <section className="container px-4 py-20">
+        <Card className="max-w-3xl mx-auto border border-neutral-800 bg-card/80">
+          {user ? (
+            <>
+              <CardHeader className="text-center space-y-3 pb-6">
+                <CardTitle className="text-3xl">Welcome back, {user.full_name?.split(' ')[0] || 'Learner'} 👋</CardTitle>
+                <CardDescription className="text-lg">
+                  Continue your path and keep building your ranking.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col sm:flex-row justify-center gap-3">
+                <Button size="lg" className="w-full sm:w-auto" onClick={() => router.push('/dashboard')}>
+                  Go to Dashboard
+                </Button>
+                <Button size="lg" variant="outline" className="w-full sm:w-auto" onClick={() => router.push('/practice')}>
+                  Practice Problems
+                </Button>
+              </CardContent>
+            </>
+          ) : (
+            <>
             <CardHeader className="text-center space-y-4 pb-8">
               <CardTitle className="text-3xl">Ready to Start Your Journey?</CardTitle>
               <CardDescription className="text-lg">
                 Join thousands of learners mastering code with AI-powered education
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex justify-center gap-4">
-              <Button size="lg" onClick={() => router.push('/auth/signup')}>
+            <CardContent className="flex flex-col sm:flex-row justify-center gap-3">
+              <Button size="lg" className="w-full sm:w-auto" onClick={() => router.push('/auth/signup')}>
                 Create Free Account
               </Button>
-              <Button size="lg" variant="outline" onClick={() => router.push('/courses')}>
+              <Button size="lg" className="w-full sm:w-auto" variant="outline" onClick={() => router.push('/courses')}>
                 Explore Courses
               </Button>
             </CardContent>
-          </Card>
-        </section>
-      )}
+            </>
+          )}
+        </Card>
+      </section>
     </div>
   );
 }
