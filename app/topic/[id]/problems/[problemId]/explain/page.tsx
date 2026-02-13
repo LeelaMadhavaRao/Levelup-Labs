@@ -54,19 +54,22 @@ export default function ExplainProblemPage() {
       );
 
       if (result.error) {
-        toast.error('Failed to submit explanation');
+        toast.error(result.error);
         setLoading(false);
         return;
       }
 
-      if (result.feedback) {
-        setFeedback(result.feedback);
+      // Set feedback from AI response
+      setFeedback({
+        isCorrect: result.isCorrect,
+        feedback: result.feedback,
+        suggestions: result.suggestions,
+      });
         
-        if (result.feedback.isCorrect) {
-          toast.success(`Great work! +${result.pointsAwarded} points`);
-        } else {
-          toast.error('Not quite right. Try again!');
-        }
+      if (result.isCorrect) {
+        toast.success('Great work! Your algorithm is correct!');
+      } else {
+        toast.error('Not quite right. Check the feedback and try again!');
       }
     } catch (error) {
       console.error('Error:', error);

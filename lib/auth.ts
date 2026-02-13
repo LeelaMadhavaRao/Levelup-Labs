@@ -23,35 +23,30 @@ export async function signInWithEmail(email: string, password: string) {
 export async function signUpWithEmail(email: string, password: string, fullName: string) {
   const supabase = createClient()
   
-  // Sign up the user
+  // Sign up the user with metadata
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: {
+        full_name: fullName,
+      },
+    },
   })
   
   if (authError) {
-    return { user: null, error: authError.message }
+    return { user: null, error: authError.message, needsConfirmation: false }
   }
   
-  // Create user profile
-  if (authData.user) {
-    const { error: profileError } = await supabase
-      .from('users')
-      .insert([
-        {
-          id: authData.user.id,
-          email,
-          full_name: fullName,
-          role: 'user',
-        },
-      ])
-    
-    if (profileError) {
-      return { user: null, error: profileError.message }
-    }
-  }
+  // Check if email confirmation is required
+  const needsConfirmation = authData.user && !authData.session
   
-  return { user: authData.user, error: null }
+  // User profile will be created automatically by database trigger after email confirmation
+  return { 
+    user: authData.user, 
+    error: null, 
+    needsConfirmation 
+  }
 }
 
 // Get current user
@@ -173,4 +168,27 @@ export async function updateUserProfile(
     .select()
   
   return { data, error: error ? error.message : null }
+}
+
+// Request password reset
+export async function requestPasswordReset(email: string) {
+  const supabase = createClient()
+  
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/auth/reset-password`,
+  })
+  
+  return { error: error ? error.message : null }
+}
+
+// Reset password with token
+export async function resetPassword(token: string, newPassword: string) {
+  const supabase = createClient()
+  
+  // The token is automatically validated by Supabase
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword,
+  })
+  
+  return { error: error ? error.message : null }
 }

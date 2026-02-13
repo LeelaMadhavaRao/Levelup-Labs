@@ -19,11 +19,13 @@ export default function SignupPage() {
     confirmPassword: '',
   });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
     // Validation
     if (formData.password !== formData.confirmPassword) {
@@ -39,7 +41,7 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const { error: signUpError } = await signUpWithEmail(
+      const { error: signUpError, needsConfirmation } = await signUpWithEmail(
         formData.email,
         formData.password,
         formData.fullName
@@ -51,8 +53,16 @@ export default function SignupPage() {
         return;
       }
 
-      // Redirect to home page after successful signup
-      router.push('/');
+      if (needsConfirmation) {
+        // Email confirmation required
+        setSuccess(
+          `Account created! Please check your email (${formData.email}) and click the confirmation link to activate your account.`
+        );
+        setLoading(false);
+      } else {
+        // No confirmation needed, redirect to home
+        router.push('/');
+      }
     } catch (err) {
       setError('An unexpected error occurred');
       setLoading(false);
@@ -80,6 +90,12 @@ export default function SignupPage() {
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            
+            {success && (
+              <Alert className="bg-green-50 text-green-900 border-green-200">
+                <AlertDescription>{success}</AlertDescription>
               </Alert>
             )}
             

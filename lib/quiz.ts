@@ -1,5 +1,4 @@
 import { createClient } from './supabase'
-import { callGeminiAPI } from './gemini'
 
 export interface QuizQuestion {
   id: string
@@ -8,34 +7,30 @@ export interface QuizQuestion {
   correctAnswer: number
 }
 
-// Generate quiz using Gemini AI
+// Generate quiz using Edge Function (server-side Gemini AI)
 export async function generateQuiz(topicId: string, topicName: string, numQuestions: number) {
-  const prompt = `Generate ${numQuestions} multiple choice questions about "${topicName}" for a coding course.
-Return ONLY a valid JSON array with no additional text, in this exact format:
-[
-  {
-    "question": "What is...",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correctAnswer": 0
-  }
-]
-The correctAnswer should be the index (0-3) of the correct option.`;
+  const supabase = createClient()
 
   try {
-    const response = await callGeminiAPI(prompt);
-    const jsonMatch = response.match(/\[[\s\S]*\]/);
-    const jsonStr = jsonMatch ? jsonMatch[0] : response;
-    const questions = JSON.parse(jsonStr);
-    
+    const { data, error } = await supabase.functions.invoke('generateQuiz', {
+      body: {
+        topicId,
+        topicName,
+        numQuestions,
+      },
+    })
+
+    if (error) {
+      console.error('Error generating quiz:', error)
+      throw new Error(error.message || 'Failed to generate quiz questions')
+    }
+
     return {
-      questions: questions.map((q: any, idx: number) => ({
-        ...q,
-        id: `q${idx + 1}`,
-      })),
-    };
+      questions: data.questions,
+    }
   } catch (error) {
-    console.error('Error generating quiz:', error);
-    throw new Error('Failed to generate quiz questions');
+    console.error('Error generating quiz:', error)
+    throw new Error('Failed to generate quiz questions')
   }
 }
 

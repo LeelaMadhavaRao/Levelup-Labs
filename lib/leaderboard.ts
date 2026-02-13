@@ -33,9 +33,9 @@ export async function getUserRank(userId: string) {
   const supabase = createClient()
   
   const { data, error } = await supabase
-    .from('leaderboard')
-    .select('rank, total_points')
-    .eq('user_id', userId)
+    .from('users')
+    .select('rank, total_points, problems_solved, courses_completed')
+    .eq('id', userId)
     .single()
   
   if (error && error.code === 'PGRST116') {
@@ -46,57 +46,32 @@ export async function getUserRank(userId: string) {
   return data
 }
 
-export async function updateUserPoints(userId: string, pointsToAdd: number) {
+// Search leaderboard by rank or name
+export async function searchLeaderboard(query: string, searchType: 'rank' | 'name' = 'name') {
   const supabase = createClient()
   
-  // Update user total points
-  const { data: userData, error: userError } = await supabase
-    .from('users')
-    .select('total_points')
-    .eq('id', userId)
-    .single()
-  
-  if (userError) throw userError
-  
-  const newTotal = (userData?.total_points || 0) + pointsToAdd
-  
-  const { error: updateError } = await supabase
-    .from('users')
-    .update({ total_points: newTotal })
-    .eq('id', userId)
-  
-  if (updateError) throw updateError
-  
-  // Update leaderboard
-  await updateLeaderboard(userId, newTotal)
-  
-  return newTotal
-}
-
-export async function updateLeaderboard(userId: string, totalPoints: number) {
-  const supabase = createClient()
-  
-  // Get current rank
-  const { data: rankData } = await supabase
-    .from('leaderboard')
-    .select('rank')
-    .gt('total_points', totalPoints)
-    .order('total_points', { ascending: false })
-  
-  const newRank = (rankData?.length || 0) + 1
-  
-  const { error } = await supabase
-    .from('leaderboard')
-    .upsert([
-      {
-        user_id: userId,
-        total_points: totalPoints,
-        rank: newRank,
-        updated_at: new Date().toISOString(),
-      },
-    ])
-  
-  if (error) throw error
+  if (searchType === 'rank') {
+    const rank = parseInt(query)
+    if (isNaN(rank)) return []
+    
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, full_name, avatar_url, email, total_points, rank, courses_completed, problems_solved')
+      .eq('rank', rank)
+    
+    if (error) throw error
+    return data || []
+  } else {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, full_name, avatar_url, email, total_points, rank, courses_completed, problems_solved')
+      .ilike('full_name', `%${query}%`)
+      .order('total_points', { ascending: false })
+      .limit(10)
+    
+    if (error) throw error
+    return data || []
+  }
 }
 
 export async function updateLeaderboardRanks() {

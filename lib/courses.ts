@@ -42,6 +42,36 @@ export async function getCourseById(courseId: string) {
   return data
 }
 
+export async function getCourseWithModules(courseId: string) {
+  const supabase = createClient()
+  
+  const { data, error } = await supabase
+    .from('courses')
+    .select(`
+      *,
+      modules (
+        id,
+        name,
+        description,
+        order_index,
+        topics (
+          id,
+          name,
+          description,
+          video_url,
+          order_index,
+          num_mcqs,
+          num_problems
+        )
+      )
+    `)
+    .eq('id', courseId)
+    .single()
+  
+  if (error) throw error
+  return data
+}
+
 export async function getUserCourses(userId: string) {
   const supabase = createClient()
   
@@ -208,6 +238,83 @@ export async function deleteCourse(courseId: string) {
     .from('courses')
     .delete()
     .eq('id', courseId)
+  
+  return { error: error ? error.message : null }
+}
+
+export async function updateCourse(courseId: string, data: {
+  name?: string
+  description?: string
+  thumbnail_url?: string
+  completion_reward_points?: number
+}) {
+  const supabase = createClient()
+  
+  const { data: course, error } = await supabase
+    .from('courses')
+    .update(data)
+    .eq('id', courseId)
+    .select()
+    .single()
+  
+  return { course, error: error ? error.message : null }
+}
+
+export async function updateModule(moduleId: string, data: {
+  name?: string
+  description?: string
+  order_index?: number
+}) {
+  const supabase = createClient()
+  
+  const { data: module, error } = await supabase
+    .from('modules')
+    .update(data)
+    .eq('id', moduleId)
+    .select()
+    .single()
+  
+  return { module, error: error ? error.message : null }
+}
+
+export async function deleteModule(moduleId: string) {
+  const supabase = createClient()
+  
+  const { error } = await supabase
+    .from('modules')
+    .delete()
+    .eq('id', moduleId)
+  
+  return { error: error ? error.message : null }
+}
+
+export async function updateTopic(topicId: string, data: {
+  name?: string
+  description?: string
+  video_url?: string
+  order_index?: number
+  num_mcqs?: number
+  num_problems?: number
+}) {
+  const supabase = createClient()
+  
+  const { data: topic, error } = await supabase
+    .from('topics')
+    .update(data)
+    .eq('id', topicId)
+    .select()
+    .single()
+  
+  return { topic, error: error ? error.message : null }
+}
+
+export async function deleteTopic(topicId: string) {
+  const supabase = createClient()
+  
+  const { error } = await supabase
+    .from('topics')
+    .delete()
+    .eq('id', topicId)
   
   return { error: error ? error.message : null }
 }

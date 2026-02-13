@@ -196,7 +196,7 @@ export async function getUserProblemsSolvedInCourse(userId: string, courseId: st
   return data || []
 }
 
-// Submit algorithm explanation
+// Submit algorithm explanation and verify with AI (Edge Function)
 export async function submitAlgorithmExplanation(
   userId: string,
   problemId: string,
@@ -204,84 +204,117 @@ export async function submitAlgorithmExplanation(
 ) {
   const supabase = createClient()
   
-  // In production, this would call Gemini API to validate the explanation
-  // For now, we'll do a simple validation
-  const isCorrect = explanation.length > 100 // Simple check
-  const pointsAwarded = isCorrect ? 50 : 0
-  
-  const { data, error } = await supabase
-    .from('problem_solutions')
-    .upsert([
-      {
-        user_id: userId,
-        problem_id: problemId,
-        algorithm_explanation: explanation,
-        status: isCorrect ? 'algorithm_submitted' : 'in_progress',
+  try {
+    const { data, error } = await supabase.functions.invoke('verifyAlgorithm', {
+      body: {
+        problemId,
+        algorithmExplanation: explanation,
       },
-    ])
-    .select()
-  
-  if (error) {
-    return { error: error.message, feedback: null, pointsAwarded: 0 }
-  }
-  
-  // Award points if correct
-  if (isCorrect && pointsAwarded > 0) {
-    await supabase
-      .from('users')
-      .update({ points: supabase.raw(`points + ${pointsAwarded}`) })
-      .eq('id', userId)
-  }
-  
-  return {
-    error: null,
-    pointsAwarded,
-    feedback: {
-      isCorrect,
-      feedback: isCorrect 
-        ? 'Great explanation! You have a good understanding of the algorithm.'
-        : 'Your explanation needs more detail. Try to explain the approach, algorithm steps, time complexity, and space complexity.',
-    },
+    })
+
+    if (error) {
+      return { 
+        error: error.message, 
+        feedback: null, 
+        isCorrect: false,
+        suggestions: null 
+      }
+    }
+
+    return {
+      error: null,
+      isCorrect: data.isCorrect,
+      feedback: data.feedback,
+      suggestions: data.suggestions,
+    }
+  } catch (error) {
+    console.error('Error verifying algorithm:', error)
+    return { 
+      error: 'Failed to verify algorithm', 
+      feedback: null, 
+      isCorrect: false,
+      suggestions: null 
+    }
   }
 }
 
-// Submit code solution
+// Submit code solution and verify with AI (Edge Function)
 export async function submitCode(
   userId: string,
   problemId: string,
-  code: string
+  code: string,
+  language: string = 'javascript'
 ) {
   const supabase = createClient()
   
-  // Get problem details for points calculation
-  const problem = await getProblemById(problemId)
-  const pointsAwarded = await getPointsForProblem(problem.difficulty)
-  
-  const { data, error } = await supabase
-    .from('problem_solutions')
-    .upsert([
-      {
-        user_id: userId,
-        problem_id: problemId,
-        code_solution: code,
-        status: 'completed',
-        code_verified_at: new Date().toISOString(),
+  try {
+    const { data, error } = await supabase.functions.invoke('verifyCode', {
+      body: {
+        problemId,
+        code,
+        language,
       },
-    ])
-    .select()
-  
-  if (error) {
-    return { error: error.message, pointsAwarded: 0 }
+    })
+
+    if (error) {
+      return { 
+        error: error.message, 
+        pointsAwarded: 0,
+        allTestsPassed: false,
+        testResults: [],
+        feedback: null,
+      }
+    }
+
+    return {
+      error: null,
+      allTestsPassed: data.allTestsPassed,
+      testResults: data.testResults,
+      feedback: data.feedback,
+      pointsAwarded: data.pointsAwarded,
+    }
+  } catch (error) {
+    console.error('Error verifying code:', error)
+    return { 
+      error: 'Failed to verify code', 
+      pointsAwarded: 0,
+      allTestsPassed: false,
+      testResults: [],
+      feedback: null,
+    }
   }
+}
+
+// Generate coding problems for a topic using AI (Edge Function)
+export async function generateProblemsForTopic(
+  topicId: string,
+  topicName: string,
+  numProblems: number
+) {
+  const supabase = createClient()
   
-  // Award points
-  await supabase.rpc('award_points', {
-    p_user_id: userId,
-    p_points: pointsAwarded,
-  })
-  
-  return {
-    error: null,
-    pointsAwarded,
+  try {
+    const { data, error } = await supabase.functions.invoke('generateProblems', {
+      body: {
+        topicId,
+        topicName,
+        numProblems,
+      },
+    })
+
+    if (error) {
+      throw new Error(error.message || 'Failed to generate problems')
+    }
+
+    return {
+      problems: data.problems,
+      error: null,
+    }
+  } catch (error) {
+    console.error('Error generating problems:', error)
+    return {
+      problems: [],
+      error: 'Failed to generate problems',
+    }
   }
 }
