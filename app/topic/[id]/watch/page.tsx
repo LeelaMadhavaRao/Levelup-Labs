@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { getTopic, markVideoAsWatched } from '@/lib/courses';
 import { getCurrentUser } from '@/lib/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +9,10 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, Play } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function WatchVideoPage({ params }: { params: { id: string } }) {
+export default function WatchVideoPage() {
+  const router = useRouter();
+  const params = useParams();
+  const topicId = params.id as string;
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [topic, setTopic] = useState<any>(null);
@@ -18,7 +21,7 @@ export default function WatchVideoPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     loadData();
-  }, [params.id]);
+  }, [topicId]);
 
   const loadData = async () => {
     const currentUser = await getCurrentUser();
@@ -29,7 +32,7 @@ export default function WatchVideoPage({ params }: { params: { id: string } }) {
     }
 
     setUser(currentUser);
-    const topicData = await getTopic(params.id);
+    const topicData = await getTopic(topicId);
     setTopic(topicData);
     setWatched(topicData?.video_watched || false);
     setLoading(false);

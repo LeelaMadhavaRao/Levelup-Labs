@@ -1,3 +1,7 @@
+// DEPRECATED: This client-side Gemini helper is unused.
+// All AI calls go through Supabase Edge Functions (generateQuiz, verifyAlgorithm, verifyCode, generateProblems)
+// which use server-side GEMINI_API_KEY_* secrets instead.
+//
 // Gemini API Round-Robin Load Balancer
 // Rotates through multiple API keys to distribute load and avoid rate limits
 

@@ -23,10 +23,14 @@ export async function getAllCourses() {
   
   const { data, error } = await supabase
     .from('courses')
-    .select('*')
+    .select('*, modules(count)')
   
   if (error) return []
-  return data || []
+  // Map module count from nested array format to flat field
+  return (data || []).map((course: any) => ({
+    ...course,
+    module_count: course.modules?.[0]?.count ?? 0,
+  }))
 }
 
 export async function getCourseById(courseId: string) {
@@ -358,7 +362,7 @@ export async function createTopic(data: {
     .select()
     .single()
   
-  return { error: error ? error.message : null }
+  return { topic, error: error ? error.message : null }
 }
 
 export async function getUserCoursesWithProgress(userId: string) {
@@ -391,7 +395,28 @@ export async function getUserCoursesWithProgress(userId: string) {
     .eq('user_id', userId)
   
   if (error) throw error
-  return data?.map((uc: any) => uc.courses) || []
+
+  // Fetch topic progress for this user to determine completion status
+  const { data: progressData } = await supabase
+    .from('topic_progress')
+    .select('topic_id, video_watched, quiz_passed, problems_completed')
+    .eq('user_id', userId)
+
+  const completedTopicIds = new Set(
+    progressData?.filter((p: any) => p.video_watched).map((p: any) => p.topic_id) || []
+  )
+
+  // Merge completion status into topics
+  return data?.map((uc: any) => ({
+    ...uc.courses,
+    modules: uc.courses?.modules?.map((m: any) => ({
+      ...m,
+      topics: m.topics?.map((t: any) => ({
+        ...t,
+        is_completed: completedTopicIds.has(t.id),
+      })),
+    })),
+  })) || []
 }
 
 export async function markVideoAsWatched(userId: string, topicId: string) {

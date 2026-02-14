@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { getTopicProblems, getTopic } from '@/lib/problems';
 import { getCurrentUser } from '@/lib/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Code, Trophy, CheckCircle, Circle } from 'lucide-react';
 
-export default function ProblemsListPage({ params }: { params: { id: string } }) {
+export default function ProblemsListPage() {
+  const router = useRouter();
+  const params = useParams();
+  const topicId = params.id as string;
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [topic, setTopic] = useState<any>(null);
@@ -18,7 +21,7 @@ export default function ProblemsListPage({ params }: { params: { id: string } })
 
   useEffect(() => {
     loadData();
-  }, [params.id]);
+  }, [topicId]);
 
   const loadData = async () => {
     const currentUser = await getCurrentUser();
@@ -29,8 +32,8 @@ export default function ProblemsListPage({ params }: { params: { id: string } })
     }
 
     setUser(currentUser);
-    const topicData = await getTopic(params.id);
-    const problemsData = await getTopicProblems(params.id, currentUser.id);
+    const topicData = await getTopic(topicId);
+    const problemsData = await getTopicProblems(topicId, currentUser.id);
     
     setTopic(topicData);
     setProblems(problemsData);
@@ -203,7 +206,7 @@ export default function ProblemsListPage({ params }: { params: { id: string } })
                   <div className="flex gap-3">
                     <Button
                       onClick={() =>
-                        router.push(`/topic/${params.id}/problems/${problem.id}/explain`)
+                        router.push(`/topic/${topicId}/problems/${problem.id}/explain`)
                       }
                       variant={isCompleted ? 'outline' : 'default'}
                     >

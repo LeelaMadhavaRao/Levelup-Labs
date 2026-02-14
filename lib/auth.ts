@@ -240,11 +240,13 @@ export async function requestPasswordReset(email: string) {
   return { error: error ? error.message : null }
 }
 
-// Reset password with token
-export async function resetPassword(token: string, newPassword: string) {
+// Reset password (Supabase handles token automatically via session from redirect)
+export async function resetPassword(_token: string, newPassword: string) {
   const supabase = createClient()
   
-  // The token is automatically validated by Supabase
+  // The token from the reset email is automatically exchanged for a session
+  // by the Supabase client when the user lands on the reset page.
+  // We just need to call updateUser with the new password.
   const { error } = await supabase.auth.updateUser({
     password: newPassword,
   })

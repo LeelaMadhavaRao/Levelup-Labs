@@ -235,7 +235,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-4">
               {leaderboard.map((leader, index) => (
-                <div key={`${leader.user_id ?? leader.full_name ?? 'leader'}-${index}`} className="flex items-center gap-4">
+                <div key={`${leader.id ?? leader.full_name ?? 'leader'}-${index}`} className="flex items-center gap-4">
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted font-semibold text-sm">
                     {index === 0 && '🥇'}
                     {index === 1 && '🥈'}
@@ -249,7 +249,7 @@ export default function DashboardPage() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">
                       {leader.full_name}
-                      {leader.user_id === user?.id && (
+                      {leader.id === user?.id && (
                         <span className="text-xs text-primary ml-2">(You)</span>
                       )}
                     </p>

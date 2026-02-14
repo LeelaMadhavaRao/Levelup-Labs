@@ -48,11 +48,8 @@ export default function ResetPasswordClient() {
       return
     }
 
-    const token = searchParams.get('token')
-    if (!token) {
-      toast.error('Invalid reset token')
-      return
-    }
+    // Supabase handles the token via session exchange; pass a placeholder
+    const token = searchParams.get('token') || searchParams.get('code') || searchParams.get('token_hash') || 'session-based'
 
     setLoading(true)
     try {

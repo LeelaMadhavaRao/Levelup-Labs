@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { getTopic, generateQuiz, submitQuizResponse } from '@/lib/quiz';
 import { getCurrentUser } from '@/lib/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +18,10 @@ interface Question {
   correctAnswer: number;
 }
 
-export default function QuizPage({ params }: { params: { id: string } }) {
+export default function QuizPage() {
+  const router = useRouter();
+  const params = useParams();
+  const topicId = params.id as string;
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [topic, setTopic] = useState<any>(null);
@@ -32,7 +35,7 @@ export default function QuizPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     loadData();
-  }, [params.id]);
+  }, [topicId]);
 
   const loadData = async () => {
     const currentUser = await getCurrentUser();
@@ -43,11 +46,11 @@ export default function QuizPage({ params }: { params: { id: string } }) {
     }
 
     setUser(currentUser);
-    const topicData = await getTopic(params.id);
+    const topicData = await getTopic(topicId);
     setTopic(topicData);
 
     // Generate quiz
-    await generateQuizQuestions(params.id, topicData.name);
+    await generateQuizQuestions(topicId, topicData.name);
   };
 
   const generateQuizQuestions = async (topicId: string, topicName: string) => {
@@ -138,7 +141,7 @@ export default function QuizPage({ params }: { params: { id: string } }) {
         <Card>
           <CardContent className="py-16 text-center space-y-4">
             <h2 className="text-xl font-semibold">Unable to generate quiz</h2>
-            <Button onClick={() => router.push(`/topic/${params.id}/watch`)}>
+            <Button onClick={() => router.push(`/topic/${topicId}/watch`)}>
               Back to Video
             </Button>
           </CardContent>

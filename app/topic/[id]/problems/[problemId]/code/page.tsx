@@ -80,31 +80,60 @@ export default function CodeProblemPage() {
     }
   };
 
-  const handleSubmit = async (code: string, results: any[]) => {
-    const allPassed = results.every((r) => r.passed);
+  const handleRunTests = async (code: string): Promise<any[]> => {
+    try {
+      const result = await submitCode(user.id, problemId, code, problem.language || 'javascript');
 
-    if (allPassed) {
-      try {
-        const result = await submitCode(user.id, problemId, code);
-        
-        if (result.error) {
-          toast.error('Failed to submit solution');
-          return;
-        }
+      if (result.error) {
+        toast.error(result.error);
+        return testCases.map((tc: any) => ({
+          ...tc,
+          passed: false,
+          actual_output: 'Verification failed',
+        }));
+      }
 
+      if (result.allTestsPassed) {
         toast.success(`Perfect! All tests passed. +${result.pointsAwarded} points`, {
           icon: <Award className="h-4 w-4 text-yellow-500" />,
           duration: 5000,
         });
-
-        // Navigate back to problems list after success
-        setTimeout(() => {
-          router.push(`/topic/${problem.topic_id}/problems`);
-        }, 2000);
-      } catch (error) {
-        console.error('Error:', error);
-        toast.error('An error occurred');
       }
+
+      // Map server results back to TestCase format
+      if (result.testResults && result.testResults.length > 0) {
+        return result.testResults.map((tr: any, i: number) => ({
+          input: testCases[i]?.input || '',
+          expected_output: tr.expectedOutput || testCases[i]?.expected_output || '',
+          passed: tr.passed,
+          actual_output: tr.actualOutput || (tr.passed ? (testCases[i]?.expected_output || '') : 'Output mismatch'),
+        }));
+      }
+
+      return testCases.map((tc: any) => ({
+        ...tc,
+        passed: result.allTestsPassed,
+        actual_output: result.allTestsPassed ? tc.expected_output : (result.feedback || 'Output mismatch'),
+      }));
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('An error occurred during verification');
+      return testCases.map((tc: any) => ({
+        ...tc,
+        passed: false,
+        actual_output: 'Verification error',
+      }));
+    }
+  };
+
+  const handleSubmit = async (code: string, results: any[]) => {
+    const allPassed = results.every((r) => r.passed);
+
+    if (allPassed) {
+      // Points already awarded by the edge function in handleRunTests
+      setTimeout(() => {
+        router.push(`/topic/${problem.topic_id}/problems`);
+      }, 2000);
     } else {
       toast.error('Some tests failed. Fix your code and try again!');
     }
@@ -189,6 +218,7 @@ function solution(input) {
             defaultCode={defaultCode}
             testCases={testCases}
             onSubmit={handleSubmit}
+            onRunTests={handleRunTests}
           />
         </div>
       </div>

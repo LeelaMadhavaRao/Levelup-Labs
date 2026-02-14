@@ -19,6 +19,7 @@ interface CodeEditorProps {
   defaultCode?: string;
   testCases: TestCase[];
   onSubmit?: (code: string, results: TestCase[]) => void;
+  onRunTests?: (code: string) => Promise<TestCase[]>;
   readOnly?: boolean;
 }
 
@@ -27,6 +28,7 @@ export function CodeEditor({
   defaultCode = '',
   testCases,
   onSubmit,
+  onRunTests,
   readOnly = false,
 }: CodeEditorProps) {
   const [code, setCode] = useState(defaultCode);
@@ -37,17 +39,19 @@ export function CodeEditor({
     setLoading(true);
     
     try {
-      // Simulate test execution
-      // In production, this would call Gemini API or execute code safely
-      const testResults = testCases.map((testCase) => {
-        // Mock evaluation - replace with actual execution
-        const passed = Math.random() > 0.3; // Simulate success rate
-        return {
+      let testResults: TestCase[];
+
+      if (onRunTests) {
+        // Delegate test execution to parent (server-side AI verification)
+        testResults = await onRunTests(code);
+      } else {
+        // No test runner provided - cannot verify locally
+        testResults = testCases.map((testCase) => ({
           ...testCase,
-          passed,
-          actual_output: passed ? testCase.expected_output : 'Error: Output mismatch',
-        };
-      });
+          passed: false,
+          actual_output: 'Server verification required',
+        }));
+      }
 
       setResults(testResults);
 
