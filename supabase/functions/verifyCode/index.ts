@@ -202,6 +202,7 @@ Be strict - even one failing test case means allTestsPassed should be false.`
       const { error: pointsError } = await supabaseClient.rpc('add_points_to_user', {
         p_user_id: user.id,
         p_points: points,
+        p_problem_id: problemId, // For idempotency checking
       })
 
       if (pointsError) {

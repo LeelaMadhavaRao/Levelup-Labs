@@ -3,13 +3,31 @@
 -- Purpose: Handle points, leaderboard updates automatically
 -- ==============================================
 
--- Function: Add points to user
+-- Function: Add points to user (with idempotency check)
 -- Called by: verifyCode Edge Function, updatePoints Edge Function
 CREATE OR REPLACE FUNCTION add_points_to_user(
     p_user_id UUID,
-    p_points INT
+    p_points INT,
+    p_problem_id UUID DEFAULT NULL
 ) RETURNS VOID AS $$
+DECLARE
+    v_already_awarded BOOLEAN;
 BEGIN
+    -- Check if points were already awarded for this problem (idempotency)
+    IF p_problem_id IS NOT NULL THEN
+        SELECT EXISTS (
+            SELECT 1 FROM problem_solutions 
+            WHERE user_id = p_user_id 
+            AND problem_id = p_problem_id 
+            AND points_awarded > 0
+            AND status IN ('completed', 'algorithm_verified')
+        ) INTO v_already_awarded;
+        
+        IF v_already_awarded THEN
+            RETURN; -- Points already awarded, skip
+        END IF;
+    END IF;
+    
     -- Update user's total points
     UPDATE users
     SET 

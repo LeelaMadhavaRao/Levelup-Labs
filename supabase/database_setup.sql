@@ -9,7 +9,7 @@
 -- ==============================================
 CREATE TYPE user_role AS ENUM ('admin', 'user');
 CREATE TYPE problem_difficulty AS ENUM ('easy', 'medium', 'hard');
-CREATE TYPE solution_status AS ENUM ('pending', 'algorithm_submitted', 'algorithm_verified', 'code_submitted', 'completed', 'failed');
+CREATE TYPE solution_status AS ENUM ('pending', 'algorithm_submitted', 'algorithm_verified', 'algorithm_approved', 'code_submitted', 'code_failed', 'completed', 'failed');
 
 -- ==============================================
 -- STEP 2: Create Tables
@@ -57,9 +57,13 @@ CREATE TABLE modules (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
     "order" INT NOT NULL,
+    order_index INT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-    UNIQUE(course_id, "order")
+    UNIQUE(course_id, "order"),
+    UNIQUE(course_id, order_index)
 );
 
 -- Topics Table
@@ -67,11 +71,26 @@ CREATE TABLE topics (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     module_id UUID NOT NULL REFERENCES modules(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
+    description TEXT,
     video_url TEXT NOT NULL,
+    order_index INT,
     num_mcqs INT DEFAULT 5,
     num_problems INT DEFAULT 3,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Topic Progress Table (tracks video watched status)
+CREATE TABLE topic_progress (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    topic_id UUID NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
+    video_watched BOOLEAN DEFAULT FALSE,
+    quiz_passed BOOLEAN DEFAULT FALSE,
+    problems_completed INT DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    UNIQUE(user_id, topic_id)
 );
 
 -- Quiz Responses Table
@@ -179,9 +198,12 @@ ALTER TABLE leaderboard ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can read all users" ON users
     FOR SELECT USING (true);
 
-CREATE POLICY "Users can update their own profile" ON users
+CREATE POLICY "Users can update their own profile (except role)" ON users
     FOR UPDATE USING (auth.uid() = id)
-    WITH CHECK (auth.uid() = id);
+    WITH CHECK (
+        auth.uid() = id AND 
+        role = (SELECT role FROM users WHERE id = auth.uid())
+    );
 
 CREATE POLICY "Service role can create users" ON users
     FOR INSERT WITH CHECK (true);
@@ -315,27 +337,37 @@ CREATE POLICY "Users can read their own solutions" ON problem_solutions
 CREATE POLICY "Users can update their own solutions" ON problem_solutions
     FOR UPDATE USING (user_id = auth.uid());
 
+-- Topic Progress Table Policies
+CREATE POLICY "Users can create their own progress" ON topic_progress
+    FOR INSERT WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Users can read their own progress" ON topic_progress
+    FOR SELECT USING (user_id = auth.uid());
+
+CREATE POLICY "Users can update their own progress" ON topic_progress
+    FOR UPDATE USING (user_id = auth.uid());
+
 -- Leaderboard Table Policies
 CREATE POLICY "Anyone can read leaderboard" ON leaderboard
     FOR SELECT USING (true);
 
-CREATE POLICY "Service role can update leaderboard" ON leaderboard
-    FOR UPDATE USING (true);
-
-CREATE POLICY "Service role can insert leaderboard entries" ON leaderboard
-    FOR INSERT WITH CHECK (true);
+-- Note: UPDATE and INSERT are intentionally restricted to service role via SECURITY DEFINER functions
+-- No policies for UPDATE/INSERT - only functions can modify leaderboard
 
 -- ==============================================
--- STEP 5.5: Grant Schema/Table Access
+-- STEP 5.5: Grant Schema/Table Access (RESTRICTED)
 -- ==============================================
 -- Ensure anon/authenticated roles can access public schema
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
+-- Authenticated users can only modify their own data via RLS policies
+GRANT SELECT, INSERT, UPDATE ON quiz_responses, problem_solutions, user_courses, topic_progress TO authenticated;
+GRANT SELECT ON users, courses, modules, topics, coding_problems, leaderboard TO authenticated;
+-- Leaderboard modifications only via SECURITY DEFINER functions
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT SELECT ON TABLES TO anon;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO authenticated;
+GRANT SELECT ON TABLES TO authenticated;
 
 -- ==============================================
 -- STEP 6: Create Initial Admin User

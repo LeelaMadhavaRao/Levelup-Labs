@@ -12,6 +12,27 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, Send, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
+function formatProblemField(value: unknown): string {
+  if (value == null) return ''
+  if (typeof value === 'string') return value
+  
+  // Handle array of example objects specially
+  if (Array.isArray(value) && value.length > 0 && value[0].input !== undefined) {
+    return value.map((ex: any, idx: number) => 
+      `Example ${idx + 1}:\n` +
+      `Input: ${ex.input}\n` +
+      `Output: ${ex.output}\n` +
+      (ex.explanation ? `Explanation: ${ex.explanation}` : '')
+    ).join('\n\n')
+  }
+  
+  try {
+    return JSON.stringify(value, null, 2)
+  } catch {
+    return String(value)
+  }
+}
+
 export default function ExplainProblemPage() {
   const router = useRouter();
   const params = useParams();
@@ -122,14 +143,14 @@ export default function ExplainProblemPage() {
             {problem.constraints && (
               <div className="mt-4">
                 <h4 className="font-semibold">Constraints:</h4>
-                <p className="text-sm text-muted-foreground">{problem.constraints}</p>
+                <p className="text-sm text-muted-foreground">{formatProblemField(problem.constraints)}</p>
               </div>
             )}
 
             {problem.examples && (
               <div className="mt-4">
                 <h4 className="font-semibold">Examples:</h4>
-                <pre className="text-sm bg-muted p-3 rounded">{problem.examples}</pre>
+                <pre className="text-sm bg-muted p-3 rounded">{formatProblemField(problem.examples)}</pre>
               </div>
             )}
           </div>

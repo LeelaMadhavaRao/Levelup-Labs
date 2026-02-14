@@ -104,7 +104,7 @@ export default function QuizPage({ params }: { params: { id: string } }) {
 
     // Submit quiz response
     if (user && topic) {
-      await submitQuizResponse(user.id, topic.id, finalScore, selectedAnswers);
+      await submitQuizResponse(user.id, topic.id, finalScore, selectedAnswers, questions);
     }
 
     if (finalScore >= 70) {

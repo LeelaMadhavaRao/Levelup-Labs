@@ -52,8 +52,10 @@ export async function getCourseWithModules(courseId: string) {
       modules (
         id,
         name,
+        title,
         description,
         order_index,
+        order,
         topics (
           id,
           name,
@@ -327,9 +329,14 @@ export async function createModule(data: {
 }) {
   const supabase = createClient()
   
+  // Populate both old and new schema fields for backward compatibility
   const { data: module, error } = await supabase
     .from('modules')
-    .insert([data])
+    .insert([{
+      ...data,
+      title: data.name, // Map name to title
+      order: data.order_index, // Map order_index to order
+    }])
     .select()
     .single()
   

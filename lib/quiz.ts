@@ -52,11 +52,23 @@ export async function submitQuizResponse(
   userId: string,
   topicId: string,
   score: number,
-  userAnswers: number[]
+  userAnswers: number[],
+  questions: Array<{ question: string; options: string[]; correctAnswer: number }>
 ) {
   const supabase = createClient()
   
   const passed = score >= 70
+  
+  // Build quiz_data JSONB with questions and user answers
+  const quiz_data = {
+    questions: questions.map((q, index) => ({
+      question: q.question,
+      options: q.options,
+      correctAnswer: q.correctAnswer,
+      userAnswer: userAnswers[index],
+    })),
+    timestamp: new Date().toISOString(),
+  }
   
   const { data, error } = await supabase
     .from('quiz_responses')
@@ -64,7 +76,9 @@ export async function submitQuizResponse(
       {
         user_id: userId,
         topic_id: topicId,
+        quiz_data,
         score,
+        total_questions: questions.length,
         passed,
       },
     ])

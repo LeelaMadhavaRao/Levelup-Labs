@@ -175,7 +175,7 @@ export default function AdminDashboard() {
                       variant="outline"
                       size="sm"
                       className="flex-1"
-                      onClick={() => router.push(`/admin/edit-course/${course.id}`)}
+                      onClick={() => router.push(`/admin/courses/${course.id}/edit`)}
                     >
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
