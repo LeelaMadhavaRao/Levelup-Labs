@@ -113,14 +113,14 @@ export default function Navbar() {
           { href: '/admin/dashboard', label: 'ADMIN' },
           { href: '/admin/create-course', label: 'CREATE' },
           { href: '/admin/courses', label: 'CONSOLE' },
-          { href: '/courses', label: 'GATES' },
+          { href: '/courses', label: 'DUNGEONS' },
           { href: '/practice', label: 'PRACTICE' },
           { href: '/leaderboard', label: 'RANKINGS' },
         ]
       : [
           { href: '/dashboard', label: 'HOME' },
-          { href: '/courses', label: 'GATES' },
-          { href: '/my-courses', label: 'MY QUESTS' },
+          { href: '/courses', label: 'DUNGEONS' },
+          { href: '/my-courses', label: 'MY DUNGEONS' },
           { href: '/practice', label: 'PRACTICE' },
           { href: '/leaderboard', label: 'RANKINGS' },
         ]
