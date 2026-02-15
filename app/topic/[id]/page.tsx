@@ -75,7 +75,7 @@ export default function TopicLandingPage() {
     setTotalProblems(problems.length);
 
     const solvedCount = problems.filter(
-      (p: any) => p.problem_solutions?.some((s: any) => s.status === 'completed')
+      (p: any) => p.status === 'completed'
     ).length;
 
     // Determine current step

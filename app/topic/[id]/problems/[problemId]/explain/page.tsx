@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { getProblemById, submitAlgorithmExplanation } from '@/lib/problems';
+import { getProblemById, submitAlgorithmExplanation, submitProblemSolution, getProblemSolution } from '@/lib/problems';
 import { getCurrentUser } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Send, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Send, CheckCircle, XCircle, Code, Loader2, Eye, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 
 function formatProblemField(value: unknown): string {
@@ -43,6 +43,15 @@ export default function ExplainProblemPage() {
   const [explanation, setExplanation] = useState('');
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<any>(null);
+  // Track the text that was approved so we can detect edits
+  const [approvedText, setApprovedText] = useState<string | null>(null);
+  // Track if the problem is fully solved (code completed)
+  const [isSolved, setIsSolved] = useState(false);
+
+  // Derived: approach is approved AND text hasn't changed since approval
+  const isApproved = approvedText !== null && explanation.trim() === approvedText.trim();
+  // Derived: text changed after an approval → allow re-submit
+  const hasChangedSinceApproval = approvedText !== null && explanation.trim() !== approvedText.trim();
 
   useEffect(() => {
     loadData();
@@ -58,6 +67,29 @@ export default function ExplainProblemPage() {
 
     const problemData = await getProblemById(problemId);
     setProblem(problemData);
+
+    // Check if user already has an approved algorithm explanation
+    try {
+      const existingSolution = await getProblemSolution(currentUser.id, problemId);
+      if (existingSolution && existingSolution.algorithm_explanation) {
+        setExplanation(existingSolution.algorithm_explanation);
+        // If previously approved (status is algorithm_submitted or completed), mark as approved
+        if (existingSolution.status === 'algorithm_submitted' || existingSolution.status === 'completed') {
+          setApprovedText(existingSolution.algorithm_explanation);
+          const solved = existingSolution.status === 'completed';
+          setIsSolved(solved);
+          setFeedback({
+            isCorrect: true,
+            feedback: solved
+              ? 'This problem is solved. Your approach and code have been submitted successfully.'
+              : 'Your approach was previously approved. You can proceed to coding!',
+            suggestions: null,
+          });
+        }
+      }
+    } catch {
+      // No existing solution — that's fine
+    }
   };
 
   const handleSubmit = async () => {
@@ -67,6 +99,12 @@ export default function ExplainProblemPage() {
     }
 
     setLoading(true);
+    // Reset previous approval if text was changed
+    if (hasChangedSinceApproval) {
+      setApprovedText(null);
+      setFeedback(null);
+    }
+
     try {
       const result = await submitAlgorithmExplanation(
         user.id,
@@ -89,7 +127,15 @@ export default function ExplainProblemPage() {
         
       if (result.isCorrect) {
         toast.success('Great work! Your algorithm is correct!');
+        setApprovedText(explanation);
+        // Save solution to DB with status 'algorithm_submitted'
+        try {
+          await submitProblemSolution(user.id, problemId, explanation);
+        } catch (e) {
+          console.error('Error saving solution:', e);
+        }
       } else {
+        setApprovedText(null);
         toast.error('Not quite right. Check the feedback and try again!');
       }
     } catch (error) {
@@ -159,22 +205,38 @@ export default function ExplainProblemPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Your Explanation</CardTitle>
-          <CardDescription>
-            Explain your approach, algorithm, time complexity, and space complexity
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Your Explanation</CardTitle>
+              <CardDescription>
+                {isSolved
+                  ? 'Your submitted approach (read-only)'
+                  : 'Explain your approach, algorithm, time complexity, and space complexity'}
+              </CardDescription>
+            </div>
+            {isSolved && (
+              <Badge className="bg-green-500/10 text-green-500 border-green-500/20">
+                <Lock className="mr-1 h-3 w-3" />
+                Solved
+              </Badge>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <Textarea
             value={explanation}
-            onChange={(e) => setExplanation(e.target.value)}
+            onChange={(e) => {
+              if (isSolved) return;
+              setExplanation(e.target.value);
+            }}
+            readOnly={isSolved}
             placeholder="Example:&#10;1. Approach: Use a hash map to store...&#10;2. Algorithm: First, iterate through...&#10;3. Time Complexity: O(n)&#10;4. Space Complexity: O(n)"
             rows={12}
-            className="font-mono text-sm"
+            className={`font-mono text-sm ${isSolved ? 'opacity-80 cursor-not-allowed bg-muted' : ''}`}
           />
 
           {feedback && (
-            <Alert variant={feedback.isCorrect ? 'default' : 'destructive'}>
+            <Alert variant={feedback.isCorrect && isApproved ? 'default' : feedback.isCorrect && hasChangedSinceApproval ? 'default' : !feedback.isCorrect ? 'destructive' : 'default'}>
               <div className="flex items-start gap-2">
                 {feedback.isCorrect ? (
                   <CheckCircle className="h-5 w-5 text-green-500" />
@@ -187,27 +249,66 @@ export default function ExplainProblemPage() {
                       {feedback.isCorrect ? 'Excellent!' : 'Not quite right'}
                     </p>
                     <p className="text-sm">{feedback.feedback}</p>
+                    {feedback.suggestions && (
+                      <p className="text-sm mt-2 text-muted-foreground">{feedback.suggestions}</p>
+                    )}
                   </AlertDescription>
                 </div>
               </div>
             </Alert>
           )}
 
+          {hasChangedSinceApproval && (
+            <Alert>
+              <AlertDescription className="text-sm text-muted-foreground">
+                You&apos;ve modified your approach since it was approved. Submit again to re-verify.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="flex gap-2">
-            <Button
-              onClick={handleSubmit}
-              disabled={loading || !explanation.trim()}
-              className="flex-1"
-            >
-              <Send className="mr-2 h-4 w-4" />
-              {loading ? 'Submitting...' : 'Submit Explanation'}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => router.push(`/topic/${problem.topic_id}/problems/${problemId}/code`)}
-            >
-              Skip to Code
-            </Button>
+            {!isSolved && (
+              <Button
+                onClick={handleSubmit}
+                disabled={loading || !explanation.trim() || isApproved}
+                className="flex-1"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Verifying...
+                  </>
+                ) : isApproved ? (
+                  <>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Approach Approved
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Submit Explanation
+                  </>
+                )}
+              </Button>
+            )}
+            {(isApproved || isSolved) && (
+              <Button
+                onClick={() => router.push(`/topic/${problem.topic_id}/problems/${problemId}/code`)}
+                className={isSolved ? 'flex-1 bg-green-600 hover:bg-green-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'}
+              >
+                {isSolved ? (
+                  <>
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Code
+                  </>
+                ) : (
+                  <>
+                    <Code className="mr-2 h-4 w-4" />
+                    Go to Code
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

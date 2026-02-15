@@ -21,6 +21,7 @@ export async function getTopLeaderboard(limit: number = 10) {
   const { data, error } = await supabase
     .from('users')
     .select('id, full_name, avatar_url, email, total_points, rank, courses_completed, problems_solved, role')
+    .neq('role', 'admin')
     .order('total_points', { ascending: false })
     .limit(limit)
   
@@ -57,6 +58,7 @@ export async function searchLeaderboard(query: string, searchType: 'rank' | 'nam
     const { data, error } = await supabase
       .from('users')
       .select('id, full_name, avatar_url, email, total_points, rank, courses_completed, problems_solved')
+      .neq('role', 'admin')
       .eq('rank', rank)
     
     if (error) throw error
@@ -65,6 +67,7 @@ export async function searchLeaderboard(query: string, searchType: 'rank' | 'nam
     const { data, error } = await supabase
       .from('users')
       .select('id, full_name, avatar_url, email, total_points, rank, courses_completed, problems_solved')
+      .neq('role', 'admin')
       .ilike('full_name', `%${query}%`)
       .order('total_points', { ascending: false })
       .limit(10)

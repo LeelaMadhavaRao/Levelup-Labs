@@ -171,7 +171,48 @@ Be strict - even one failing test case means allTestsPassed should be false.`
     }
     const points = allPassed ? (difficultyPoints[problem.difficulty] || 0) : 0
 
-    // Update solution status and award points if solved
+    // Award points FIRST (before updating problem_solutions) so the
+    // idempotency check inside add_points_to_user sees the old row
+    // where points_awarded is still 0.
+    if (allPassed && points > 0) {
+      // Check if points were already awarded for this problem (idempotency)
+      const { data: existingSolution } = await supabaseClient
+        .from('problem_solutions')
+        .select('points_awarded, status')
+        .eq('user_id', user.id)
+        .eq('problem_id', problemId)
+        .single()
+
+      const alreadyAwarded = existingSolution?.points_awarded > 0 && existingSolution?.status === 'completed'
+
+      if (!alreadyAwarded) {
+        // Try RPC first (handles users + leaderboard + ranks)
+        const { error: rpcError } = await supabaseClient.rpc('add_points_to_user', {
+          p_user_id: user.id,
+          p_points: points,
+          p_problem_id: problemId,
+        })
+
+        if (rpcError) {
+          console.error('RPC add_points_to_user failed, using direct update:', rpcError.message)
+          // Fallback: directly increment points on users table
+          const { data: currentUser } = await supabaseClient
+            .from('users')
+            .select('total_points')
+            .eq('id', user.id)
+            .single()
+
+          if (currentUser) {
+            await supabaseClient
+              .from('users')
+              .update({ total_points: (currentUser.total_points || 0) + points })
+              .eq('id', user.id)
+          }
+        }
+      }
+    }
+
+    // Now update the solution row with code, status, and points_awarded
     const { error: updateError } = await supabaseClient
       .from('problem_solutions')
       .update({
@@ -188,16 +229,38 @@ Be strict - even one failing test case means allTestsPassed should be false.`
       console.error('Failed to update solution:', updateError)
     }
 
-    // Award points to user if all tests passed
-    if (allPassed && points > 0) {
-      const { error: pointsError } = await supabaseClient.rpc('add_points_to_user', {
-        p_user_id: user.id,
-        p_points: points,
-        p_problem_id: problemId, // For idempotency checking
-      })
+    // Increment problems_solved on users table if completed
+    // (DB trigger should handle this, but do it as fallback too)
+    if (allPassed) {
+      const { data: existingCheck } = await supabaseClient
+        .from('problem_solutions')
+        .select('status')
+        .eq('user_id', user.id)
+        .eq('problem_id', problemId)
+        .single()
+      
+      // Only increment if status just changed to completed
+      if (existingCheck?.status === 'completed') {
+        const { data: userData } = await supabaseClient
+          .from('users')
+          .select('problems_solved')
+          .eq('id', user.id)
+          .single()
 
-      if (pointsError) {
-        console.error('Failed to award points:', pointsError)
+        // Count actual completed problems to be accurate
+        const { data: allSolved } = await supabaseClient
+          .from('problem_solutions')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('status', 'completed')
+
+        const actualSolvedCount = allSolved?.length || 0
+        if (userData && (userData.problems_solved || 0) < actualSolvedCount) {
+          await supabaseClient
+            .from('users')
+            .update({ problems_solved: actualSolvedCount })
+            .eq('id', user.id)
+        }
       }
     }
 

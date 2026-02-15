@@ -352,6 +352,7 @@ export async function createTopic(data: {
   name: string
   video_url: string
   description?: string
+  overview?: string
   order_index: number
 }) {
   const supabase = createClient()

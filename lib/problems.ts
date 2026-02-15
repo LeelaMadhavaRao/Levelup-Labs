@@ -19,12 +19,22 @@ export async function getTopicProblems(topicId: string, userId?: string) {
     .from('coding_problems')
     .select(`
       *,
-      problem_solutions!left(status)
+      problem_solutions!left(status, user_id)
     `)
     .eq('topic_id', topicId)
   
   if (error) throw error
-  return data as any[]
+
+  // Flatten: extract the current user's solution status to a top-level 'status' field
+  return (data || []).map((problem: any) => {
+    const userSolution = userId
+      ? problem.problem_solutions?.find((s: any) => s.user_id === userId)
+      : null
+    return {
+      ...problem,
+      status: userSolution?.status || null,
+    }
+  })
 }
 
 // Get topic
@@ -322,7 +332,8 @@ export async function submitCode(
 export async function generateProblemsForTopic(
   topicId: string,
   topicName: string,
-  numProblems: number
+  numProblems: number,
+  topicOverview?: string
 ) {
   const supabase = createClient()
   
@@ -341,6 +352,7 @@ export async function generateProblemsForTopic(
         topicId,
         topicName,
         numProblems,
+        topicOverview: topicOverview || '',
       },
       headers: {
         Authorization: `Bearer ${session.access_token}`,

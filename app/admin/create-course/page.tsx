@@ -17,6 +17,7 @@ interface Topic {
   name: string;
   video_url: string;
   description: string;
+  overview: string;
 }
 
 interface Module {
@@ -82,6 +83,7 @@ export default function CreateCoursePage() {
                   name: '',
                   video_url: '',
                   description: '',
+                  overview: '',
                 },
               ],
             }
@@ -198,6 +200,7 @@ export default function CreateCoursePage() {
             name: topic.name,
             video_url: topic.video_url,
             description: topic.description,
+            overview: topic.overview,
             order_index: j + 1,
           });
 
@@ -383,6 +386,15 @@ export default function CreateCoursePage() {
                         }
                         placeholder="Topic description"
                         rows={2}
+                      />
+
+                      <Textarea
+                        value={topic.overview}
+                        onChange={(e) =>
+                          updateTopic(module.id, topic.id, 'overview', e.target.value)
+                        }
+                        placeholder="Topic overview — provide a detailed summary of what this topic covers. This will be enhanced by AI and used to generate better quizzes and problems."
+                        rows={3}
                       />
                     </div>
                   ))}

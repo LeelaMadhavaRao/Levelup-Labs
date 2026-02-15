@@ -8,7 +8,7 @@ export interface QuizQuestion {
 }
 
 // Generate quiz using Edge Function (server-side Gemini AI)
-export async function generateQuiz(topicId: string, topicName: string, numQuestions: number) {
+export async function generateQuiz(topicId: string, topicName: string, numQuestions: number, topicOverview?: string) {
   const supabase = createClient()
 
   try {
@@ -54,6 +54,7 @@ export async function generateQuiz(topicId: string, topicName: string, numQuesti
         topicId,
         topicName,
         numQuestions,
+        topicOverview: topicOverview || '',
       }),
     })
 

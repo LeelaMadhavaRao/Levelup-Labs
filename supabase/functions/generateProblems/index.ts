@@ -75,7 +75,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { topicId, topicName, numProblems } = await req.json()
+    const { topicId, topicName, numProblems, topicOverview } = await req.json()
 
     if (!topicId || !topicName || !numProblems) {
       return new Response(
@@ -108,7 +108,11 @@ serve(async (req: Request) => {
     }
 
     // Generate problems using Gemini
-    const prompt = `Generate ${numProblems} LeetCode-style coding problems about "${topicName}".
+    const overviewContext = topicOverview 
+      ? `\n\nTopic Overview (use this to generate more relevant and specific problems):\n"${topicOverview}"` 
+      : ''
+    
+    const prompt = `Generate ${numProblems} LeetCode-style coding problems about "${topicName}".${overviewContext}
 Return ONLY a valid JSON array with no additional text, in this exact format:
 [
   {

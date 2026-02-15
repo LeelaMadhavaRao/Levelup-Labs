@@ -50,14 +50,14 @@ export default function QuizPage() {
     setTopic(topicData);
 
     // Generate quiz
-    await generateQuizQuestions(topicId, topicData.name);
+    await generateQuizQuestions(topicId, topicData.name, topicData.overview);
   };
 
-  const generateQuizQuestions = async (topicId: string, topicName: string) => {
+  const generateQuizQuestions = async (topicId: string, topicName: string, topicOverview?: string) => {
     setGenerating(true);
     
     try {
-      const quizData = await generateQuiz(topicId, topicName, 5);
+      const quizData = await generateQuiz(topicId, topicName, 5, topicOverview);
       
       if (quizData.error || !quizData.questions) {
         console.error('Error generating quiz:', quizData.error);

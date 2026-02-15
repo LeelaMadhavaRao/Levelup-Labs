@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { getProblemById, submitCode } from '@/lib/problems';
+import { getProblemById, submitCode, getProblemSolution } from '@/lib/problems';
 import { getCurrentUser } from '@/lib/auth';
 import { updateProblemsCompleted } from '@/lib/courses';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CodeEditor } from '@/components/code-editor';
-import { ArrowLeft, Award } from 'lucide-react';
+import { ArrowLeft, Award, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 
 function formatProblemField(value: unknown): string {
@@ -41,6 +41,8 @@ export default function CodeProblemPage() {
   const [user, setUser] = useState<any>(null);
   const [problem, setProblem] = useState<any>(null);
   const [testCases, setTestCases] = useState<any[]>([]);
+  const [isSolved, setIsSolved] = useState(false);
+  const [savedCode, setSavedCode] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -53,6 +55,27 @@ export default function CodeProblemPage() {
       return;
     }
     setUser(currentUser);
+
+    // Guard: check if algorithm explanation was approved before allowing code
+    try {
+      const solution = await getProblemSolution(currentUser.id, problemId);
+      if (!solution || (solution.status !== 'algorithm_submitted' && solution.status !== 'completed')) {
+        toast.error('You must get your approach approved before writing code.');
+        router.push(`/topic/${params.id}/problems/${problemId}/explain`);
+        return;
+      }
+      // If already solved, load the saved code and mark as read-only
+      if (solution.status === 'completed') {
+        setIsSolved(true);
+        if (solution.code_solution) {
+          setSavedCode(solution.code_solution);
+        }
+      }
+    } catch {
+      toast.error('You must explain your approach first.');
+      router.push(`/topic/${params.id}/problems/${problemId}/explain`);
+      return;
+    }
 
     const problemData = await getProblemById(problemId);
     setProblem(problemData);
@@ -159,7 +182,7 @@ export default function CodeProblemPage() {
     );
   }
 
-  const defaultCode = problem.starter_code || `// Write your solution here
+  const defaultCode = savedCode || problem.starter_code || `// Write your solution here
 function solution(input) {
   // Your code here
   return result;
@@ -184,7 +207,7 @@ function solution(input) {
               <div>
                 <CardTitle>{problem.title}</CardTitle>
                 <CardDescription className="mt-2">
-                  Solve this coding challenge
+                  {isSolved ? 'Your submitted solution (read-only)' : 'Solve this coding challenge'}
                 </CardDescription>
               </div>
               <Badge variant={problem.difficulty === 'easy' ? 'default' : problem.difficulty === 'medium' ? 'secondary' : 'destructive'}>
@@ -222,12 +245,19 @@ function solution(input) {
 
         {/* Code Editor */}
         <div>
+          {isSolved && (
+            <div className="mb-3 flex items-center gap-2 text-sm text-green-500">
+              <Lock className="h-4 w-4" />
+              <span className="font-medium">Problem solved — code is read-only</span>
+            </div>
+          )}
           <CodeEditor
             language={problem.language || 'javascript'}
             defaultCode={defaultCode}
             testCases={testCases}
-            onSubmit={handleSubmit}
-            onRunTests={handleRunTests}
+            onSubmit={isSolved ? undefined : handleSubmit}
+            onRunTests={isSolved ? undefined : handleRunTests}
+            readOnly={isSolved}
           />
         </div>
       </div>

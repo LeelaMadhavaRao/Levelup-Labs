@@ -72,6 +72,7 @@ CREATE TABLE topics (
     module_id UUID NOT NULL REFERENCES modules(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     description TEXT,
+    overview TEXT,
     video_url TEXT NOT NULL,
     order_index INT,
     num_mcqs INT DEFAULT 5,

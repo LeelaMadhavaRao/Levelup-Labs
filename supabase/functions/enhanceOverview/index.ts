@@ -1,6 +1,6 @@
-// Edge Function: Generate AI Quiz
-// Purpose: Generate MCQ quiz questions using Gemini API
-// Called by: Frontend quiz page
+// Edge Function: Enhance Topic Overview
+// Purpose: Enhance admin-provided topic overview using Gemini AI
+// Called by: Frontend watch page when user clicks "Topic Overview"
 
 // @ts-ignore - Deno imports
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
@@ -19,7 +19,7 @@ const GEMINI_API_KEYS = [
   Deno.env.get('GEMINI_API_KEY_4'),
 ].filter(Boolean) as string[]
 
-const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'] // Primary -> Fallback
+const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash']
 
 let currentKeyIndex = 0
 
@@ -35,9 +35,7 @@ function getNextGeminiApiKey(): string {
 async function callGeminiAPI(prompt: string): Promise<string> {
   let lastError: Error | null = null
 
-  // Try each model (1.5-flash first, then 2.0-flash-exp)
   for (const modelName of MODELS) {
-    // For each model, try all API keys using round-robin
     for (let keyAttempt = 0; keyAttempt < GEMINI_API_KEYS.length; keyAttempt++) {
       try {
         const apiKey = getNextGeminiApiKey()
@@ -75,114 +73,65 @@ serve(async (req: Request) => {
   }
 
   try {
-    console.log('🔵 Incoming request to generateQuiz')
-    
-    const { topicId, topicName, numQuestions, topicOverview } = await req.json()
-    
-    console.log('📦 Request body:', { topicId, topicName, numQuestions, hasOverview: !!topicOverview })
+    const { topicName, overview } = await req.json()
 
-    if (!topicId || !topicName || !numQuestions) {
-      console.log('❌ Missing required fields')
+    if (!topicName || !overview) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
+        JSON.stringify({ error: 'Missing required fields: topicName and overview' }),
         { status: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
       )
     }
 
-    // Log all headers for debugging
-    console.log('📋 Request headers:')
-    req.headers.forEach((value, key) => {
-      if (key.toLowerCase().includes('auth') || key.toLowerCase().includes('apikey')) {
-        console.log(`  ${key}: ${value.substring(0, 20)}...`)
-      } else {
-        console.log(`  ${key}: ${value}`)
-      }
-    })
-
     // Validate user is authenticated
     const authHeader = req.headers.get('Authorization') || req.headers.get('authorization')
-    console.log('🔑 Auth header check:', {
-      hasAuthHeader: !!authHeader,
-      headerPreview: authHeader ? authHeader.substring(0, 30) + '...' : 'null',
-      startsWithBearer: authHeader?.startsWith('Bearer '),
-    })
-    
     if (!authHeader) {
-      console.log('❌ Missing authorization header')
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
         { status: 401, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
       )
     }
 
-    console.log('🔧 Creating Supabase client with auth header')
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: authHeader } } }
     )
 
-    console.log('👤 Verifying user...')
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
-    
-    console.log('👤 User verification result:', {
-      hasUser: !!user,
-      userId: user?.id,
-      userEmail: user?.email,
-      authError: authError?.message,
-    })
-    
+    const { data: { user } } = await supabaseClient.auth.getUser()
     if (!user) {
-      console.log('❌ User verification failed - Unauthorized')
       return new Response(
-        JSON.stringify({ 
-          error: 'Unauthorized', 
-          details: authError?.message || 'Failed to verify user',
-        }),
+        JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
       )
     }
 
-    console.log('✅ User authenticated, generating quiz...')
+    // Enhance overview using Gemini
+    const prompt = `You are an expert programming instructor. Given the following topic and its overview, create an enhanced, comprehensive learning overview that students will see before studying this topic.
 
-    // Generate quiz using Gemini
-    const overviewContext = topicOverview 
-      ? `\n\nTopic Overview (use this to generate more relevant and specific questions):\n"${topicOverview}"` 
-      : ''
-    
-    const prompt = `Generate ${numQuestions} multiple choice questions about "${topicName}" for a coding course.${overviewContext}
-Return ONLY a valid JSON array with no additional text, in this exact format:
-[
-  {
-    "question": "What is...",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correctAnswer": 0
-  }
-]
-The correctAnswer should be the index (0-3) of the correct option. Make questions progressively challenging.`
+Topic: "${topicName}"
 
-    const response = await callGeminiAPI(prompt)
-    console.log('🤖 Gemini response received, parsing...')
-    
-    const jsonMatch = response.match(/\[[\s\S]*\]/)
-    const jsonStr = jsonMatch ? jsonMatch[0] : response
-    const questions = JSON.parse(jsonStr)
+Admin-provided Overview:
+"${overview}"
 
-    // Add IDs to questions
-    const questionsWithIds = questions.map((q: any, idx: number) => ({
-      ...q,
-      id: `q${idx + 1}`,
-    }))
+Create an enhanced overview that includes:
+1. **What You'll Learn** — A clear summary of the key concepts covered
+2. **Why It Matters** — Real-world relevance and practical applications
+3. **Key Concepts** — Bullet points of the main technical concepts
+4. **Prerequisites** — What the student should already know
+5. **Learning Tips** — Quick tips for mastering this topic
 
-    console.log(`✅ Successfully generated ${questionsWithIds.length} quiz questions`)
+Format the response in clean markdown. Keep it concise but informative (around 300-400 words). Make it engaging and motivating for students.
+Do NOT include any code blocks or examples — just conceptual overview.`
+
+    const enhancedOverview = await callGeminiAPI(prompt)
 
     return new Response(
-      JSON.stringify({ questions: questionsWithIds }),
+      JSON.stringify({ enhancedOverview }),
       { status: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
     )
   } catch (error) {
-    console.error('💥 Error generating quiz:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Failed to generate quiz'
+    console.error('Error enhancing overview:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to enhance overview'
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
