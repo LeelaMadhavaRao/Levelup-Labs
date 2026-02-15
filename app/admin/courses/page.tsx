@@ -307,7 +307,7 @@ export default function AdminCoursesPage() {
                     <TableHead>Modules</TableHead>
                     <TableHead>Topics</TableHead>
                     <TableHead>Enrollments</TableHead>
-                    <TableHead>Reward Points</TableHead>
+                    <TableHead>Reward XP</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>

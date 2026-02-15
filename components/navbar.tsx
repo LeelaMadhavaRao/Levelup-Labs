@@ -54,7 +54,7 @@ export default function Navbar() {
       let xp = Number(currentUser.xp || 0);
       try {
         const overview = await getGamificationOverview(currentUser.id);
-        points = Number(overview.total_points || points);
+        points = Number(overview.total_xp || points);
         xp = Number(overview.xp || xp);
         setPlayerStats({
           level: overview.level,
@@ -129,7 +129,7 @@ export default function Navbar() {
         ]
     : [];
 
-  const totalPoints = Number(playerStats?.points ?? user?.total_points ?? 0);
+  const totalPoints = Number(playerStats?.points ?? user?.total_xp ?? user?.total_points ?? 0);
   const xp = playerStats?.xp || totalPoints || Number(user?.xp || 0);
   const level = Math.max(1, Math.floor(xp / 1000) + 1);
   const hunterRank = getHunterRankByPoints(totalPoints);

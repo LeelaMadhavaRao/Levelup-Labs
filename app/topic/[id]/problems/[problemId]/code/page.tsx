@@ -59,8 +59,8 @@ export default function CodeProblemPage() {
     }
     setUser(currentUser);
 
-    // Guard: check if algorithm explanation was approved before allowing code
-    // Retry up to 3 times to handle race conditions between UI and DB updates
+    // Guard: check if algorithm phase is complete before allowing code.
+    // Retry up to 3 times to handle race conditions between UI and DB updates.
     const maxRetries = 3;
     let solution = null;
     let isApproved = false;
@@ -71,10 +71,12 @@ export default function CodeProblemPage() {
         
         solution = await getProblemSolution(currentUser.id, problemId);
         
-        // Check if solution exists and is approved
-        isApproved = solution && (
-          solution.status === 'algorithm_approved' || 
-          solution.status === 'completed'
+        // Allow coding when approach was approved OR when user is retrying after failed code verification.
+        // Some users hit a false block because status became `code_failed` after first attempt.
+        const allowedStatuses = new Set(['algorithm_approved', 'code_failed', 'completed']);
+        isApproved = !!solution && (
+          allowedStatuses.has(solution.status) ||
+          (!!solution.algorithm_explanation && solution.status !== 'algorithm_submitted')
         );
         
         console.log(`Attempt ${attempt}: Solution status = ${solution?.status || 'not found'}, isApproved = ${isApproved}`);
@@ -156,7 +158,8 @@ export default function CodeProblemPage() {
       }
 
       if (result.allTestsPassed) {
-        toast.success(`Perfect! All tests passed. +${result.pointsAwarded} points`, {
+        const xpAwarded = Number(result.xpAwarded ?? result.pointsAwarded ?? 0);
+        toast.success(`Perfect! All tests passed. +${xpAwarded} XP`, {
           icon: <Award className="h-4 w-4 text-yellow-500" />,
           duration: 5000,
         });
@@ -192,7 +195,7 @@ export default function CodeProblemPage() {
     const allPassed = results.every((r) => r.passed);
 
     if (allPassed) {
-      // Points already awarded by the edge function in handleRunTests
+      // XP already awarded by the edge function in handleRunTests
       // Update topic progress: count problems solved
       if (user && problem?.topic_id) {
         const progressResult = await updateProblemsCompleted(user.id, problem.topic_id);

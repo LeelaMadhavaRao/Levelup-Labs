@@ -23,7 +23,7 @@ export interface NextAchievement {
 }
 
 export interface GamificationOverview {
-  total_points: number
+  total_xp: number
   rank: number | null
   xp: number
   level: number
@@ -65,7 +65,8 @@ function getCurrentMetric(achievement: any, user: any, streak: number): number {
     case 'streak_days':
       return Number(streak ?? 0)
     case 'points_earned':
-      return Number(user?.total_points ?? 0)
+    case 'xp_earned':
+      return Number(user?.total_xp ?? user?.total_points ?? 0)
     case 'level_reached':
       return Number(user?.level ?? 1)
     default:
@@ -79,7 +80,7 @@ export async function getGamificationOverview(userId: string): Promise<Gamificat
   const [userRes, streakRes, unlockedRes, achievementsRes] = await Promise.all([
     supabase
       .from('users')
-      .select('total_points, rank, xp, level, title, problems_solved, courses_completed')
+      .select('total_xp:total_points, rank, xp, level, title, problems_solved, courses_completed')
       .eq('id', userId)
       .maybeSingle(),
     supabase
@@ -128,7 +129,7 @@ export async function getGamificationOverview(userId: string): Promise<Gamificat
   }
 
   return {
-    total_points: Number(userData.total_points ?? 0),
+    total_xp: Number(userData.total_xp ?? userData.total_points ?? 0),
     rank: userData.rank ?? null,
     xp: Number(userData.xp ?? 0),
     level: Number(userData.level ?? 1),
@@ -207,7 +208,7 @@ export async function getRecentPointEvents(userId: string, limit: number = 10) {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('point_events')
-    .select('id, event_type, points, xp, metadata, created_at')
+    .select('id, event_type, xp_delta:points, xp, metadata, created_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(limit)
@@ -251,50 +252,11 @@ export async function getStreakMultiplier(userId: string): Promise<number> {
 }
 
 export async function claimQuizPassReward(topicId: string) {
-  const supabase = createClient()
-  const basePoints = 40
-
-  const { data, error } = await supabase.functions.invoke('updatePoints', {
-    body: {
-      action: 'pass_quiz',
-      topicId,
-    },
-  })
-
-  if (!error) {
-    return {
-      pointsAwarded: Number(data?.pointsAwarded ?? 0),
-      xpAwarded: Number(data?.xpAwarded ?? 0),
-      applied: !!data?.applied,
-      message: data?.message as string | undefined,
-    }
-  }
-
-  const { data: authData } = await supabase.auth.getUser()
-  const userId = authData.user?.id
-  if (!userId) {
-    throw new Error('Failed to apply quiz reward: not authenticated')
-  }
-
-  const eventKey = `pass_quiz:${userId}:${topicId}`
-  const { data: rpcData, error: rpcError } = await supabase.rpc('award_points_event', {
-    p_user_id: userId,
-    p_event_type: 'pass_quiz',
-    p_event_key: eventKey,
-    p_points: basePoints,
-    p_xp: basePoints,
-    p_metadata: { topic_id: topicId, source: 'client_fallback' },
-  })
-
-  if (rpcError) {
-    throw new Error(toErrorMessage(rpcError, 'Failed to apply quiz reward'))
-  }
-
-  const row = Array.isArray(rpcData) ? rpcData[0] : null
+  void topicId
   return {
-    pointsAwarded: Number(row?.points_awarded ?? 0),
-    xpAwarded: Number(row?.xp_awarded ?? 0),
-    applied: !!row?.applied,
-    message: row?.applied ? 'Quiz reward granted' : 'Quiz reward already claimed',
+    pointsAwarded: 0,
+    xpAwarded: 0,
+    applied: false,
+    message: 'Quiz rewards disabled',
   }
 }

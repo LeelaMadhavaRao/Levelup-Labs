@@ -424,6 +424,54 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- XP-first wrapper APIs (non-breaking)
+CREATE OR REPLACE FUNCTION award_xp_event(
+    p_user_id UUID,
+    p_event_type TEXT,
+    p_event_key TEXT,
+    p_xp_points INT,
+    p_xp INT DEFAULT NULL,
+    p_metadata JSONB DEFAULT '{}'::jsonb
+)
+RETURNS TABLE(
+    applied BOOLEAN,
+    xp_points_awarded INT,
+    xp_awarded INT,
+    new_total_xp INT,
+    new_xp INT,
+    new_level INT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        r.applied,
+        r.points_awarded,
+        r.xp_awarded,
+        r.new_total_points,
+        r.new_xp,
+        r.new_level
+    FROM award_points_event(
+        p_user_id,
+        p_event_type,
+        p_event_key,
+        p_xp_points,
+        p_xp,
+        p_metadata
+    ) AS r;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION add_xp_to_user(
+    p_user_id UUID,
+    p_xp INT,
+    p_problem_id UUID DEFAULT NULL
+)
+RETURNS VOID AS $$
+BEGIN
+    PERFORM add_points_to_user(p_user_id, p_xp, p_problem_id);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- ==============================================
 -- Existing Compatibility RPCs
 -- ==============================================
@@ -1007,6 +1055,8 @@ ADD COLUMN IF NOT EXISTS title TEXT DEFAULT 'Rookie';
 
 GRANT EXECUTE ON FUNCTION add_points_to_user(UUID, INT, UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION award_points_event(UUID, TEXT, TEXT, INT, INT, JSONB) TO authenticated;
+GRANT EXECUTE ON FUNCTION add_xp_to_user(UUID, INT, UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION award_xp_event(UUID, TEXT, TEXT, INT, INT, JSONB) TO authenticated;
 GRANT EXECUTE ON FUNCTION get_streak_multiplier(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION update_leaderboard_ranks() TO authenticated;
 GRANT EXECUTE ON FUNCTION get_leaderboard_all_time(INT, INT) TO authenticated, anon;

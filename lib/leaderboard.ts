@@ -6,7 +6,7 @@ export interface LeaderboardUser {
   id: string
   full_name: string
   avatar_url?: string
-  total_points: number
+  total_xp: number
   rank: number
   courses_completed: number
   problems_solved: number
@@ -47,7 +47,7 @@ function mapLeaderboardRows(rows: any[] | null | undefined): LeaderboardUser[] {
     id: row.user_id ?? row.id,
     full_name: row.full_name ?? 'Learner',
     avatar_url: row.avatar_url ?? undefined,
-    total_points: Number(row.total_points ?? 0),
+    total_xp: Number(row.total_xp ?? row.total_points ?? 0),
     rank: Number(row.rank ?? 0),
     courses_completed: Number(row.courses_completed ?? 0),
     problems_solved: Number(row.problems_solved ?? 0),
@@ -95,7 +95,7 @@ export async function getTopLeaderboard(
   } catch (rpcError) {
     const { data, error } = await supabase
       .from('users')
-      .select('id, full_name, avatar_url, total_points, rank, courses_completed, problems_solved')
+      .select('id, full_name, avatar_url, total_xp:total_points, rank, courses_completed, problems_solved')
       .order('total_points', { ascending: false })
       .limit(limit)
 
@@ -107,7 +107,7 @@ export async function getTopLeaderboard(
       id: u.id,
       full_name: u.full_name ?? 'Learner',
       avatar_url: u.avatar_url ?? undefined,
-      total_points: Number(u.total_points ?? 0),
+      total_xp: Number(u.total_xp ?? u.total_points ?? 0),
       rank: Number(u.rank ?? index + 1),
       courses_completed: Number(u.courses_completed ?? 0),
       problems_solved: Number(u.problems_solved ?? 0),
@@ -139,7 +139,7 @@ export async function getLeaderboardAroundMe(
     id: row.user_id,
     full_name: row.full_name ?? 'Learner',
     avatar_url: row.avatar_url ?? undefined,
-    total_points: Number(row.total_points ?? 0),
+    total_xp: Number(row.total_xp ?? row.total_points ?? 0),
     rank: Number(row.rank ?? 0),
     courses_completed: 0,
     problems_solved: 0,
@@ -185,7 +185,7 @@ export async function getUserRank(userId: string) {
 
   const { data, error } = await supabase
     .from('users')
-    .select('rank, total_points, problems_solved, courses_completed, xp, level, title')
+    .select('rank, total_xp:total_points, problems_solved, courses_completed, xp, level, title')
     .eq('id', userId)
     .single()
 
@@ -209,7 +209,7 @@ export async function searchLeaderboard(query: string, searchType: 'rank' | 'nam
 
     const { data, error } = await supabase
       .from('users')
-      .select('id, full_name, avatar_url, total_points, rank, courses_completed, problems_solved')
+      .select('id, full_name, avatar_url, total_xp:total_points, rank, courses_completed, problems_solved')
       .eq('rank', rank)
 
     if (error) {
@@ -221,7 +221,7 @@ export async function searchLeaderboard(query: string, searchType: 'rank' | 'nam
 
   const { data, error } = await supabase
     .from('users')
-    .select('id, full_name, avatar_url, total_points, rank, courses_completed, problems_solved')
+    .select('id, full_name, avatar_url, total_xp:total_points, rank, courses_completed, problems_solved')
     .ilike('full_name', `%${query}%`)
     .order('total_points', { ascending: false })
     .limit(10)

@@ -88,7 +88,7 @@ export default function MyCoursesPage() {
   const selectedProgress = selectedCourse ? calculateProgress(selectedCourse) : 0;
 
   const gateRank = (course: any) => {
-    const reward = Number(course?.completion_reward_points || 0);
+    const reward = Number(course?.completion_reward_xp ?? course?.completion_reward_points ?? 0);
     if (reward >= 700) return 'S-RANK';
     if (reward >= 600) return 'A-RANK';
     if (reward >= 500) return 'B-RANK';

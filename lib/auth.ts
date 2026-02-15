@@ -168,8 +168,22 @@ export async function loginWithEmail(email: string, password: string) {
 
 export async function loginWithGoogle() {
   const supabase = createClient()
-  
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+
+  const allowedOAuthOrigins = [
+    'https://levelup-labs-ten.vercel.app',
+    'https://levelup-labs-mvfl.vercel.app',
+  ]
+
+  const browserOrigin =
+    typeof window !== 'undefined' && typeof window.location?.origin === 'string'
+      ? window.location.origin
+      : ''
+  const envOrigin = process.env.NEXT_PUBLIC_SITE_URL || ''
+
+  const siteUrl =
+    (browserOrigin && allowedOAuthOrigins.includes(browserOrigin) ? browserOrigin : '') ||
+    (envOrigin && allowedOAuthOrigins.includes(envOrigin) ? envOrigin : '') ||
+    allowedOAuthOrigins[0]
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -257,6 +271,7 @@ export async function getUserProfile(userId: string) {
       full_name: fullName,
       avatar_url: defaultAvatar,
       role: 'user',
+      total_xp: 0,
       total_points: 0,
       xp: 0,
       level: 1,

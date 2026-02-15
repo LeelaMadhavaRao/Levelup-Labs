@@ -166,10 +166,14 @@ export default function ExplainProblemPage() {
 
   if (!problem) {
     return (
-      <div className="container py-8">
+      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-100`}>
+        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+        <div className="relative z-20 container py-8 max-w-7xl">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-1/3"></div>
-          <div className="h-64 bg-muted rounded"></div>
+          <div className="h-10 rounded bg-white/10 w-1/3"></div>
+          <div className="h-64 rounded bg-white/10"></div>
+        </div>
         </div>
       </div>
     );

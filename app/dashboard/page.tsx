@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
-import { getHunterRankByPoints } from '@/lib/hunter-rank';
+import { getHunterRankByXp } from '@/lib/hunter-rank';
 import { getUserCoursesWithProgress } from '@/lib/courses';
 import { getTopLeaderboard } from '@/lib/leaderboard';
 import { getQuestProgress, getRecentPointEvents, getGamificationOverview, type QuestProgress, type GamificationOverview } from '@/lib/gamification';
+import { subscribeToLeaderboard, subscribeToUserGamification } from '@/lib/realtime';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -34,13 +35,44 @@ export default function DashboardPage() {
   const [courses, setCourses] = useState<any[]>([]);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [dailyQuests, setDailyQuests] = useState<QuestProgress[]>([]);
-  const [recentPoints, setRecentPoints] = useState<any[]>([]);
+  const [recentXpEvents, setRecentXpEvents] = useState<any[]>([]);
   const [gamificationOverview, setGamificationOverview] = useState<GamificationOverview | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const refreshRealtime = () => {
+      void (async () => {
+        try {
+          const [topUsers, overview, questRows, pointRows] = await Promise.all([
+            getTopLeaderboard(5),
+            getGamificationOverview(user.id).catch(() => null),
+            getQuestProgress(user.id, 'daily').catch(() => []),
+            getRecentPointEvents(user.id, 5).catch(() => []),
+          ]);
+
+          setLeaderboard(topUsers);
+          setGamificationOverview(overview);
+          setDailyQuests(questRows);
+          setRecentXpEvents(pointRows as any[]);
+        } catch {
+          // noop
+        }
+      })();
+    };
+
+    const unsubscribeUser = subscribeToUserGamification(user.id, refreshRealtime);
+    const unsubscribeBoard = subscribeToLeaderboard(refreshRealtime);
+    return () => {
+      unsubscribeUser();
+      unsubscribeBoard();
+    };
+  }, [user?.id]);
 
   const loadData = async () => {
     try {
@@ -59,7 +91,7 @@ export default function DashboardPage() {
       console.log('📊 Dashboard: User data:', {
         id: currentUser.id,
         problems_solved: currentUser.problems_solved,
-        total_points: currentUser.total_points,
+        total_xp: currentUser.total_xp ?? currentUser.total_points,
         rank: currentUser.rank,
         xp: currentUser.xp,
         level: currentUser.level
@@ -93,7 +125,7 @@ export default function DashboardPage() {
       setLeaderboard(topUsers);
       setGamificationOverview(overview);
       setDailyQuests(questRows);
-      setRecentPoints(pointRows);
+      setRecentXpEvents(pointRows);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
@@ -139,7 +171,7 @@ export default function DashboardPage() {
   });
 
   const solvedProblems = Number(gamificationOverview?.problems_solved ?? user?.problems_solved ?? 0);
-  const manaCrystals = Number(gamificationOverview?.total_points ?? user?.total_points ?? 0);
+  const totalXp = Number(gamificationOverview?.total_xp ?? gamificationOverview?.xp ?? user?.total_xp ?? user?.xp ?? user?.total_points ?? 0);
   const userRank = gamificationOverview?.rank ?? user?.rank ?? null;
   const displayName = user?.full_name || 'Hunter';
   const avatarSeed = `${user?.id || 'hunter'}-${displayName}`;
@@ -175,7 +207,7 @@ export default function DashboardPage() {
 
   const manaGoalUnits = 10;
   const manaUnitsDone = Math.min(manaGoalUnits, Math.max(0, Math.round((questCompletion / 100) * manaGoalUnits)));
-  const hunterRank = getHunterRankByPoints(manaCrystals);
+  const hunterRank = getHunterRankByXp(totalXp);
   const currentCourses = courses
     .map((course) => {
       const progress = calculateProgress(course);
@@ -232,12 +264,12 @@ export default function DashboardPage() {
                 <div className="flex justify-between items-end mb-2">
                   <div className="flex items-baseline gap-2">
                     <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Level</span>
-                    <span className={`text-2xl font-black text-white italic ${orbitron.className} text-glow`}>{Math.max(1, Math.floor(manaCrystals / 1000) + 1)}</span>
+                    <span className={`text-2xl font-black text-white italic ${orbitron.className} text-glow`}>{Math.max(1, Math.floor(totalXp / 1000) + 1)}</span>
                   </div>
-                  <span className="text-xs font-bold text-[#A855F7] tracking-widest uppercase">{manaCrystals.toLocaleString()} / 100,000 XP</span>
+                  <span className="text-xs font-bold text-[#A855F7] tracking-widest uppercase">{totalXp.toLocaleString()} / 100,000 XP</span>
                 </div>
                 <div className="h-3 w-full bg-white/5 rounded-sm overflow-hidden relative border border-white/10">
-                  <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#7C3AED] via-[#A855F7] to-blue-500 shadow-[0_0_15px_#7C3AED]" style={{ width: `${Math.min(100, (manaCrystals / 100000) * 100)}%` }}></div>
+                  <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#7C3AED] via-[#A855F7] to-blue-500 shadow-[0_0_15px_#7C3AED]" style={{ width: `${Math.min(100, (totalXp / 100000) * 100)}%` }}></div>
                 </div>
               </div>
             </div>
@@ -332,10 +364,10 @@ export default function DashboardPage() {
                   Recent XP Logs
                 </h2>
                 <div className="space-y-3">
-                  {recentPoints.length === 0 ? (
-                    <p className="text-sm text-slate-500">No point activity yet.</p>
+                  {recentXpEvents.length === 0 ? (
+                    <p className="text-sm text-slate-500">No XP activity yet.</p>
                   ) : (
-                    recentPoints.map((event: any) => (
+                    recentXpEvents.map((event: any) => (
                       <div key={event.id} className="flex items-center justify-between border-b border-white/10 pb-3 last:border-b-0">
                         <div>
                           <p className="text-sm font-medium text-white">{event.event_type.replace(/_/g, ' ')}</p>
@@ -344,8 +376,7 @@ export default function DashboardPage() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-bold text-[#A855F7]">+{event.points} pts</p>
-                          <p className="text-xs text-slate-500">+{event.xp} XP</p>
+                          <p className="text-sm font-bold text-[#A855F7]">+{Number(event.xp_delta ?? event.xp ?? event.points ?? 0)} XP</p>
                         </div>
                       </div>
                     ))

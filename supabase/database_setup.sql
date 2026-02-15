@@ -11,7 +11,7 @@ CREATE TYPE user_role AS ENUM ('admin', 'user');
 CREATE TYPE problem_difficulty AS ENUM ('easy', 'medium', 'hard');
 CREATE TYPE solution_status AS ENUM ('pending', 'algorithm_submitted', 'algorithm_verified', 'algorithm_approved', 'code_submitted', 'code_failed', 'completed', 'failed');
 CREATE TYPE quest_frequency AS ENUM ('daily', 'weekly');
-CREATE TYPE achievement_condition_type AS ENUM ('problems_solved', 'courses_completed', 'streak_days', 'points_earned', 'level_reached');
+CREATE TYPE achievement_condition_type AS ENUM ('problems_solved', 'courses_completed', 'streak_days', 'points_earned', 'xp_earned', 'level_reached');
 
 -- ==============================================
 -- STEP 2: Create Tables
@@ -160,6 +160,18 @@ CREATE TABLE point_events (
     metadata JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
+
+CREATE OR REPLACE VIEW xp_events AS
+SELECT
+    id,
+    user_id,
+    event_type,
+    event_key,
+    points AS xp_points,
+    xp,
+    metadata,
+    created_at
+FROM point_events;
 
 -- Achievement definitions
 CREATE TABLE achievements (
@@ -566,7 +578,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
 GRANT SELECT, INSERT, UPDATE ON users TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON quiz_responses, problem_solutions, user_courses, topic_progress TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON courses, modules, topics, coding_problems TO authenticated;
-GRANT SELECT ON leaderboard, point_events, achievements, user_achievements, daily_streaks, quests, user_quest_progress, seasons, season_leaderboard_snapshots TO authenticated;
+GRANT SELECT ON leaderboard, point_events, xp_events, achievements, user_achievements, daily_streaks, quests, user_quest_progress, seasons, season_leaderboard_snapshots TO authenticated;
 -- Leaderboard modifications only via SECURITY DEFINER functions
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT SELECT ON TABLES TO anon;

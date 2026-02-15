@@ -418,7 +418,7 @@ export default function EditCoursePage() {
               />
             </div>
             <div>
-              <Label htmlFor="points">Completion Reward Points</Label>
+              <Label htmlFor="points">Completion Reward XP</Label>
               <Input
                 id="points"
                 type="number"

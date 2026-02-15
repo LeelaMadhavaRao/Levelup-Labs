@@ -27,7 +27,7 @@ export async function checkCourseCompletion(userId: string, courseId: string): P
 }
 
 /**
- * Mark course as completed and award completion points
+ * Mark course as completed and award completion XP
  * Only callable by user who completed all requirements
  */
 export async function completeCourse(userId: string, courseId: string) {
@@ -39,8 +39,8 @@ export async function completeCourse(userId: string, courseId: string) {
   if (!isCompleted) {
     return {
       error: 'Course requirements not met. Complete all quizzes and problems.',
-      pointsAwarded: 0,
       xpAwarded: 0,
+      pointsAwarded: 0,
     }
   }
   
@@ -50,8 +50,8 @@ export async function completeCourse(userId: string, courseId: string) {
     if (!session) {
       return {
         error: 'You must be logged in',
-        pointsAwarded: 0,
         xpAwarded: 0,
+        pointsAwarded: 0,
       }
     }
 
@@ -86,8 +86,8 @@ export async function completeCourse(userId: string, courseId: string) {
       if (fallbackError) {
         return {
           error: error.message || 'Failed to complete course',
-          pointsAwarded: 0,
           xpAwarded: 0,
+          pointsAwarded: 0,
         }
       }
 
@@ -103,24 +103,24 @@ export async function completeCourse(userId: string, courseId: string) {
 
       return {
         error: null,
+        xpAwarded: Number(fallbackRow?.xp_awarded ?? fallbackRow?.points_awarded ?? 0),
         pointsAwarded: Number(fallbackRow?.points_awarded ?? 0),
-        xpAwarded: Number(fallbackRow?.xp_awarded ?? 0),
         message: fallbackRow?.applied ? 'Course completed successfully' : 'Course already completed',
       }
     }
     
     return {
       error: null,
-      pointsAwarded: data.pointsAwarded,
-      xpAwarded: data.xpAwarded || 0,
+      xpAwarded: Number(data.xpAwarded ?? data.pointsAwarded ?? 0),
+      pointsAwarded: Number(data.pointsAwarded ?? data.xpAwarded ?? 0),
       message: data.message,
     }
   } catch (error) {
     console.error('Error completing course:', error)
     return {
       error: 'Failed to complete course',
-      pointsAwarded: 0,
       xpAwarded: 0,
+      pointsAwarded: 0,
     }
   }
 }
