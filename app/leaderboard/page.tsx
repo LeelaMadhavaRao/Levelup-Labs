@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   getActiveSeason,
   getLeaderboard,
@@ -9,17 +9,15 @@ import {
   type LeaderboardScope,
 } from '@/lib/leaderboard';
 import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowUpRight, Medal, Trophy, TrendingUp, Users } from 'lucide-react';
-import { Orbitron } from 'next/font/google';
+import { Orbitron, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 
-const orbitron = Orbitron({ subsets: ['latin'], weight: ['500','700','900'] });
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
+const jetBrainsMono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500', '700'] });
 
 export default function LeaderboardPage() {
   const [scope, setScope] = useState<LeaderboardScope>('all_time');
+  const [search, setSearch] = useState('');
   const [user, setUser] = useState<any>(null);
   const [season, setSeason] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
@@ -75,43 +73,9 @@ export default function LeaderboardPage() {
     }
   };
 
-  const getInitials = (name: string) =>
-    name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-
-  const getRankIcon = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return <Trophy className="h-6 w-6 text-yellow-500" />;
-      case 2:
-        return <Medal className="h-6 w-6 text-slate-400" />;
-      case 3:
-        return <Medal className="h-6 w-6 text-amber-700" />;
-      default:
-        return null;
-    }
-  };
-
-  const getRankBadgeClass = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-300 border border-yellow-500/40';
-      case 2:
-        return 'bg-slate-500/20 text-slate-600 dark:text-slate-200 border border-slate-400/40';
-      case 3:
-        return 'bg-amber-600/20 text-amber-700 dark:text-amber-200 border border-amber-500/40';
-      default:
-        return 'bg-muted border border-border';
-    }
-  };
-
   if (loading) {
     return (
-      <div className="container py-8">
+      <div className={`${spaceGrotesk.className} container py-8`}>
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-64 bg-muted rounded" />
           <div className="h-10 w-72 bg-muted rounded" />
@@ -126,233 +90,381 @@ export default function LeaderboardPage() {
   }
 
   const meInBoard = user ? leaderboard.find((u) => u.id === user.id) : null;
+  const podium = leaderboard.slice(0, 3);
+  const boardRows = leaderboard.length > 3 ? leaderboard.slice(3) : leaderboard;
 
-  return (
-    <div className="container relative py-8 max-w-6xl space-y-8">
-      <div className="scanlines pointer-events-none absolute inset-0 z-0 opacity-8" />
-      <div className="space-y-4">
-        <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Trophy className="h-10 w-10 text-yellow-500" />
-            <h1 className={`${orbitron.className} hunter-glow-text text-4xl md:text-5xl font-extrabold`}>Hunter Ranking Leaderboard</h1>
+  const filteredRows = useMemo(
+    () =>
+      boardRows.filter((entry) => {
+        if (!search.trim()) return true;
+        const q = search.toLowerCase();
+        return (
+          entry.full_name?.toLowerCase().includes(q) ||
+          String(entry.rank).includes(q) ||
+          entry.title?.toLowerCase().includes(q)
+        );
+      }),
+    [boardRows, search]
+  );
+
+  const scopeLabel = scope === 'all_time' ? 'Global' : scope === 'weekly' ? 'Friends' : 'Guild';
+
+  const aroundIndex = aroundMe.findIndex((entry) => entry.is_me || entry.id === user?.id);
+  const aboveEntry = aroundIndex > 0 ? aroundMe[aroundIndex - 1] : null;
+  const meEntry = aroundIndex >= 0 ? aroundMe[aroundIndex] : meInBoard;
+  const belowEntry = aroundIndex >= 0 && aroundIndex < aroundMe.length - 1 ? aroundMe[aroundIndex + 1] : null;
+
+  const dailyQuestProgress = meInBoard ? Math.min(95, Math.max(15, Math.round((meInBoard.problems_solved % 50) * 2))) : 0;
+  const dungeonClears = meInBoard ? Math.min(20, meInBoard.courses_completed) : 0;
+  const dungeonProgress = Math.round((dungeonClears / 20) * 100);
+
+  const getTier = (rank?: number) => {
+    if (!rank) return 'Unranked';
+    if (rank <= 10) return 'S-Rank';
+    if (rank <= 50) return 'A-Rank';
+    if (rank <= 100) return 'B-Rank';
+    return 'C-Rank';
+  };
+
+  const renderPodiumCard = (
+    hunter: any,
+    rankLabel: string,
+    glowClass: string,
+    rankTextClass: string,
+    borderClass: string,
+    heightClass: string,
+    titleBadge: string,
+    titleBadgeClass: string,
+    frameClass: string,
+    highlightClass: string
+  ) => {
+    if (!hunter) return null;
+
+    return (
+      <div className="relative w-1/3 max-w-[240px] group cursor-pointer">
+        <div className="absolute -top-12 left-1/2 z-20 flex -translate-x-1/2 transform flex-col items-center">
+          <span className={`${rankTextClass} text-lg font-bold mb-1`}>{rankLabel}</span>
+          <div className={`w-20 h-20 rounded-full border-2 p-1 bg-background-dark relative ${glowClass} ${frameClass}`}>
+            <img
+              src={hunter.avatar_url || generateHunterAvatarUrl(`${hunter.id}-${hunter.full_name}`)}
+              alt={hunter.full_name}
+              className="w-full h-full rounded-full object-cover"
+            />
+            <div className={`absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full text-xs font-bold ${titleBadgeClass}`}>
+              {titleBadge}
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground">Compete, climb hunter tiers, and hold your streak on Levelup‑Labs.</p>
         </div>
-
-        <div className="flex flex-col items-center gap-2">
-          <Tabs value={scope} onValueChange={(value) => setScope(value as LeaderboardScope)}>
-            <TabsList>
-              <TabsTrigger value="all_time">All-time</TabsTrigger>
-              <TabsTrigger value="weekly">Weekly</TabsTrigger>
-              <TabsTrigger value="seasonal">Seasonal</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          {scope === 'seasonal' && season && (
-            <p className="text-xs text-muted-foreground">{season.name}: {season.starts_at} to {season.ends_at}</p>
-          )}
+        <div className={`${heightClass} bg-gradient-to-b from-gray-800/85 to-background-dark rounded-t-xl backdrop-blur-sm flex flex-col justify-end pb-4 items-center shadow-lg relative overflow-hidden border-t-2 ${borderClass}`}>
+          <div className={`absolute inset-0 ${highlightClass}`}></div>
+          <h3 className={`${orbitron.className} text-white font-bold text-lg z-10 text-glow text-center px-2`}>{hunter.full_name}</h3>
+          <p className={`${jetBrainsMono.className} ${rankTextClass} text-sm z-10 font-bold`}>{hunter.total_points.toLocaleString()} XP</p>
+          <p className="text-gray-500 text-xs mt-1 z-10 uppercase tracking-wide">{hunter.title || 'Elite Hunter'}</p>
         </div>
       </div>
+    );
+  };
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <section className="mb-6">
-            {leaderboard.length >= 3 && (
-              <div className="flex items-end justify-center gap-8 lg:gap-12">
-                {/* rank 2 */}
-                <div className="relative w-[220px] text-center">
-                  <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 flex flex-col items-center z-20">
-                    <span className="text-rank-blue font-bold text-lg mb-1">RANK 2</span>
-                    <div className="w-16 h-16 rounded-full border-2 border-rank-blue p-1 bg-background-dark overflow-hidden breathing-blue">
-                      <img src={leaderboard[1].avatar_url || generateHunterAvatarUrl(`${leaderboard[1].id}-${leaderboard[1].full_name}`)} alt={leaderboard[1].full_name} className="w-full h-full rounded-full object-cover" />
-                    </div>
-                  </div>
-                  <div className="h-44 bg-gradient-to-b from-gray-800/80 to-background-dark border-t-2 border-rank-blue rounded-t-xl flex flex-col justify-end pb-4 items-center shadow-lg relative overflow-hidden">
-                    <h3 className={`${orbitron.className} text-white font-bold text-lg z-10`}>{leaderboard[1].full_name}</h3>
-                    <p className="text-rank-blue text-sm font-mono z-10">{leaderboard[1].total_points.toLocaleString()} XP</p>
-                  </div>
-                </div>
+  return (
+    <div className={`${spaceGrotesk.className} relative min-h-screen overflow-hidden text-gray-100`}>
+      <div
+        className="pointer-events-none absolute inset-0 z-0 opacity-10"
+        style={{
+          backgroundImage:
+            'linear-gradient(#a60df2 1px, transparent 1px), linear-gradient(90deg, #a60df2 1px, transparent 1px)',
+          backgroundSize: '50px 50px',
+        }}
+      />
+      <div className="scanlines pointer-events-none absolute inset-0 z-0 opacity-10" />
 
-                {/* rank 1 */}
-                <div className="relative w-[300px] text-center z-10">
-                  <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 flex flex-col items-center z-20">
-                    <span className="text-primary font-bold text-xl mb-1">RANK 1</span>
-                    <div className="w-28 h-28 rounded-full border-4 border-primary p-1 bg-background-dark overflow-hidden ring-4 ring-primary/10 shadow-2xl breathing-purple">
-                      <img src={leaderboard[0].avatar_url || generateHunterAvatarUrl(`${leaderboard[0].id}-${leaderboard[0].full_name}`)} alt={leaderboard[0].full_name} className="w-full h-full rounded-full object-cover" />
-                    </div>
-                  </div>
-                  <div className="h-56 bg-gradient-to-b from-gray-900/90 to-background-dark border-t-4 border-primary rounded-t-xl flex flex-col justify-end pb-6 items-center shadow-2xl relative overflow-hidden">
-                    <h3 className={`${orbitron.className} hunter-glow-text text-2xl font-black z-10`}>{leaderboard[0].full_name}</h3>
-                    <p className="text-primary text-xl font-mono z-10 font-bold">{leaderboard[0].total_points.toLocaleString()} XP</p>
-                  </div>
-                </div>
-
-                {/* rank 3 */}
-                <div className="relative w-[220px] text-center">
-                  <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 flex flex-col items-center z-20">
-                    <span className="text-rank-gold font-bold text-lg mb-1">RANK 3</span>
-                    <div className="w-16 h-16 rounded-full border-2 border-rank-gold p-1 bg-background-dark overflow-hidden breathing-gold">
-                      <img src={leaderboard[2].avatar_url || generateHunterAvatarUrl(`${leaderboard[2].id}-${leaderboard[2].full_name}`)} alt={leaderboard[2].full_name} className="w-full h-full rounded-full object-cover" />
-                    </div>
-                  </div>
-                  <div className="h-36 bg-gradient-to-b from-gray-800/80 to-background-dark border-t-2 border-rank-gold rounded-t-xl flex flex-col justify-end pb-4 items-center shadow-lg relative overflow-hidden">
-                    <h3 className={`${orbitron.className} text-white font-bold text-lg z-10`}>{leaderboard[2].full_name}</h3>
-                    <p className="text-rank-gold text-sm font-mono z-10">{leaderboard[2].total_points.toLocaleString()} XP</p>
-                  </div>
-                </div>
-              </div>
+      <main className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 p-4 lg:flex-row">
+        <div className="flex min-h-0 flex-1 flex-col">
+          <section className="flex-none pb-4 pt-2">
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <h1 className={`${orbitron.className} text-3xl font-black text-glow md:text-4xl`}>Hunter Ranking Leaderboard</h1>
+              <span className={`${jetBrainsMono.className} rounded-lg border border-primary/30 bg-primary/10 px-3 py-1 text-xs uppercase tracking-widest text-primary`}>
+                {scopeLabel} Scope
+              </span>
+            </div>
+            {scope === 'seasonal' && season && (
+              <p className={`${jetBrainsMono.className} mb-2 text-xs text-gray-400`}>
+                {season.name}: {season.starts_at} to {season.ends_at}
+              </p>
             )}
-          </section>
-          <div className="rounded-xl border border-white/10 bg-terminal-black/50 p-4 flex flex-col sm:flex-row items-center gap-4">
-            <div className="relative w-full sm:max-w-md group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-primary">
-                <span className="material-icons-round">qr_code_scanner</span>
+
+            <div className="flex h-64 w-full items-end justify-center gap-4 sm:h-80 sm:gap-8 lg:gap-12">
+              {renderPodiumCard(
+                podium[1],
+                'RANK 2',
+                'breathing-blue border-rank-blue',
+                'text-rank-blue',
+                'border-rank-blue',
+                'h-48',
+                'S-Rank',
+                'bg-rank-blue text-black',
+                'border-rank-blue',
+                'bg-rank-blue/5'
+              )}
+              <div className="relative z-10 w-1/3 max-w-[260px] cursor-pointer">
+                {podium[0] && (
+                  <>
+                    <div className="absolute -top-16 left-1/2 z-20 flex -translate-x-1/2 transform flex-col items-center">
+                      <span className="mb-1 flex items-center gap-1 text-xl font-bold text-primary">
+                        <span className="material-icons-round text-sm">emoji_events</span> RANK 1
+                      </span>
+                      <div className="relative h-24 w-24 rounded-full border-4 border-primary bg-background-dark p-1 breathing-purple">
+                        <img
+                          src={podium[0].avatar_url || generateHunterAvatarUrl(`${podium[0].id}-${podium[0].full_name}`)}
+                          alt={podium[0].full_name}
+                          className="h-full w-full rounded-full object-cover"
+                        />
+                        <div className="absolute -bottom-2 -right-2 rounded-full border border-black bg-primary px-2 py-0.5 text-xs font-bold text-white">
+                          Monarch
+                        </div>
+                      </div>
+                    </div>
+                    <div className="relative flex h-60 flex-col items-center justify-end overflow-hidden rounded-t-xl border-t-4 border-primary bg-gradient-to-b from-gray-800/90 to-background-dark pb-6 shadow-2xl backdrop-blur-md">
+                      <div className="absolute inset-0 bg-primary/10 animate-pulse" />
+                      <h3 className={`${orbitron.className} z-10 px-2 text-center text-xl font-bold text-white text-glow`}>{podium[0].full_name}</h3>
+                      <p className={`${jetBrainsMono.className} z-10 text-base font-bold text-primary`}>{podium[0].total_points.toLocaleString()} XP</p>
+                      <p className="z-10 mt-1 text-xs uppercase tracking-widest text-gray-400">{podium[0].title || 'Shadow Monarch'}</p>
+                    </div>
+                  </>
+                )}
               </div>
-              <input className="block w-full pl-10 pr-3 py-2.5 border border-white/10 rounded-lg bg-black/40 text-gray-300 placeholder-gray-500 focus:outline-none focus:bg-black/60 focus:border-primary/50 focus:ring-1 focus:ring-primary sm:text-sm font-mono transition-all" placeholder="SCAN HUNTER ID OR NAME..." type="text" />
-              <div className="absolute bottom-0 left-0 h-[1px] bg-primary w-0 group-focus-within:w-full transition-all duration-500 ease-out" />
+              {renderPodiumCard(
+                podium[2],
+                'RANK 3',
+                'breathing-gold border-rank-gold',
+                'text-rank-gold',
+                'border-rank-gold',
+                'h-40',
+                'Nation',
+                'bg-rank-gold text-black',
+                'border-rank-gold',
+                'bg-rank-gold/5'
+              )}
             </div>
-            <div className="flex gap-2">
-              <button className="px-4 py-2 rounded-lg bg-primary/20 text-primary border border-primary/30 text-xs font-bold uppercase tracking-wider hover:bg-primary hover:text-white transition-all">Global</button>
-              <button className="px-4 py-2 rounded-lg bg-white/5 text-gray-400 border border-white/5 text-xs font-bold uppercase tracking-wider hover:bg-white/10 hover:text-white transition-all">Friends</button>
-              <button className="px-4 py-2 rounded-lg bg-white/5 text-gray-400 border border-white/5 text-xs font-bold uppercase tracking-wider hover:bg-white/10 hover:text-white transition-all">Guild</button>
+          </section>
+
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-white/10 bg-terminal-black/50 shadow-2xl backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-4 border-b border-white/10 bg-background-dark/50 p-4 sm:flex-row">
+              <div className="relative group w-full sm:max-w-md">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <span className="material-icons-round text-primary transition-colors group-focus-within:text-white">qr_code_scanner</span>
+                </div>
+                <input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  className={`${jetBrainsMono.className} block w-full rounded-lg border border-white/10 bg-black/40 py-2.5 pl-10 pr-3 text-gray-300 placeholder-gray-500 leading-5 transition-all focus:border-primary/50 focus:bg-black/60 focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm`}
+                  placeholder="SCAN HUNTER ID OR NAME..."
+                  type="text"
+                />
+                <div className="absolute bottom-0 left-0 h-[1px] w-0 bg-primary transition-all duration-500 ease-out group-focus-within:w-full" />
+              </div>
+              <div className="flex w-full gap-2 overflow-x-auto pb-1 sm:w-auto sm:pb-0">
+                <button
+                  onClick={() => setScope('all_time')}
+                  className={`px-4 py-2 rounded-lg border text-xs font-bold uppercase tracking-wider transition-all ${scope === 'all_time' ? 'bg-primary/20 text-primary border-primary/30 hover:bg-primary hover:text-white' : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10 hover:text-white'}`}
+                >
+                  Global
+                </button>
+                <button
+                  onClick={() => setScope('weekly')}
+                  className={`px-4 py-2 rounded-lg border text-xs font-bold uppercase tracking-wider transition-all ${scope === 'weekly' ? 'bg-primary/20 text-primary border-primary/30 hover:bg-primary hover:text-white' : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10 hover:text-white'}`}
+                >
+                  Friends
+                </button>
+                <button
+                  onClick={() => setScope('seasonal')}
+                  className={`px-4 py-2 rounded-lg border text-xs font-bold uppercase tracking-wider transition-all ${scope === 'seasonal' ? 'bg-primary/20 text-primary border-primary/30 hover:bg-primary hover:text-white' : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10 hover:text-white'}`}
+                >
+                  Guild
+                </button>
+              </div>
             </div>
-          </div>
-          <div className="rounded-xl border border-white/10 bg-terminal-black overflow-hidden">
-            <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-white/3 border-b border-white/5 backdrop-blur-sm text-xs font-mono uppercase tracking-widest text-gray-400 font-bold">
+
+            <div className={`grid grid-cols-12 gap-4 border-b border-white/5 bg-white/5 px-6 py-3 text-xs uppercase tracking-widest text-gray-400 font-bold ${jetBrainsMono.className}`}>
               <div className="col-span-2 sm:col-span-1">Rank</div>
               <div className="col-span-6 sm:col-span-5">Hunter Identity</div>
               <div className="hidden sm:block sm:col-span-3">Title / Class</div>
-              <div className="col-span-4 sm:col-span-3 text-right">Total XP</div>
+              <div className="col-span-4 text-right sm:col-span-3">Total XP</div>
             </div>
-            <div className="divide-y divide-white/5">
-              {leaderboard.map((leader) => {
-                const isCurrentUser = leader.id === user?.id;
+
+            <div className="relative flex-1 space-y-1 overflow-y-auto p-2 terminal-scroll">
+              <div className="scan-line opacity-10" />
+              {filteredRows.map((entry) => {
+                const isCurrentUser = entry.id === user?.id;
                 return (
-                  <div key={leader.id} className={`grid grid-cols-12 gap-4 px-4 py-4 items-center transition-colors ${isCurrentUser ? 'bg-gradient-to-r from-primary/6 to-transparent border-l-4 border-primary/50 ring-1 ring-primary/10' : 'hover:bg-white/5'} `}>
-                    <div className="col-span-2 sm:col-span-1 font-mono text-gray-400">#{leader.rank}</div>
-                    <div className="col-span-6 sm:col-span-5 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded bg-gray-700 relative overflow-hidden hidden sm:block">
-                        <img src={leader.avatar_url || generateHunterAvatarUrl(`${leader.id}-${leader.full_name}`)} alt={leader.full_name} className="w-full h-full object-cover opacity-80" />
+                  <div
+                    key={entry.id}
+                    className={`group grid grid-cols-12 items-center gap-4 rounded px-4 py-3 transition-colors border-l-2 ${isCurrentUser ? 'border-primary/70 bg-primary/10 shadow-[0_0_20px_rgba(166,13,242,0.25)]' : 'border-transparent hover:bg-white/5 hover:border-primary/50'}`}
+                  >
+                    <div className={`${jetBrainsMono.className} col-span-2 text-gray-400 group-hover:text-white sm:col-span-1`}>#{entry.rank.toString().padStart(2, '0')}</div>
+                    <div className="col-span-6 flex items-center gap-3 sm:col-span-5">
+                      <div className="relative hidden h-8 w-8 overflow-hidden rounded bg-gray-700 sm:block">
+                        <img
+                          src={entry.avatar_url || generateHunterAvatarUrl(`${entry.id}-${entry.full_name}`)}
+                          alt={entry.full_name}
+                          className="h-full w-full object-cover opacity-80 group-hover:opacity-100"
+                        />
                       </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className={`font-bold truncate ${isCurrentUser ? 'text-primary' : 'text-gray-200'}`}>{leader.full_name}</span>
-                        <span className="text-[10px] text-gray-500 font-mono uppercase sm:hidden">{leader.title || ''}</span>
+                      <div className="flex min-w-0 flex-col">
+                        <span className={`truncate font-bold transition-colors ${isCurrentUser ? 'text-primary' : 'text-gray-200 group-hover:text-primary'}`}>
+                          {entry.full_name}
+                          {isCurrentUser && <span className="ml-2 text-[10px] uppercase tracking-widest">You</span>}
+                        </span>
+                        <span className={`${jetBrainsMono.className} text-[10px] uppercase text-gray-500 sm:hidden`}>{entry.title || 'Hunter'}</span>
                       </div>
                     </div>
-                    <div className="hidden sm:block sm:col-span-3 font-mono text-xs text-gray-400">{leader.title || ''}</div>
-                    <div className="col-span-4 sm:col-span-3 text-right font-mono text-primary font-bold">{leader.total_points.toLocaleString()}</div>
+                    <div className={`${jetBrainsMono.className} hidden text-xs text-gray-400 sm:col-span-3 sm:block`}>{entry.title || 'Unclassified'}</div>
+                    <div className={`${jetBrainsMono.className} col-span-4 text-right font-bold text-primary sm:col-span-3`}>
+                      {entry.total_points.toLocaleString()}
+                    </div>
                   </div>
                 );
               })}
+              {filteredRows.length === 0 && (
+                <div className="px-4 py-8 text-center text-sm text-gray-500">No hunters detected for this query.</div>
+              )}
             </div>
           </div>
         </div>
 
-        <aside className="flex flex-col gap-6 sticky top-24">
-          <Card className="bg-[#07070a]/60 border border-amber-700/10">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-amber-400" />
-                Proximity Alert
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {!user ? (
-                <p className="text-sm text-muted-foreground">Sign in to see hunters near your rank.</p>
-              ) : aroundMe.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No nearby hunters within this scope.</p>
-              ) : (
-                <div className="space-y-3">
-                  {aroundMe.map((entry) => (
-                    <div key={`${entry.id}-${entry.rank}`} className={`flex items-center justify-between rounded-lg border p-3 ${entry.is_me ? 'border-primary/40 bg-primary/5' : 'border-border/70'}`}>
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold shrink-0 ${getRankBadgeClass(entry.rank)}`}>
-                          #{entry.rank}
-                        </div>
-                        <Avatar className="h-9 w-9 shrink-0">
-                          <AvatarImage src={entry.avatar_url || generateHunterAvatarUrl(`${entry.id}-${entry.full_name}`)} alt={entry.full_name} />
-                          <AvatarFallback>{getInitials(entry.full_name)}</AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">{entry.full_name} {entry.is_me && <span className="text-xs text-primary">(You)</span>}</p>
-                        </div>
-                      </div>
-                      <p className="text-sm font-semibold">{entry.total_points} XP</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        <aside className="w-full flex-none lg:w-80 flex flex-col gap-6">
+          <div className="relative overflow-hidden rounded-xl border border-white/10 bg-terminal-black p-6">
+            <div className="absolute right-0 top-0 p-2 opacity-20">
+              <span className="material-icons-round text-primary text-6xl">radar</span>
+            </div>
+            <h2 className={`${jetBrainsMono.className} mb-6 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-gray-400`}>
+              <span className="h-2 w-2 rounded-full bg-primary animate-ping"></span>
+              Proximity Alert
+            </h2>
 
-          <Card className="bg-[#07070a]/50 border border-white/6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-green-400" />
-                Top Movers
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {movers.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No movements recorded yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {movers.map((m) => (
-                    <div key={m.user_id} className="flex items-center justify-between gap-3 p-2 rounded-md border border-border/60">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={m.avatar_url} alt={m.full_name} />
-                          <AvatarFallback>{getInitials(m.full_name)}</AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium truncate">{m.full_name}</div>
-                          <div className="text-xs text-muted-foreground">#{m.previous_rank} → #{m.current_rank}</div>
-                        </div>
-                      </div>
-                      <Badge className="bg-green-500/10 text-green-400">+{m.rank_change}</Badge>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            {!user ? (
+              <p className="text-sm text-gray-500">Sign in to see hunters near your rank.</p>
+            ) : !meEntry ? (
+              <p className="text-sm text-gray-500">No nearby hunters within this scope.</p>
+            ) : (
+              <div className="relative flex flex-col gap-4">
+                <div className="absolute bottom-4 left-[1.65rem] top-4 w-0.5 bg-gradient-to-b from-transparent via-primary/50 to-transparent"></div>
 
-          {user && (
-            <Card className="border-primary/30 bg-[#071026]/30">
-              <CardHeader>
-                <CardTitle>My Hunter Stats</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-12 w-12 border-2 border-primary">
-                    <AvatarImage src={user.avatar_url || generateHunterAvatarUrl(`${user.id}-${user.full_name}`)} alt={user.full_name} />
-                    <AvatarFallback>{getInitials(user.full_name || 'You')}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <div className="font-semibold truncate">{user.full_name}</div>
-                      <Badge className="text-xs">You</Badge>
+                {aboveEntry && (
+                  <div className="relative z-10 flex items-center gap-4 opacity-60">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full border border-gray-600 bg-gray-800 text-sm font-bold text-gray-400">
+                      #{String(aboveEntry.rank).padStart(2, '0')}
                     </div>
-                    <div className="mt-2 flex items-center justify-between">
-                      <div className="text-sm text-muted-foreground">Rank</div>
-                      <div className="font-bold">#{meInBoard?.rank ?? '—'}</div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="truncate text-sm font-bold text-gray-300">{aboveEntry.full_name}</span>
+                      <span className={`${jetBrainsMono.className} text-xs text-gray-500`}>XP: {aboveEntry.total_points.toLocaleString()}</span>
                     </div>
-                    <div className="mt-2 flex items-center justify-between">
-                      <div className="text-sm text-muted-foreground">XP</div>
-                      <div className="font-bold">{meInBoard?.total_points ?? 0}</div>
-                    </div>
-                    <div className="mt-3">
-                      <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: `${Math.min(100, meInBoard ? Math.round((meInBoard.total_points % 1000) / 10) : 0)}%` }} />
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">Progress to next title</div>
+                    <div className={`${jetBrainsMono.className} ml-auto text-xs text-red-400`}>
+                      +{Math.max(0, aboveEntry.total_points - meEntry.total_points).toLocaleString()} XP
                     </div>
                   </div>
+                )}
+
+                <div className="relative z-10 -mx-3 flex items-center gap-4 rounded-lg border border-primary/30 bg-primary/10 p-3 shadow-[0_0_15px_rgba(166,13,242,0.45)]">
+                  <div className="h-14 w-14 rounded-full border-2 border-primary bg-gray-800 p-0.5">
+                    <img
+                      src={meEntry.avatar_url || generateHunterAvatarUrl(`${meEntry.id}-${meEntry.full_name}`)}
+                      alt={meEntry.full_name}
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  </div>
+                  <div className="flex min-w-0 flex-col">
+                    <span className="truncate text-sm font-bold text-white">You</span>
+                    <span className={`${jetBrainsMono.className} text-xs font-bold text-primary`}>
+                      XP: {meEntry.total_points.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="ml-auto">
+                    <span className="material-icons-round text-sm text-primary animate-bounce">arrow_upward</span>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+
+                {belowEntry && (
+                  <div className="relative z-10 flex items-center gap-4 opacity-60">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full border border-gray-600 bg-gray-800 text-sm font-bold text-gray-400">
+                      #{String(belowEntry.rank).padStart(2, '0')}
+                    </div>
+                    <div className="flex min-w-0 flex-col">
+                      <span className="truncate text-sm font-bold text-gray-300">{belowEntry.full_name}</span>
+                      <span className={`${jetBrainsMono.className} text-xs text-gray-500`}>XP: {belowEntry.total_points.toLocaleString()}</span>
+                    </div>
+                    <div className={`${jetBrainsMono.className} ml-auto text-xs text-green-400`}>
+                      -{Math.max(0, meEntry.total_points - belowEntry.total_points).toLocaleString()} XP
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-4 rounded-xl border border-white/5 bg-background-dark p-6">
+            <h2 className={`${jetBrainsMono.className} mb-2 text-sm font-bold uppercase tracking-widest text-gray-400`}>My Hunter Stats</h2>
+
+            <div className="space-y-4">
+              <div>
+                <div className="mb-1 flex justify-between text-xs">
+                  <span className="text-gray-400">Daily Quest Progress</span>
+                  <span className={`${jetBrainsMono.className} text-primary`}>{dailyQuestProgress}%</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-gray-700">
+                  <div className="relative h-full bg-primary" style={{ width: `${dailyQuestProgress}%` }}>
+                    <div className="absolute inset-0 animate-pulse bg-white/20"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-1 flex justify-between text-xs">
+                  <span className="text-gray-400">Dungeon Clears</span>
+                  <span className={`${jetBrainsMono.className} text-white`}>{dungeonClears}/20</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-gray-700">
+                  <div className="h-full bg-rank-blue" style={{ width: `${dungeonProgress}%` }}></div>
+                </div>
+              </div>
+
+              <div className="mt-2 flex items-center justify-between rounded-lg border border-white/5 bg-white/5 p-3">
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase text-gray-500">Current Tier</span>
+                  <span className="text-xl font-bold text-white">{getTier(meInBoard?.rank)}</span>
+                </div>
+                <div className={`${orbitron.className} text-3xl font-black text-gray-600`}>
+                  {getTier(meInBoard?.rank).charAt(0)}
+                </div>
+              </div>
+            </div>
+
+            <button className="group mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 font-bold text-white shadow-[0_0_15px_rgba(166,13,242,0.45)] transition-colors hover:bg-primary-dark">
+              <span>ENTER DUNGEON</span>
+              <span className="material-icons-round text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
+            </button>
+
+            {movers.length > 0 && (
+              <div className="rounded-lg border border-white/5 bg-white/5 p-3">
+                <div className={`${jetBrainsMono.className} mb-2 text-[10px] uppercase tracking-widest text-gray-500`}>Top Movers</div>
+                <div className="space-y-1.5">
+                  {movers.slice(0, 3).map((mover) => (
+                    <div key={mover.user_id} className="flex items-center justify-between text-xs">
+                      <span className="truncate text-gray-300">{mover.full_name}</span>
+                      <span className={`${jetBrainsMono.className} text-green-400`}>#{mover.previous_rank} → #{mover.current_rank}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className={`${jetBrainsMono.className} rounded-lg border border-green-500/30 bg-black p-4 text-xs text-green-400 shadow-[0_0_10px_rgba(0,255,0,0.1)]`}>
+            <p className="mb-2">&gt; SYSTEM ALERT</p>
+            <p className="opacity-80">A new S-Rank Gate has appeared in the Tokyo district. Guilds are mobilizing.</p>
+            <p className="mt-2 animate-pulse">_</p>
+          </div>
         </aside>
-      </div>
+      </main>
     </div>
   );
 }

@@ -24,6 +24,12 @@ const config: Config = {
     },
     extend: {
       colors: {
+        'primary-dark': '#7b09b5',
+        'background-dark': '#1c1022',
+        'terminal-black': '#0f0814',
+        'rank-gold': '#FFD700',
+        'rank-blue': '#00BFFF',
+        'rank-purple': '#a60df2',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
