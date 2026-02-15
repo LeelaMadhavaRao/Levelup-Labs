@@ -161,6 +161,28 @@ levelup-labs/
 
 ---
 
+## 🧭 Top Navigation (Authenticated)
+
+### Student Navbar
+- `/dashboard` → HOME
+- `/courses` → GATES
+- `/my-courses` → MY QUESTS
+- `/practice` → PRACTICE
+- `/leaderboard` → RANKINGS
+- `/profile` → PROFILE
+
+### Admin Navbar
+- `/dashboard` → HOME
+- `/admin/dashboard` → ADMIN
+- `/admin/create-course` → CREATE
+- `/admin/courses` → CONSOLE
+- `/courses` → GATES
+- `/practice` → PRACTICE
+- `/leaderboard` → RANKINGS
+- `/profile` → PROFILE
+
+---
+
 ## 💰 Points & Rewards
 
 | Achievement | Points |

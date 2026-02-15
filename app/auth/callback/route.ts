@@ -2,6 +2,11 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
+function generateHunterAvatarUrl(seedInput: string) {
+  const seed = encodeURIComponent(seedInput.trim().toLowerCase() || `hunter-${Date.now()}`)
+  return `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${seed}&backgroundType=gradientLinear&backgroundColor=190B2A,2A0E45,00E5FF&eyes=bulging,cute,round&mouth=grill01,smile01,smile02`
+}
+
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
@@ -45,6 +50,7 @@ export async function GET(request: Request) {
           (data.user.user_metadata?.fullName as string) ||
           data.user.email?.split('@')[0] ||
           'User'
+        const defaultAvatar = generateHunterAvatarUrl(`${userId}-${data.user.email}-${fullName}`)
         
         await supabase
           .from('users')
@@ -53,6 +59,7 @@ export async function GET(request: Request) {
               id: userId,
               email: data.user.email,
               full_name: fullName,
+              avatar_url: defaultAvatar,
               role: 'user',
             },
           ])

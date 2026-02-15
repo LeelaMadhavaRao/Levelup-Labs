@@ -1,5 +1,10 @@
 import { createClient } from './supabase'
 
+export function generateHunterAvatarUrl(seedInput: string) {
+  const seed = encodeURIComponent(seedInput.trim().toLowerCase() || `hunter-${Date.now()}`)
+  return `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${seed}&backgroundType=gradientLinear&backgroundColor=190B2A,2A0E45,00E5FF&eyes=bulging,cute,round&mouth=grill01,smile01,smile02`
+}
+
 function toError(error: unknown, fallback: string): Error {
   if (error instanceof Error) return error
   if (error && typeof error === 'object') {
@@ -56,6 +61,7 @@ export async function signInWithEmail(email: string, password: string) {
 // Sign up with email and password  
 export async function signUpWithEmail(email: string, password: string, fullName: string) {
   const supabase = createClient()
+  const defaultAvatar = generateHunterAvatarUrl(`${email}-${fullName}`)
   
   // Sign up the user with metadata
   const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -86,6 +92,7 @@ export async function signUpWithEmail(email: string, password: string, fullName:
             id: authData.user.id,
             email: authData.user.email,
             full_name: fullName,
+            avatar_url: defaultAvatar,
             role: 'user',
           },
         ])
@@ -189,7 +196,20 @@ export async function getUserProfile(userId: string) {
     throw toError(error, 'Failed to load user profile')
   }
   
-  if (data) return data
+  if (data) {
+    if (!data.avatar_url) {
+      const generatedAvatar = generateHunterAvatarUrl(`${data.id}-${data.email}-${data.full_name || 'hunter'}`)
+      const { data: updated } = await supabase
+        .from('users')
+        .update({ avatar_url: generatedAvatar })
+        .eq('id', data.id)
+        .select('*')
+        .maybeSingle()
+
+      return updated || { ...data, avatar_url: generatedAvatar }
+    }
+    return data
+  }
   
   // If profile missing, create it from auth user metadata
   const { data: authData } = await supabase.auth.getUser()
@@ -201,6 +221,7 @@ export async function getUserProfile(userId: string) {
     (authUser.user_metadata?.fullName as string) ||
     authUser.email?.split('@')[0] ||
     'User'
+  const defaultAvatar = generateHunterAvatarUrl(`${authUser.id}-${authUser.email}-${fullName}`)
   
   const { error: insertError } = await supabase
     .from('users')
@@ -209,6 +230,7 @@ export async function getUserProfile(userId: string) {
         id: authUser.id,
         email: authUser.email,
         full_name: fullName,
+        avatar_url: defaultAvatar,
         role: 'user',
       },
     ])

@@ -660,6 +660,26 @@ ORDER BY total_points DESC
 
 ## Navigation Flow
 
+### Navbar Links (Authenticated)
+
+**Student Navbar**
+- `/dashboard` (HOME)
+- `/courses` (GATES)
+- `/my-courses` (MY QUESTS)
+- `/practice` (PRACTICE)
+- `/leaderboard` (RANKINGS)
+- `/profile` (PROFILE)
+
+**Admin Navbar**
+- `/dashboard` (HOME)
+- `/admin/dashboard` (ADMIN)
+- `/admin/create-course` (CREATE)
+- `/admin/courses` (CONSOLE)
+- `/courses` (GATES)
+- `/practice` (PRACTICE)
+- `/leaderboard` (RANKINGS)
+- `/profile` (PROFILE)
+
 ### Public Routes (No Auth Required)
 ```
 / (Home Page)

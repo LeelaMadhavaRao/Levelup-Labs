@@ -80,9 +80,9 @@ export default function SignupPage() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md border-neutral-800 bg-card/80">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Awaken Hunter Account</CardTitle>
           <CardDescription className="text-center">
-            Join Levelup-Labs and start your coding journey
+            Join CodeQuest and enter the Solo Leveling system
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSignup}>
@@ -158,7 +158,7 @@ export default function SignupPage() {
           
           <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creating account...' : 'Sign Up'}
+              {loading ? 'Awakening account...' : 'Register Hunter'}
             </Button>
             
             <div className="text-sm text-center text-muted-foreground">

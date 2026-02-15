@@ -8,7 +8,7 @@ import {
   getTopMovers,
   type LeaderboardScope,
 } from '@/lib/leaderboard';
-import { getCurrentUser } from '@/lib/auth';
+import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -130,9 +130,9 @@ export default function LeaderboardPage() {
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Trophy className="h-10 w-10 text-yellow-500" />
-            <h1 className="text-4xl font-bold tracking-tight">Leaderboard</h1>
+            <h1 className="text-4xl font-bold tracking-tight">Hunter Rankings</h1>
           </div>
-          <p className="text-lg text-muted-foreground">Compete, climb ranks, and hold your streak.</p>
+          <p className="text-lg text-muted-foreground">Compete, climb hunter tiers, and hold your streak.</p>
         </div>
 
         <div className="flex flex-col items-center gap-2">
@@ -154,11 +154,11 @@ export default function LeaderboardPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="card-interactive lg:col-span-2">
           <CardHeader>
-            <CardTitle>Rank Around You</CardTitle>
+            <CardTitle>Hunters Around You</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {!user ? (
-              <p className="text-sm text-muted-foreground">Sign in to see your nearby rivals.</p>
+              <p className="text-sm text-muted-foreground">Sign in to track nearby hunters.</p>
             ) : aroundMe.length === 0 ? (
               <p className="text-sm text-muted-foreground">No nearby rank data for this scope yet.</p>
             ) : (
@@ -178,7 +178,7 @@ export default function LeaderboardPage() {
                       #{entry.rank}
                     </div>
                     <Avatar className="h-9 w-9 shrink-0">
-                      <AvatarImage src={entry.avatar_url} alt={entry.full_name} />
+                      <AvatarImage src={entry.avatar_url || generateHunterAvatarUrl(`${entry.id}-${entry.full_name}`)} alt={entry.full_name} />
                       <AvatarFallback>{getInitials(entry.full_name)}</AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
@@ -187,7 +187,7 @@ export default function LeaderboardPage() {
                       </p>
                     </div>
                   </div>
-                  <p className="text-sm font-semibold">{entry.total_points} pts</p>
+                  <p className="text-sm font-semibold">{entry.total_points} XP</p>
                 </div>
               ))
             )}
@@ -231,14 +231,14 @@ export default function LeaderboardPage() {
                 <Trophy className="h-16 w-16 text-yellow-500" />
               </div>
               <Avatar className="h-20 w-20 mx-auto border-4 border-yellow-500">
-                <AvatarImage src={leaderboard[0].avatar_url} alt={leaderboard[0].full_name} />
+                <AvatarImage src={leaderboard[0].avatar_url || generateHunterAvatarUrl(`${leaderboard[0].id}-${leaderboard[0].full_name}`)} alt={leaderboard[0].full_name} />
                 <AvatarFallback>{getInitials(leaderboard[0].full_name)}</AvatarFallback>
               </Avatar>
               <div>
                 <Badge className="mb-2 bg-yellow-500 text-black">Champion</Badge>
                 <p className="font-bold text-lg">{leaderboard[0].full_name}</p>
                 <p className="text-3xl font-bold">{leaderboard[0].total_points}</p>
-                <p className="text-sm text-muted-foreground">points</p>
+                <p className="text-sm text-muted-foreground">XP</p>
               </div>
             </CardContent>
           </Card>
@@ -249,13 +249,13 @@ export default function LeaderboardPage() {
                 <Medal className="h-12 w-12 text-gray-400" />
               </div>
               <Avatar className="h-16 w-16 mx-auto border-2 border-gray-400">
-                <AvatarImage src={leaderboard[1].avatar_url} alt={leaderboard[1].full_name} />
+                <AvatarImage src={leaderboard[1].avatar_url || generateHunterAvatarUrl(`${leaderboard[1].id}-${leaderboard[1].full_name}`)} alt={leaderboard[1].full_name} />
                 <AvatarFallback>{getInitials(leaderboard[1].full_name)}</AvatarFallback>
               </Avatar>
               <div>
                 <p className="font-semibold">{leaderboard[1].full_name}</p>
                 <p className="text-2xl font-bold">{leaderboard[1].total_points}</p>
-                <p className="text-sm text-muted-foreground">points</p>
+                <p className="text-sm text-muted-foreground">XP</p>
               </div>
             </CardContent>
           </Card>
@@ -266,13 +266,13 @@ export default function LeaderboardPage() {
                 <Medal className="h-12 w-12 text-amber-700" />
               </div>
               <Avatar className="h-16 w-16 mx-auto border-2 border-amber-700">
-                <AvatarImage src={leaderboard[2].avatar_url} alt={leaderboard[2].full_name} />
+                <AvatarImage src={leaderboard[2].avatar_url || generateHunterAvatarUrl(`${leaderboard[2].id}-${leaderboard[2].full_name}`)} alt={leaderboard[2].full_name} />
                 <AvatarFallback>{getInitials(leaderboard[2].full_name)}</AvatarFallback>
               </Avatar>
               <div>
                 <p className="font-semibold">{leaderboard[2].full_name}</p>
                 <p className="text-2xl font-bold">{leaderboard[2].total_points}</p>
-                <p className="text-sm text-muted-foreground">points</p>
+                <p className="text-sm text-muted-foreground">XP</p>
               </div>
             </CardContent>
           </Card>
@@ -285,7 +285,7 @@ export default function LeaderboardPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Avatar className="h-12 w-12 border-2 border-primary">
-                  <AvatarImage src={user.avatar_url} alt={user.full_name} />
+                  <AvatarImage src={user.avatar_url || generateHunterAvatarUrl(`${user.id}-${user.full_name}`)} alt={user.full_name} />
                   <AvatarFallback>{getInitials(user.full_name || 'You')}</AvatarFallback>
                 </Avatar>
                 <div>
@@ -295,7 +295,7 @@ export default function LeaderboardPage() {
               </div>
               <div className="text-right">
                 <p className="text-2xl font-bold">#{meInBoard.rank}</p>
-                <p className="text-sm text-muted-foreground">{meInBoard.total_points} points</p>
+                <p className="text-sm text-muted-foreground">{meInBoard.total_points} XP</p>
               </div>
             </div>
           </CardContent>
@@ -306,7 +306,7 @@ export default function LeaderboardPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Full Rankings
+            Full Hunter Rankings
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -330,7 +330,7 @@ export default function LeaderboardPage() {
                     </div>
 
                     <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
-                      <AvatarImage src={leader.avatar_url} alt={leader.full_name} />
+                      <AvatarImage src={leader.avatar_url || generateHunterAvatarUrl(`${leader.id}-${leader.full_name}`)} alt={leader.full_name} />
                       <AvatarFallback>{getInitials(leader.full_name)}</AvatarFallback>
                     </Avatar>
 
@@ -344,7 +344,7 @@ export default function LeaderboardPage() {
                         )}
                       </div>
                       <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                        {leader.courses_completed} courses and {leader.problems_solved} problems
+                        {leader.courses_completed} gates and {leader.problems_solved} boss fights
                       </p>
                     </div>
                   </div>
@@ -354,7 +354,7 @@ export default function LeaderboardPage() {
                       <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
                       <span className="text-lg sm:text-xl font-bold">{leader.total_points}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">points</p>
+                    <p className="text-xs text-muted-foreground">XP</p>
                   </div>
                 </div>
               );

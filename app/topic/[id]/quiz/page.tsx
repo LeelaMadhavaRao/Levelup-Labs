@@ -146,7 +146,7 @@ export default function QuizPage() {
 
     if (finalScore >= 70) {
       if (earnedPoints > 0 || earnedXp > 0) {
-        toast.success(`Quiz passed! +${earnedPoints} points and +${earnedXp} XP`);
+        toast.success(`Quiz cleared! +${earnedPoints} XP and +${earnedXp} bonus XP`);
       } else {
         toast.success('Congratulations! You passed the quiz!');
       }
@@ -248,7 +248,7 @@ export default function QuizPage() {
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-2">
                     <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-500">
-                      <Trophy className="h-3 w-3" />+{rewardSummary?.points || 0} points
+                      <Trophy className="h-3 w-3" />+{rewardSummary?.points || 0} XP
                     </span>
                     <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                       <Star className="h-3 w-3" />+{rewardSummary?.xp || 0} XP
@@ -262,7 +262,7 @@ export default function QuizPage() {
                       Start Problems
                     </Button>
                     <Button variant="outline" onClick={() => router.push('/my-courses')}>
-                      My Courses
+                      My Gates
                     </Button>
                   </div>
                 </>

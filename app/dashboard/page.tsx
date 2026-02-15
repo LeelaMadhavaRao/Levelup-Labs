@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getCurrentUser } from '@/lib/auth';
+import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
+import { getHunterRankByPoints } from '@/lib/hunter-rank';
 import { getUserCoursesWithProgress } from '@/lib/courses';
 import { getTopLeaderboard } from '@/lib/leaderboard';
 import { getQuestProgress, getRecentPointEvents, type QuestProgress } from '@/lib/gamification';
@@ -112,16 +113,17 @@ export default function DashboardPage() {
     const progress = calculateProgress(c);
     return progress > 0 && progress < 100;
   });
+  const hunterRank = getHunterRankByPoints(Number(user?.total_points || 0));
 
   return (
     <div className="container py-8 space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
-          Welcome back, {user?.full_name?.split(' ')[0] || 'User'}! 👋
+          Welcome back, Hunter {user?.full_name?.split(' ')[0] || 'User'}! 👋
         </h1>
         <p className="text-muted-foreground mt-2">
-          Here's your learning progress and achievements
+          Here's your gate progress and hunter achievements
         </p>
       </div>
 
@@ -129,33 +131,33 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Points</CardTitle>
+            <CardTitle className="text-sm font-medium">Total XP</CardTitle>
             <Trophy className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{user?.total_points || 0}</div>
             <p className="text-xs text-muted-foreground">
-              Rank #{user?.rank || 'N/A'} on leaderboard
+              Hunter Rank {hunterRank.label}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Courses Enrolled</CardTitle>
+            <CardTitle className="text-sm font-medium">Raid Gates Joined</CardTitle>
             <BookOpen className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{courses.length}</div>
             <p className="text-xs text-muted-foreground">
-              {user?.courses_completed || 0} completed
+              {user?.courses_completed || 0} gates cleared
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Problems Solved</CardTitle>
+            <CardTitle className="text-sm font-medium">Boss Fights Cleared</CardTitle>
             <Code className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
@@ -176,7 +178,7 @@ export default function DashboardPage() {
               {inProgressCourses.length > 0 ? '🔥 Active' : '😴 Start'}
             </div>
             <p className="text-xs text-muted-foreground">
-              {inProgressCourses.length} courses in progress
+              {inProgressCourses.length} active gates in progress
             </p>
           </CardContent>
         </Card>
@@ -187,9 +189,9 @@ export default function DashboardPage() {
         {/* Continue Learning */}
         <Card className="col-span-4">
           <CardHeader>
-            <CardTitle>Continue Learning</CardTitle>
+            <CardTitle>Continue Raids</CardTitle>
             <CardDescription>
-              Pick up where you left off
+              Re-enter your active gates
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -197,10 +199,10 @@ export default function DashboardPage() {
               <div className="text-center py-8">
                 <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground mb-4">
-                  No courses in progress. Start learning now!
+                  No active gates. Enter a new raid now!
                 </p>
                 <Button asChild>
-                  <Link href="/courses">Browse Courses</Link>
+                  <Link href="/courses">Browse Raid Gates</Link>
                 </Button>
               </div>
             ) : (
@@ -237,7 +239,7 @@ export default function DashboardPage() {
 
             {courses.length > 3 && (
               <Button variant="outline" className="w-full" asChild>
-                <Link href="/my-courses">View All Courses</Link>
+                <Link href="/my-courses">View All Gates</Link>
               </Button>
             )}
           </CardContent>
@@ -246,9 +248,9 @@ export default function DashboardPage() {
         {/* Leaderboard Preview */}
         <Card className="col-span-3">
           <CardHeader>
-            <CardTitle>Top Performers</CardTitle>
+            <CardTitle>Top Hunters</CardTitle>
             <CardDescription>
-              See how you rank against others
+              Track your rank among hunters
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -262,7 +264,7 @@ export default function DashboardPage() {
                     {index > 2 && `#${index + 1}`}
                   </div>
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={leader.avatar_url} />
+                    <AvatarImage src={leader.avatar_url || generateHunterAvatarUrl(`${leader.id}-${leader.full_name}`)} />
                     <AvatarFallback>{getInitials(leader.full_name)}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
@@ -280,7 +282,7 @@ export default function DashboardPage() {
               ))}
               
               <Button variant="outline" className="w-full" asChild>
-                <Link href="/leaderboard">View Full Leaderboard</Link>
+                <Link href="/leaderboard">View Hunter Rankings</Link>
               </Button>
             </div>
           </CardContent>
@@ -290,8 +292,8 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Daily Quests</CardTitle>
-            <CardDescription>Small wins that boost your XP</CardDescription>
+            <CardTitle>Daily Missions</CardTitle>
+            <CardDescription>Small clears that boost your XP</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {dailyQuests.length === 0 ? (
@@ -320,7 +322,7 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Points</CardTitle>
+            <CardTitle>Recent XP Logs</CardTitle>
             <CardDescription>Latest rewards earned</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">

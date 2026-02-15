@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getCurrentUser, updateUserProfile } from '@/lib/auth';
+import { generateHunterAvatarUrl, getCurrentUser, updateUserProfile } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Save, Upload } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function EditProfilePage() {
@@ -24,6 +24,36 @@ export default function EditProfilePage() {
     github_username: '',
     linkedin_url: '',
   });
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : '';
+      if (!result) {
+        toast.error('Failed to process image');
+        return;
+      }
+      setFormData((prev) => ({ ...prev, avatar_url: result }));
+      toast.success('Hunter portrait uploaded');
+    };
+    reader.onerror = () => toast.error('Failed to read image file');
+    reader.readAsDataURL(file);
+  };
+
+  const handleGenerateAvatar = () => {
+    const seed = `${user?.id || 'hunter'}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const generated = generateHunterAvatarUrl(seed);
+    setFormData((prev) => ({ ...prev, avatar_url: generated }));
+    toast.success('Generated a new hunter avatar');
+  };
 
   useEffect(() => {
     loadUser();
@@ -88,13 +118,13 @@ export default function EditProfilePage() {
         className="mb-4"
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Profile
+        Back to Hunter Profile
       </Button>
 
       <Card>
         <CardHeader>
-          <CardTitle>Edit Profile</CardTitle>
-          <CardDescription>Update your profile information</CardDescription>
+          <CardTitle>Edit Hunter Profile</CardTitle>
+          <CardDescription>Update your hunter dossier and portrait</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -119,10 +149,20 @@ export default function EditProfilePage() {
                     onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
                     placeholder="https://example.com/avatar.jpg"
                   />
-                  <Button type="button" variant="outline" size="icon" className="shrink-0">
+                  <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => document.getElementById('avatar-file')?.click()}>
                     <Upload className="h-4 w-4" />
                   </Button>
                 </div>
+                <input id="avatar-file" type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('avatar-file')?.click()}>
+                    <Upload className="mr-2 h-4 w-4" /> Upload Portrait
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" onClick={handleGenerateAvatar}>
+                    <Sparkles className="mr-2 h-4 w-4" /> Auto-Generate Hunter
+                  </Button>
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">Upload your own image or auto-generate a unique Solo-style hunter avatar.</p>
               </div>
             </div>
 
@@ -140,12 +180,12 @@ export default function EditProfilePage() {
 
             {/* Bio */}
             <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
+              <Label htmlFor="bio">Hunter Bio</Label>
               <Textarea
                 id="bio"
                 value={formData.bio}
                 onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                placeholder="Tell us about yourself..."
+                placeholder="Write your hunter background..."
                 rows={4}
               />
             </div>

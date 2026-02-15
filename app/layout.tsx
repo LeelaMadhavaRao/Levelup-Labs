@@ -9,8 +9,8 @@ import './globals.css'
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['400', '500', '600', '700'] })
 
 export const metadata: Metadata = {
-  title: 'Levelup-Labs - Gamified AI-Powered Learning',
-  description: 'Master coding with AI-powered courses, quizzes, and challenges',
+  title: 'CodeQuest AI - Hunter System',
+  description: 'Clear raid gates, complete boss fights, and rise through Hunter Ranks with AI guidance',
 }
 
 export default function RootLayout({
