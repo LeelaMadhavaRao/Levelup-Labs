@@ -61,7 +61,7 @@ export default function AdminDashboard() {
       <div className="container py-8">
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-64 bg-muted rounded" />
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-32 bg-muted rounded" />
             ))}
@@ -88,8 +88,8 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card>
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <Card className="card-interactive">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
             <BookOpen className="h-4 w-4 text-muted-foreground" />
@@ -100,7 +100,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-interactive">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Students</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-interactive">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Problems</CardTitle>
             <Code className="h-4 w-4 text-muted-foreground" />
@@ -132,7 +132,7 @@ export default function AdminDashboard() {
         <h2 className="text-2xl font-bold">Your Courses</h2>
         
         {courses.length === 0 ? (
-          <Card>
+          <Card className="card-interactive">
             <CardContent className="flex flex-col items-center justify-center py-16">
               <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No courses yet</h3>
@@ -146,15 +146,15 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {courses.map((course) => (
-              <Card key={course.id} className="overflow-hidden">
+              <Card key={course.id} className="overflow-hidden card-interactive card-equal">
                 {course.thumbnail_url && (
                   <div className="aspect-video w-full overflow-hidden bg-muted">
                     <img
                       src={course.thumbnail_url}
                       alt={course.name}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                     />
                   </div>
                 )}
@@ -217,3 +217,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+

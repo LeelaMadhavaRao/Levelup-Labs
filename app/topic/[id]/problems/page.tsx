@@ -4,10 +4,11 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { getTopicProblems, getTopic } from '@/lib/problems';
 import { getCurrentUser } from '@/lib/auth';
+import { getStreakMultiplier } from '@/lib/gamification';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Code, Trophy, CheckCircle, Circle } from 'lucide-react';
+import { Code, Trophy, CheckCircle, Circle, Flame, Star } from 'lucide-react';
 
 export default function ProblemsListPage() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function ProblemsListPage() {
   const [user, setUser] = useState<any>(null);
   const [topic, setTopic] = useState<any>(null);
   const [problems, setProblems] = useState<any[]>([]);
+  const [streakMultiplier, setStreakMultiplier] = useState(1);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,20 +25,30 @@ export default function ProblemsListPage() {
   }, [topicId]);
 
   const loadData = async () => {
-    const currentUser = await getCurrentUser();
-    
-    if (!currentUser) {
-      router.push('/auth/login');
-      return;
-    }
+    try {
+      const currentUser = await getCurrentUser();
+      
+      if (!currentUser) {
+        router.push('/auth/login');
+        return;
+      }
 
-    setUser(currentUser);
-    const topicData = await getTopic(topicId);
-    const problemsData = await getTopicProblems(topicId, currentUser.id);
-    
-    setTopic(topicData);
-    setProblems(problemsData);
-    setLoading(false);
+      setUser(currentUser);
+      const [topicData, problemsData, multiplier] = await Promise.all([
+        getTopic(topicId),
+        getTopicProblems(topicId, currentUser.id),
+        getStreakMultiplier(currentUser.id).catch(() => 1),
+      ]);
+      
+      setTopic(topicData);
+      setProblems(problemsData);
+      setStreakMultiplier(multiplier);
+    } catch (error) {
+      console.error('Failed to load topic problems:', error);
+      setProblems([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -65,6 +77,14 @@ export default function ProblemsListPage() {
     }
   };
 
+  const getProblemStatus = (problem: any) => {
+    const statuses = problem.problem_solutions || [];
+    if (!Array.isArray(statuses) || statuses.length === 0) return null;
+    if (statuses.some((s: any) => s.status === 'completed')) return 'completed';
+    if (statuses.some((s: any) => s.status)) return 'attempted';
+    return null;
+  };
+
   if (loading) {
     return (
       <div className="container py-8">
@@ -83,7 +103,7 @@ export default function ProblemsListPage() {
   if (!topic) {
     return (
       <div className="container py-8">
-        <Card>
+        <Card className="card-interactive">
           <CardContent className="py-16 text-center">
             <h2 className="text-xl font-semibold mb-2">Topic not found</h2>
             <Button onClick={() => router.push('/my-courses')}>
@@ -103,11 +123,21 @@ export default function ProblemsListPage() {
         <p className="text-muted-foreground">
           Solve coding problems to master this topic and earn points
         </p>
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+          <Badge variant="outline" className="gap-1">
+            <Flame className="h-3 w-3 text-orange-500" />
+            Streak multiplier x{streakMultiplier.toFixed(2)}
+          </Badge>
+          <Badge variant="outline" className="gap-1">
+            <Star className="h-3 w-3 text-primary" />
+            Bonus XP from quests and achievements
+          </Badge>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <Card>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Card className="card-interactive">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
@@ -119,13 +149,13 @@ export default function ProblemsListPage() {
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="card-interactive">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Solved</p>
                 <p className="text-2xl font-bold">
-                  {problems.filter((p) => p.status === 'completed').length}
+                  {problems.filter((p) => getProblemStatus(p) === 'completed').length}
                 </p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500" />
@@ -133,7 +163,7 @@ export default function ProblemsListPage() {
           </CardContent>
         </Card>
         
-        <Card>
+        <Card className="card-interactive">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
@@ -150,7 +180,7 @@ export default function ProblemsListPage() {
 
       {/* Problems List */}
       {problems.length === 0 ? (
-        <Card>
+        <Card className="card-interactive">
           <CardContent className="py-16 text-center space-y-4">
             <Code className="h-12 w-12 text-muted-foreground mx-auto" />
             <div>
@@ -167,12 +197,15 @@ export default function ProblemsListPage() {
       ) : (
         <div className="space-y-4">
           {problems.map((problem) => {
-            const isCompleted = problem.status === 'completed';
+            const status = getProblemStatus(problem);
+            const isCompleted = status === 'completed';
+            const basePoints = getPointsByDifficulty(problem.difficulty);
+            const effectivePoints = Math.round(basePoints * streakMultiplier);
 
             return (
               <Card
                 key={problem.id}
-                className={`transition-colors ${
+                className={`card-interactive transition-colors ${
                   isCompleted ? 'border-green-500/30 bg-green-500/5' : 'hover:border-primary'
                 }`}
               >
@@ -194,15 +227,18 @@ export default function ProblemsListPage() {
                       <Badge className={getDifficultyColor(problem.difficulty)}>
                         {problem.difficulty}
                       </Badge>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground justify-end">
                         <Trophy className="h-4 w-4 text-yellow-500" />
-                        <span className="font-semibold">{getPointsByDifficulty(problem.difficulty)}</span>
+                        <span className="font-semibold">{effectivePoints}</span>
+                      </div>
+                      <div className="text-[11px] text-right text-muted-foreground">
+                        base {basePoints} x {streakMultiplier.toFixed(2)}
                       </div>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex gap-3">
+                  <div className="flex flex-col gap-3 sm:flex-row">
                     <Button
                       onClick={() =>
                         router.push(`/topic/${topicId}/problems/${problem.id}/explain`)
@@ -226,3 +262,4 @@ export default function ProblemsListPage() {
     </div>
   );
 }
+

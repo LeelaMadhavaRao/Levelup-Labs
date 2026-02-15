@@ -5,12 +5,13 @@ import { useRouter, useParams } from 'next/navigation';
 import { getTopic, generateQuiz, submitQuizResponse } from '@/lib/quiz';
 import { getCurrentUser } from '@/lib/auth';
 import { markQuizPassed } from '@/lib/courses';
+import { claimQuizPassReward } from '@/lib/gamification';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { CheckCircle, Loader2, Star, Trophy, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Question {
@@ -32,6 +33,7 @@ export default function QuizPage() {
   const [generating, setGenerating] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+  const [rewardSummary, setRewardSummary] = useState<{ points: number; xp: number; applied: boolean } | null>(null);
 
   useEffect(() => {
     loadData();
@@ -113,6 +115,8 @@ export default function QuizPage() {
     const finalScore = (correctCount / questions.length) * 100;
     setScore(finalScore);
     setSubmitted(true);
+    let earnedPoints = 0;
+    let earnedXp = 0;
 
     // Submit quiz response
     if (user && topic) {
@@ -121,11 +125,31 @@ export default function QuizPage() {
       // If passed, update topic_progress.quiz_passed
       if (finalScore >= 70) {
         await markQuizPassed(user.id, topic.id);
+        try {
+          const reward = await claimQuizPassReward(topic.id);
+          earnedPoints = reward.pointsAwarded;
+          earnedXp = reward.xpAwarded;
+          setRewardSummary({
+            points: reward.pointsAwarded,
+            xp: reward.xpAwarded,
+            applied: reward.applied,
+          });
+        } catch {
+          setRewardSummary({
+            points: 0,
+            xp: 0,
+            applied: false,
+          });
+        }
       }
     }
 
     if (finalScore >= 70) {
-      toast.success('Congratulations! You passed the quiz!');
+      if (earnedPoints > 0 || earnedXp > 0) {
+        toast.success(`Quiz passed! +${earnedPoints} points and +${earnedXp} XP`);
+      } else {
+        toast.success('Congratulations! You passed the quiz!');
+      }
     } else {
       toast.error('You need at least 70% to pass. Try again!');
     }
@@ -222,6 +246,17 @@ export default function QuizPage() {
                   <p className="text-center text-muted-foreground">
                     Great job! You're ready to move on to the coding challenges.
                   </p>
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-500">
+                      <Trophy className="h-3 w-3" />+{rewardSummary?.points || 0} points
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                      <Star className="h-3 w-3" />+{rewardSummary?.xp || 0} XP
+                    </span>
+                    {rewardSummary && !rewardSummary.applied && (
+                      <span className="text-xs text-muted-foreground">Reward already claimed previously.</span>
+                    )}
+                  </div>
                   <div className="flex gap-3 justify-center">
                     <Button onClick={() => router.push(`/topic/${topic.id}/problems`)}>
                       Start Problems

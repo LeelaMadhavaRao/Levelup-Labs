@@ -73,6 +73,8 @@ export default function ProfilePage() {
     );
   }
 
+  const isRankEligible = user.role !== 'admin';
+
   return (
     <div className="container py-8 max-w-4xl space-y-6">
       {/* Profile Header */}
@@ -110,7 +112,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Trophy className="h-5 w-5 text-yellow-500" />
-                  <span className="font-semibold">Rank #{user.rank || 'N/A'}</span>
+                  <span className="font-semibold">{isRankEligible ? `Rank #${user.rank || 'N/A'}` : 'Not ranked'}</span>
                 </div>
               </div>
             </div>
@@ -133,7 +135,7 @@ export default function ProfilePage() {
           <CardContent>
             <div className="text-3xl font-bold">{user.total_points || 0}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Rank #{user.rank || 'N/A'} globally
+              {isRankEligible ? `Rank #${user.rank || 'N/A'} globally` : 'Not ranked'}
             </p>
           </CardContent>
         </Card>
@@ -209,7 +211,7 @@ export default function ProfilePage() {
               </div>
             )}
             
-            {user.rank && user.rank <= 10 && (
+            {isRankEligible && user.rank && user.rank <= 10 && (
               <div className="flex items-center gap-3 p-4 rounded-lg border bg-muted/30">
                 <div className="h-12 w-12 rounded-full bg-red-500/10 flex items-center justify-center">
                   <Award className="h-6 w-6 text-red-500" />

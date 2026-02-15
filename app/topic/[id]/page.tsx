@@ -6,6 +6,7 @@ import { getTopic, getTopicProgress } from '@/lib/courses';
 import { hasUserPassedQuiz } from '@/lib/quiz';
 import { getTopicProblems } from '@/lib/problems';
 import { getCurrentUser } from '@/lib/auth';
+import { getGamificationOverview, getStreakMultiplier } from '@/lib/gamification';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,7 @@ import {
   ArrowRight,
   RotateCcw,
   Trophy,
+  Star,
 } from 'lucide-react';
 
 type TopicStep = 'video' | 'quiz' | 'problems' | 'completed';
@@ -36,6 +38,8 @@ export default function TopicLandingPage() {
     problems_completed: 0,
   });
   const [totalProblems, setTotalProblems] = useState(0);
+  const [streakMultiplier, setStreakMultiplier] = useState(1);
+  const [levelSnapshot, setLevelSnapshot] = useState<{ level: number; title: string } | null>(null);
 
   useEffect(() => {
     checkProgressAndRoute();
@@ -54,6 +58,15 @@ export default function TopicLandingPage() {
       return;
     }
     setTopic(topicData);
+
+    const [multiplier, overview] = await Promise.all([
+      getStreakMultiplier(user.id).catch(() => 1),
+      getGamificationOverview(user.id).catch(() => null),
+    ]);
+    setStreakMultiplier(multiplier);
+    if (overview) {
+      setLevelSnapshot({ level: overview.level, title: overview.title });
+    }
 
     // Get progress from topic_progress table
     const topicProgress = await getTopicProgress(user.id, topicId);
@@ -156,7 +169,7 @@ export default function TopicLandingPage() {
   if (!topic) {
     return (
       <div className="container py-8 max-w-3xl">
-        <Card>
+        <Card className="card-interactive">
           <CardContent className="py-16 text-center">
             <h2 className="text-xl font-semibold mb-2">Topic not found</h2>
             <Button onClick={() => router.push('/my-courses')}>Back to My Courses</Button>
@@ -174,6 +187,7 @@ export default function TopicLandingPage() {
       icon: PlayCircle,
       title: 'Watch Video',
       description: 'Learn the concepts through the video lesson',
+      reward: 'Unlocks quiz progression',
       action: () => router.push(`/topic/${topicId}/watch`),
       actionLabel: progress.video_watched ? 'Rewatch' : 'Watch Now',
     },
@@ -182,6 +196,7 @@ export default function TopicLandingPage() {
       icon: FileQuestion,
       title: 'Take Quiz',
       description: 'Test your understanding with AI-generated questions',
+      reward: `Pass reward: ~${Math.round(40 * streakMultiplier)} pts + 40 XP`,
       action: () => router.push(`/topic/${topicId}/quiz`),
       actionLabel: progress.quiz_passed ? 'Retake Quiz' : 'Start Quiz',
     },
@@ -190,6 +205,7 @@ export default function TopicLandingPage() {
       icon: Code,
       title: 'Solve Problems',
       description: `Complete coding challenges (${progress.problems_completed}/${totalProblems} solved)`,
+      reward: `Each solve: 100-300 pts with x${streakMultiplier.toFixed(2)} streak boost`,
       action: () => router.push(`/topic/${topicId}/problems`),
       actionLabel:
         totalProblems > 0 && progress.problems_completed >= totalProblems
@@ -217,9 +233,21 @@ export default function TopicLandingPage() {
       </div>
 
       {/* Overall Progress */}
-      <Card>
+      <Card className="card-interactive">
         <CardContent className="pt-6">
           <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              {levelSnapshot && (
+                <Badge variant="secondary" className="gap-1">
+                  <Star className="h-3 w-3" />
+                  Lv {levelSnapshot.level} {levelSnapshot.title}
+                </Badge>
+              )}
+              <Badge variant="outline" className="gap-1">
+                <Trophy className="h-3 w-3 text-yellow-500" />
+                Streak x{streakMultiplier.toFixed(2)}
+              </Badge>
+            </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Topic Progress</span>
               <span className="font-semibold">{progressPercent}%</span>
@@ -240,7 +268,7 @@ export default function TopicLandingPage() {
           return (
             <Card
               key={step.id}
-              className={`transition-all ${
+              className={`card-interactive reveal-in transition-all ${
                 isCurrent
                   ? 'border-primary ring-1 ring-primary/20'
                   : isDone
@@ -272,6 +300,7 @@ export default function TopicLandingPage() {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold">{step.title}</h3>
                     <p className="text-sm text-muted-foreground">{step.description}</p>
+                    <p className="text-xs text-primary/90 mt-1">{step.reward}</p>
                   </div>
                   <Button
                     size="sm"
@@ -329,3 +358,4 @@ export default function TopicLandingPage() {
     </div>
   );
 }
+

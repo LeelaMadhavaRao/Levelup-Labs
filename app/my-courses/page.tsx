@@ -77,7 +77,7 @@ export default function MyCoursesPage() {
 
       {/* Courses */}
       {courses.length === 0 ? (
-        <Card>
+        <Card className="card-interactive">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No courses enrolled</h3>
@@ -95,7 +95,7 @@ export default function MyCoursesPage() {
             const progress = calculateProgress(course);
             
             return (
-              <Card key={course.id}>
+              <Card key={course.id} className="card-interactive">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1 flex-1">
@@ -106,7 +106,7 @@ export default function MyCoursesPage() {
                       <img
                         src={course.thumbnail_url}
                         alt={course.name}
-                        className="w-32 h-20 object-cover rounded-lg ml-4"
+                        className="ml-2 h-16 w-24 rounded-lg object-cover sm:ml-4 sm:h-20 sm:w-32"
                       />
                     )}
                   </div>
@@ -204,3 +204,5 @@ export default function MyCoursesPage() {
     </div>
   );
 }
+
+

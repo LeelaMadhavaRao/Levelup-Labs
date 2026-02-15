@@ -1,5 +1,16 @@
 import { createClient } from './supabase'
 
+function toError(error: unknown, fallback: string): Error {
+  if (error instanceof Error) return error
+  if (error && typeof error === 'object') {
+    const message = (error as { message?: unknown }).message
+    if (typeof message === 'string' && message.trim()) {
+      return new Error(message)
+    }
+  }
+  return new Error(fallback)
+}
+
 function normalizeError(error: unknown) {
   if (!error) return null
   if (error instanceof Error) {
@@ -130,7 +141,7 @@ export async function loginWithEmail(email: string, password: string) {
     password,
   })
   
-  if (error) throw error
+  if (error) throw toError(error, 'Login failed')
   return data
 }
 
@@ -144,7 +155,7 @@ export async function loginWithGoogle() {
     },
   })
   
-  if (error) throw error
+  if (error) throw toError(error, 'Google login failed')
   return data
 }
 
@@ -157,7 +168,7 @@ export async function getUserRole(userId: string) {
     .eq('id', userId)
     .single()
   
-  if (error) throw error
+  if (error) throw toError(error, 'Failed to load user role')
   return data?.role
 }
 
@@ -175,7 +186,7 @@ export async function getUserProfile(userId: string) {
     if (error.code === '42501' || message.includes('permission denied')) {
       return null
     }
-    throw error
+    throw toError(error, 'Failed to load user profile')
   }
   
   if (data) return data
@@ -220,7 +231,7 @@ export async function getUserProfile(userId: string) {
       return existing || null
     }
     
-    throw insertError
+    throw toError(insertError, 'Failed to create user profile')
   }
   
   const { data: refreshed } = await supabase

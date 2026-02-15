@@ -40,6 +40,7 @@ export async function completeCourse(userId: string, courseId: string) {
     return {
       error: 'Course requirements not met. Complete all quizzes and problems.',
       pointsAwarded: 0,
+      xpAwarded: 0,
     }
   }
   
@@ -50,6 +51,7 @@ export async function completeCourse(userId: string, courseId: string) {
       return {
         error: 'You must be logged in',
         pointsAwarded: 0,
+        xpAwarded: 0,
       }
     }
 
@@ -67,12 +69,14 @@ export async function completeCourse(userId: string, courseId: string) {
       return {
         error: error.message || 'Failed to complete course',
         pointsAwarded: 0,
+        xpAwarded: 0,
       }
     }
     
     return {
       error: null,
       pointsAwarded: data.pointsAwarded,
+      xpAwarded: data.xpAwarded || 0,
       message: data.message,
     }
   } catch (error) {
@@ -80,6 +84,7 @@ export async function completeCourse(userId: string, courseId: string) {
     return {
       error: 'Failed to complete course',
       pointsAwarded: 0,
+      xpAwarded: 0,
     }
   }
 }

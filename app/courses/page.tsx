@@ -114,7 +114,7 @@ export default function CoursesPage() {
 
       {/* Courses Grid */}
       {filteredCourses.length === 0 ? (
-        <Card>
+        <Card className="card-interactive">
           <CardContent className="flex flex-col items-center justify-center py-16">
             <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No courses found</h3>
@@ -131,13 +131,13 @@ export default function CoursesPage() {
             const isRegistered = userCourseIds.has(course.id);
 
             return (
-              <Card key={course.id} className="overflow-hidden flex flex-col">
+              <Card key={course.id} className="overflow-hidden flex flex-col card-interactive card-equal">
                 {course.thumbnail_url && (
                   <div className="aspect-video w-full overflow-hidden bg-muted">
                     <img
                       src={course.thumbnail_url}
                       alt={course.name}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                     />
                   </div>
                 )}
@@ -199,3 +199,5 @@ export default function CoursesPage() {
     </div>
   );
 }
+
+

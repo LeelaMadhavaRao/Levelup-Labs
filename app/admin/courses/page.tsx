@@ -96,7 +96,7 @@ export default function AdminCoursesPage() {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) throw new Error(error.message || 'Failed to fetch courses');
 
       // Calculate stats
       const processedCourses = coursesData?.map(course => ({
@@ -149,7 +149,7 @@ export default function AdminCoursesPage() {
         .delete()
         .eq('id', courseId);
 
-      if (error) throw error;
+      if (error) throw new Error(error.message || 'Failed to delete course');
 
       toast.success('Course deleted successfully');
       await fetchCourses();
@@ -164,7 +164,7 @@ export default function AdminCoursesPage() {
       <div className="container py-8">
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-64 bg-muted rounded" />
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="h-24 bg-muted rounded" />
             ))}
@@ -194,8 +194,8 @@ export default function AdminCoursesPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Card className="card-interactive">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
             <BookOpen className="h-4 w-4 text-blue-500" />
@@ -205,7 +205,7 @@ export default function AdminCoursesPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-interactive">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Enrollments</CardTitle>
             <Users className="h-4 w-4 text-green-500" />
@@ -215,7 +215,7 @@ export default function AdminCoursesPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-interactive">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Modules</CardTitle>
             <BookOpen className="h-4 w-4 text-purple-500" />
@@ -225,7 +225,7 @@ export default function AdminCoursesPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-interactive">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Topics</CardTitle>
             <Trophy className="h-4 w-4 text-yellow-500" />
@@ -250,7 +250,7 @@ export default function AdminCoursesPage() {
       </div>
 
       {/* Courses Table */}
-      <Card>
+      <Card className="card-interactive">
         <CardHeader>
           <CardTitle>All Courses</CardTitle>
           <CardDescription>
@@ -274,7 +274,7 @@ export default function AdminCoursesPage() {
               )}
             </div>
           ) : (
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -356,3 +356,4 @@ export default function AdminCoursesPage() {
     </div>
   );
 }
+

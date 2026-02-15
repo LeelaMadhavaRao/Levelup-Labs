@@ -1,46 +1,80 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getLeaderboard } from '@/lib/leaderboard';
+import {
+  getActiveSeason,
+  getLeaderboard,
+  getLeaderboardAroundMe,
+  getTopMovers,
+  type LeaderboardScope,
+} from '@/lib/leaderboard';
 import { getCurrentUser } from '@/lib/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Medal, Award, TrendingUp } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowUpRight, Medal, Trophy, TrendingUp, Users } from 'lucide-react';
 
 export default function LeaderboardPage() {
+  const [scope, setScope] = useState<LeaderboardScope>('all_time');
   const [user, setUser] = useState<any>(null);
+  const [season, setSeason] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [aroundMe, setAroundMe] = useState<any[]>([]);
+  const [movers, setMovers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [scope]);
 
   const loadData = async () => {
-    const currentUser = await getCurrentUser();
-    setUser(currentUser);
+    try {
+      setLoading(true);
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
 
-    const leaders = await getLeaderboard(50);
-    setLeaderboard(leaders);
-    setLoading(false);
+      const activeSeason = await getActiveSeason().catch(() => null);
+      setSeason(activeSeason);
+
+      const leaders = await getLeaderboard(50, scope, activeSeason?.season_id);
+      setLeaderboard(leaders);
+
+      if (currentUser) {
+        const [windowRanks, topMovers] = await Promise.all([
+          getLeaderboardAroundMe(currentUser.id, scope, 4, activeSeason?.season_id).catch(() => []),
+          getTopMovers(5, 7).catch(() => []),
+        ]);
+        setAroundMe(windowRanks);
+        setMovers(topMovers);
+      } else {
+        setAroundMe([]);
+        setMovers([]);
+      }
+    } catch (error) {
+      console.error('Failed to load leaderboard:', error);
+      setLeaderboard([]);
+      setAroundMe([]);
+      setMovers([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getInitials = (name: string) => {
-    return name
+  const getInitials = (name: string) =>
+    name
       .split(' ')
       .map((n) => n[0])
       .join('')
       .toUpperCase()
       .slice(0, 2);
-  };
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
         return <Trophy className="h-6 w-6 text-yellow-500" />;
       case 2:
-        return <Medal className="h-6 w-6 text-gray-400" />;
+        return <Medal className="h-6 w-6 text-slate-400" />;
       case 3:
         return <Medal className="h-6 w-6 text-amber-700" />;
       default:
@@ -66,6 +100,7 @@ export default function LeaderboardPage() {
       <div className="container py-8">
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-64 bg-muted rounded" />
+          <div className="h-10 w-72 bg-muted rounded" />
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="h-20 bg-muted rounded" />
@@ -76,54 +111,109 @@ export default function LeaderboardPage() {
     );
   }
 
-  const userRank = leaderboard.findIndex((u) => u.id === user?.id) + 1;
+  const meInBoard = user ? leaderboard.find((u) => u.id === user.id) : null;
 
   return (
-    <div className="container py-8 max-w-4xl space-y-8">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <Trophy className="h-10 w-10 text-yellow-500" />
-          <h1 className="text-4xl font-bold tracking-tight">Leaderboard</h1>
+    <div className="container py-8 max-w-6xl space-y-8">
+      <div className="space-y-4">
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Trophy className="h-10 w-10 text-yellow-500" />
+            <h1 className="text-4xl font-bold tracking-tight">Leaderboard</h1>
+          </div>
+          <p className="text-lg text-muted-foreground">Compete, climb ranks, and hold your streak.</p>
         </div>
-        <p className="text-lg text-muted-foreground">
-          Compete with fellow learners and climb to the top!
-        </p>
+
+        <div className="flex flex-col items-center gap-2">
+          <Tabs value={scope} onValueChange={(value) => setScope(value as LeaderboardScope)}>
+            <TabsList>
+              <TabsTrigger value="all_time">All-time</TabsTrigger>
+              <TabsTrigger value="weekly">Weekly</TabsTrigger>
+              <TabsTrigger value="seasonal">Seasonal</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          {scope === 'seasonal' && season && (
+            <p className="text-xs text-muted-foreground">
+              {season.name}: {season.starts_at} to {season.ends_at}
+            </p>
+          )}
+        </div>
       </div>
 
-      {/* User's Rank */}
-      {user && userRank > 0 && (
-        <Card className="border-primary/50 bg-primary/5">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-12 w-12 border-2 border-primary">
-                  <AvatarImage src={user.avatar_url} alt={user.full_name} />
-                  <AvatarFallback>{getInitials(user.full_name || 'You')}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-semibold">Your Rank</p>
-                  <p className="text-sm text-muted-foreground">{user.full_name}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="flex items-center gap-3">
-                  <div>
-                    <p className="text-2xl font-bold">#{userRank}</p>
-                    <p className="text-sm text-muted-foreground">{user.total_points} points</p>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card className="card-interactive lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Rank Around You</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {!user ? (
+              <p className="text-sm text-muted-foreground">Sign in to see your nearby rivals.</p>
+            ) : aroundMe.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No nearby rank data for this scope yet.</p>
+            ) : (
+              aroundMe.map((entry) => (
+                <div
+                  key={`${entry.id}-${entry.rank}`}
+                  className={`flex items-center justify-between rounded-lg border p-3 ${
+                    entry.is_me ? 'border-primary/40 bg-primary/5' : 'border-border/70'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold shrink-0 ${getRankBadgeClass(
+                        entry.rank,
+                      )}`}
+                    >
+                      #{entry.rank}
+                    </div>
+                    <Avatar className="h-9 w-9 shrink-0">
+                      <AvatarImage src={entry.avatar_url} alt={entry.full_name} />
+                      <AvatarFallback>{getInitials(entry.full_name)}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">
+                        {entry.full_name} {entry.is_me && <span className="text-xs text-primary">(You)</span>}
+                      </p>
+                    </div>
                   </div>
-                  <TrendingUp className="h-8 w-8 text-green-500" />
+                  <p className="text-sm font-semibold">{entry.total_points} pts</p>
                 </div>
-              </div>
-            </div>
+              ))
+            )}
           </CardContent>
         </Card>
-      )}
 
-      {/* Top 3 Podium */}
+        <Card className="card-interactive">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-green-500" />
+              Top Movers
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {movers.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No movement data yet.</p>
+            ) : (
+              movers.map((mover) => (
+                <div key={mover.user_id} className="flex items-center justify-between rounded-lg border border-border/70 p-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{mover.full_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      #{mover.previous_rank} to #{mover.current_rank}
+                    </p>
+                  </div>
+                  <Badge className="bg-green-500/10 text-green-500">
+                    <ArrowUpRight className="mr-1 h-3 w-3" />+{mover.rank_change}
+                  </Badge>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       {leaderboard.length >= 3 && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-          {/* 1st Place — shown first on mobile, center on desktop */}
           <Card className="border-yellow-500/50 bg-yellow-500/5 sm:order-2 sm:scale-105">
             <CardContent className="pt-6 text-center space-y-3">
               <div className="flex justify-center">
@@ -142,7 +232,6 @@ export default function LeaderboardPage() {
             </CardContent>
           </Card>
 
-          {/* 2nd Place */}
           <Card className="border-gray-400/50 bg-gray-400/5 sm:order-1">
             <CardContent className="pt-6 text-center space-y-3">
               <div className="flex justify-center">
@@ -160,7 +249,6 @@ export default function LeaderboardPage() {
             </CardContent>
           </Card>
 
-          {/* 3rd Place */}
           <Card className="border-amber-700/50 bg-amber-700/5 sm:order-3">
             <CardContent className="pt-6 text-center space-y-3">
               <div className="flex justify-center">
@@ -180,49 +268,76 @@ export default function LeaderboardPage() {
         </div>
       )}
 
-      {/* Full Leaderboard */}
+      {user && meInBoard && (
+        <Card className="border-primary/50 bg-primary/5">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-12 w-12 border-2 border-primary">
+                  <AvatarImage src={user.avatar_url} alt={user.full_name} />
+                  <AvatarFallback>{getInitials(user.full_name || 'You')}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-semibold">Your Current Standing</p>
+                  <p className="text-sm text-muted-foreground">{user.full_name}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold">#{meInBoard.rank}</p>
+                <p className="text-sm text-muted-foreground">{meInBoard.total_points} points</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
-          <CardTitle>All Rankings</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Full Rankings
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {leaderboard.map((leader, index) => {
-              const rank = index + 1;
+            {leaderboard.map((leader) => {
               const isCurrentUser = leader.id === user?.id;
-
               return (
                 <div
-                  key={leader.id}
+                  key={`${leader.id}-${leader.rank}`}
                   className={`flex items-center justify-between gap-3 p-3 sm:p-4 rounded-lg transition-colors ${
-                    isCurrentUser
-                      ? 'bg-primary/10 border border-primary/30'
-                      : 'bg-muted/30 hover:bg-muted/50'
+                    isCurrentUser ? 'bg-primary/10 border border-primary/30' : 'bg-muted/30 hover:bg-muted/50'
                   }`}
                 >
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                    <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold text-sm sm:text-lg shrink-0 ${getRankBadgeClass(rank)}`}>
-                      {getRankIcon(rank) || `#${rank}`}
+                    <div
+                      className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold text-sm sm:text-lg shrink-0 ${getRankBadgeClass(
+                        leader.rank,
+                      )}`}
+                    >
+                      {getRankIcon(leader.rank) || `#${leader.rank}`}
                     </div>
-                    
+
                     <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
                       <AvatarImage src={leader.avatar_url} alt={leader.full_name} />
                       <AvatarFallback>{getInitials(leader.full_name)}</AvatarFallback>
                     </Avatar>
-                    
+
                     <div className="min-w-0">
                       <div className="font-semibold flex items-center gap-2 mb-0.5 sm:mb-1">
                         <span className="truncate">{leader.full_name}</span>
                         {isCurrentUser && (
-                          <Badge variant="secondary" className="text-xs shrink-0">You</Badge>
+                          <Badge variant="secondary" className="text-xs shrink-0">
+                            You
+                          </Badge>
                         )}
                       </div>
                       <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                        {leader.courses_completed} courses • {leader.problems_solved} problems
+                        {leader.courses_completed} courses and {leader.problems_solved} problems
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="text-right shrink-0">
                     <div className="flex items-center gap-1.5 sm:gap-2">
                       <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
