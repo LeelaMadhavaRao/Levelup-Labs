@@ -6,11 +6,14 @@ import { getProblemById, submitCode, getProblemSolution } from '@/lib/problems';
 import { getCurrentUser } from '@/lib/auth';
 import { updateProblemsCompleted } from '@/lib/courses';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CodeEditor } from '@/components/code-editor';
-import { ArrowLeft, Award, Lock } from 'lucide-react';
+import { ArrowLeft, Award, Lock, AlertTriangle, ShieldAlert, Timer, CheckCircle, Play, Save, Code, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { Orbitron, Rajdhani } from 'next/font/google';
+
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
+const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 function formatProblemField(value: unknown): string {
   if (value == null) return ''
@@ -208,10 +211,10 @@ export default function CodeProblemPage() {
 
   if (!problem) {
     return (
-      <div className="container py-8">
+      <div className={`${rajdhani.className} min-h-screen bg-[#09090B] p-8`}>
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-1/3"></div>
-          <div className="h-96 bg-muted rounded"></div>
+          <div className="h-8 bg-white/10 rounded w-1/3"></div>
+          <div className="h-96 bg-white/10 rounded"></div>
         </div>
       </div>
     );
@@ -224,77 +227,141 @@ function solution(input) {
 }`;
 
   return (
-    <div className="container py-8 max-w-6xl">
-      <Button
-        variant="ghost"
-        onClick={() => router.back()}
-        className="mb-4"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back
-      </Button>
+    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-200 selection:bg-purple-500/30 selection:text-white`}>
+      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+      
+      {/* Background Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-purple-500/10 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-cyan-500/10 rounded-full blur-[150px]"></div>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Problem Description */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle>{problem.title}</CardTitle>
-                <CardDescription className="mt-2">
-                  {isSolved ? 'Your submitted solution (read-only)' : 'Solve this coding challenge'}
-                </CardDescription>
+      <div className="relative z-20 flex flex-col h-screen p-4 md:p-6 gap-4">
+        {/* Header Bar */}
+        <header className="flex flex-col md:flex-row justify-between items-center bg-black/60 border border-white/10 backdrop-blur-md p-4 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] shrink-0">
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className={`h-10 w-10 rounded-lg flex items-center justify-center border ${isSolved ? 'bg-green-500/20 border-green-500/50' : 'bg-purple-500/20 border-purple-500/50'}`}>
+              <Code className={`h-5 w-5 ${isSolved ? 'text-green-400' : 'text-purple-400'}`} />
+            </div>
+            <div>
+              <h1 className={`text-lg font-bold tracking-widest text-white uppercase flex items-center gap-2 ${orbitron.className}`}>
+                {problem.title}
+                {isSolved && <span className="text-[10px] bg-green-500/20 text-green-400 border border-green-500/30 px-2 py-0.5 rounded-full font-bold tracking-wider">CLEARED</span>}
+              </h1>
+              <div className="flex items-center gap-2 text-xs text-slate-400 font-mono mt-0.5">
+                <span className={`w-1.5 h-1.5 rounded-full ${isSolved ? 'bg-green-500' : 'bg-purple-500'} animate-pulse`}></span>
+                {isSolved ? 'SYSTEM SECURE' : 'ACTIVE EXPLOIT IN PROGRESS'}
               </div>
-              <Badge variant={problem.difficulty === 'easy' ? 'default' : problem.difficulty === 'medium' ? 'secondary' : 'destructive'}>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6 font-mono">
+            <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => router.push(`/topic/${problem.topic_id}/problems`)} 
+                className="text-xs text-slate-400 hover:text-white border border-white/5 hover:bg-white/5"
+            >
+              <ArrowLeft className="mr-2 h-3 w-3" />
+              ABORT MISSION
+            </Button>
+            
+            <div className="hidden md:block h-8 w-px bg-white/10"></div>
+            
+            <div className="hidden md:block text-right">
+              <div className="text-[10px] text-slate-500 uppercase tracking-widest">Difficulty</div>
+              <div className={`font-bold text-sm flex items-center gap-1 justify-end uppercase ${
+                problem.difficulty === 'easy' ? 'text-green-400' : 
+                problem.difficulty === 'medium' ? 'text-yellow-400' : 'text-red-400'
+              }`}>
                 {problem.difficulty}
-              </Badge>
+              </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="prose dark:prose-invert max-w-none text-sm">
-              <p>{problem.description}</p>
-              
-              {problem.constraints && (
-                <div className="mt-4">
-                  <h4 className="font-semibold text-sm">Constraints:</h4>
-                  <p className="text-xs text-muted-foreground">{formatProblemField(problem.constraints)}</p>
-                </div>
-              )}
+          </div>
+        </header>
 
-              {problem.examples && (
-                <div className="mt-4">
-                  <h4 className="font-semibold text-sm">Examples:</h4>
-                  <pre className="text-xs bg-muted p-3 rounded overflow-x-auto">{formatProblemField(problem.examples)}</pre>
+        {/* Main Workspace */}
+        <main className="flex-1 flex flex-col lg:flex-row gap-4 overflow-hidden min-h-0">
+          
+          {/* Left Panel: Problem Context */}
+          <section className="lg:w-1/3 flex flex-col gap-4 overflow-hidden">
+            <div className="bg-black/60 border border-white/10 rounded-xl flex flex-col overflow-hidden h-full shadow-lg">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-white/5">
+                    <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-cyan-400" />
+                        <span className={`text-xs font-bold text-slate-200 tracking-widest uppercase ${orbitron.className}`}>Mission Intel</span>
+                    </div>
                 </div>
-              )}
+                
+                <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
+                    <div className="prose prose-sm prose-invert max-w-none">
+                        <p className="text-slate-300 leading-relaxed font-sans">{problem.description}</p>
+                        
+                        {problem.constraints && (
+                            <div className="mt-6 mb-4">
+                                <h4 className={`text-xs font-bold text-purple-300 uppercase tracking-wide mb-2 ${orbitron.className}`}>Constraints</h4>
+                                <div className="bg-purple-900/10 border border-purple-500/20 rounded p-3 text-xs font-mono text-purple-200 whitespace-pre-wrap">
+                                    {formatProblemField(problem.constraints)}
+                                </div>
+                            </div>
+                        )}
 
-              {problem.hints && (
-                <div className="mt-4">
-                  <h4 className="font-semibold text-sm">Hints:</h4>
-                  <p className="text-xs text-muted-foreground">{formatProblemField(problem.hints)}</p>
+                        {problem.examples && (
+                            <div className="mt-4">
+                                <h4 className={`text-xs font-bold text-cyan-300 uppercase tracking-wide mb-2 ${orbitron.className}`}>Test Vectors</h4>
+                                <div className="bg-black/40 border border-white/10 rounded p-3 text-xs font-mono text-slate-300 whitespace-pre-wrap">
+                                    {formatProblemField(problem.examples)}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
-              )}
+
+                {/* Console Output (Mini) */}
+                <div className="border-t border-white/10 bg-black/80 p-3 min-h-[120px] max-h-[200px] overflow-y-auto font-mono text-xs">
+                    <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-2 flex items-center justify-between">
+                        <span>Console Output</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+                    </div>
+                    <div className="space-y-1 text-slate-400">
+                        <div className="flex gap-2"><span className="text-purple-500">➜</span><span>Environment initialized.</span></div>
+                        <div className="flex gap-2"><span className="text-cyan-500">➜</span><span>Loaded {testCases.length} test cases.</span></div>
+                        <div className="flex gap-2"><span className="text-slate-600">➜</span><span className="opacity-50">Waiting for code execution...</span></div>
+                    </div>
+                </div>
             </div>
-          </CardContent>
-        </Card>
+          </section>
 
-        {/* Code Editor */}
-        <div>
-          {isSolved && (
-            <div className="mb-3 flex items-center gap-2 text-sm text-green-500">
-              <Lock className="h-4 w-4" />
-              <span className="font-medium">Problem solved — code is read-only</span>
+          {/* Right Panel: Code Editor */}
+          <section className="lg:w-2/3 flex flex-col bg-black/60 border border-white/10 rounded-xl shadow-lg overflow-hidden relative">
+            <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/50 to-transparent z-10"></div>
+            
+            <div className="flex items-center justify-between px-4 py-2 bg-black/40 border-b border-white/5">
+              <div className="flex items-center gap-2">
+                <div className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-[10px] text-purple-300 uppercase tracking-wide font-mono">
+                    {problem.language || 'JAVASCRIPT'}
+                </div>
+                {isSolved && (
+                  <span className="flex items-center gap-1.5 text-[10px] text-green-400 uppercase tracking-wide font-bold">
+                    <Lock className="h-3 w-3" /> READ-ONLY
+                  </span>
+                )}
+              </div>
             </div>
-          )}
-          <CodeEditor
-            language={problem.language || 'javascript'}
-            defaultCode={defaultCode}
-            testCases={testCases}
-            onSubmit={isSolved ? undefined : handleSubmit}
-            onRunTests={isSolved ? undefined : handleRunTests}
-            readOnly={isSolved}
-          />
-        </div>
+
+            <div className="flex-1 overflow-hidden relative">
+              <CodeEditor
+                language={problem.language || 'javascript'}
+                defaultCode={defaultCode}
+                testCases={testCases}
+                onSubmit={isSolved ? undefined : handleSubmit}
+                onRunTests={isSolved ? undefined : handleRunTests}
+                readOnly={isSolved}
+              />
+            </div>
+          </section>
+        </main>
       </div>
     </div>
   );

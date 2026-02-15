@@ -8,7 +8,11 @@ import { getStreakMultiplier } from '@/lib/gamification';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Code, Trophy, CheckCircle, Circle, Flame, Star } from 'lucide-react';
+import { Code, Trophy, CheckCircle, Circle, Flame, Star, Target, Zap, Lock, Unlock } from 'lucide-react';
+import { Orbitron, Rajdhani } from 'next/font/google';
+
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
+const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 export default function ProblemsListPage() {
   const router = useRouter();
@@ -102,8 +106,8 @@ export default function ProblemsListPage() {
 
   if (!topic) {
     return (
-      <div className="container py-8">
-        <Card className="card-interactive">
+      <div className={`${rajdhani.className} container py-8`}>
+        <Card className="card-interactive border-white/15 bg-black/60 text-slate-100">
           <CardContent className="py-16 text-center">
             <h2 className="text-xl font-semibold mb-2">Topic not found</h2>
             <Button onClick={() => router.push('/my-courses')}>
@@ -115,150 +119,156 @@ export default function ProblemsListPage() {
     );
   }
 
-  return (
-    <div className="container py-8 max-w-4xl space-y-6">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">{topic.name} - Problems</h1>
-        <p className="text-muted-foreground">
-          Solve coding problems to master this topic and earn points
-        </p>
-        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-          <Badge variant="outline" className="gap-1">
-            <Flame className="h-3 w-3 text-orange-500" />
-            Streak multiplier x{streakMultiplier.toFixed(2)}
-          </Badge>
-          <Badge variant="outline" className="gap-1">
-            <Star className="h-3 w-3 text-primary" />
-            Bonus XP from quests and achievements
-          </Badge>
-        </div>
-      </div>
+  const completedCount = problems.filter((p) => getProblemStatus(p) === 'completed').length;
+  const totalPoints = problems.reduce((acc, p) => acc + getPointsByDifficulty(p.difficulty), 0);
 
-      {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card className="card-interactive">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Problems</p>
-                <p className="text-2xl font-bold">{problems.length}</p>
-              </div>
-              <Code className="h-8 w-8 text-muted-foreground" />
+  return (
+    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-100`}>
+      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+
+      <div className="relative z-20 container py-8 max-w-6xl space-y-8">
+      {/* Header Panel */}
+      <div className="rounded-2xl border border-purple-500/30 bg-black/50 p-6 shadow-[0_0_30px_rgba(124,58,237,0.2)]">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h1 className={`${orbitron.className} text-3xl font-black tracking-tight md:text-4xl uppercase`}>
+              <span className="text-purple-500 mr-2">/</span>
+              MISSION SELECT
+            </h1>
+            <p className="mt-2 text-slate-400 font-mono text-sm">
+              // TARGET: {topic.name.toUpperCase()} <br/>
+              // OBJECTIVE: Complete coding challenges to master this domain.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-3 text-center min-w-[300px]">
+            <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3">
+              <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Status</p>
+              <p className="text-2xl font-bold text-cyan-300 font-mono leading-none">{completedCount}/{problems.length}</p>
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="card-interactive">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Solved</p>
-                <p className="text-2xl font-bold">
-                  {problems.filter((p) => getProblemStatus(p) === 'completed').length}
-                </p>
-              </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
+            <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3">
+              <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">XP Pool</p>
+              <p className="text-2xl font-bold text-purple-300 font-mono leading-none">{totalPoints}</p>
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="card-interactive">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Points Available</p>
-                <p className="text-2xl font-bold">
-                  {problems.reduce((acc, p) => acc + getPointsByDifficulty(p.difficulty), 0)}
-                </p>
+            <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3 bg-gradient-to-b from-amber-950/30 to-black/60 border-amber-500/30">
+              <p className="text-[10px] uppercase tracking-wider text-amber-400 mb-1">Multiplier</p>
+              <div className="flex items-center justify-center gap-1">
+                <Flame className="h-4 w-4 text-amber-500 fill-amber-500 animate-pulse" />
+                <p className="text-2xl font-bold text-amber-300 font-mono leading-none">x{streakMultiplier.toFixed(2)}</p>
               </div>
-              <Trophy className="h-8 w-8 text-yellow-500" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Problems List */}
       {problems.length === 0 ? (
-        <Card className="card-interactive">
-          <CardContent className="py-16 text-center space-y-4">
-            <Code className="h-12 w-12 text-muted-foreground mx-auto" />
+        <Card className="card-interactive border-white/15 bg-black/60 text-slate-100 min-h-[400px] flex items-center justify-center">
+          <CardContent className="text-center space-y-4">
+            <div className="relative">
+               <Code className="h-16 w-16 text-slate-700 mx-auto" />
+               <Lock className="h-6 w-6 text-slate-500 absolute bottom-0 right-1/2 translate-x-12" />
+            </div>
             <div>
-              <h3 className="text-lg font-semibold mb-2">No problems available yet</h3>
-              <p className="text-muted-foreground">
-                Problems will be added soon. Check back later!
+              <h3 className={`${orbitron.className} text-xl font-bold mb-2 tracking-wide`}>NO MISSIONS DETECTED</h3>
+                <p className="text-slate-400 max-w-md mx-auto">
+                No active coding challenges found for this sector. Check back later for new deployments.
               </p>
             </div>
-            <Button onClick={() => router.push('/my-courses')}>
-              Back to My Courses
+            <Button onClick={() => router.push('/my-courses')} variant="outline" className="border-white/20 hover:bg-white/10 mt-4">
+              Return to Base
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {problems.map((problem) => {
             const status = getProblemStatus(problem);
             const isCompleted = status === 'completed';
             const basePoints = getPointsByDifficulty(problem.difficulty);
             const effectivePoints = Math.round(basePoints * streakMultiplier);
+            
+            // Difficulty styling
+            let diffColor = 'text-slate-400';
+            let diffBorder = 'border-slate-500/30';
+            if (problem.difficulty === 'easy') { diffColor = 'text-green-400'; diffBorder = 'border-green-500/30'; }
+            if (problem.difficulty === 'medium') { diffColor = 'text-yellow-400'; diffBorder = 'border-yellow-500/30'; }
+            if (problem.difficulty === 'hard') { diffColor = 'text-red-400'; diffBorder = 'border-red-500/30'; }
 
             return (
               <Card
                 key={problem.id}
-                className={`card-interactive transition-colors ${
-                  isCompleted ? 'border-green-500/30 bg-green-500/5' : 'hover:border-primary'
+                className={`group relative flex flex-col justify-between overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(124,58,237,0.15)] ${
+                  isCompleted 
+                    ? 'border-green-500/30 bg-green-950/10' 
+                    : 'border-white/10 bg-black/80 hover:border-purple-500/50'
                 }`}
               >
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-3">
-                        {isCompleted ? (
-                          <CheckCircle className="h-5 w-5 text-green-500 shrink-0" />
-                        ) : (
-                          <Circle className="h-5 w-5 text-muted-foreground shrink-0" />
-                        )}
-                        <CardTitle className="text-xl">{problem.title}</CardTitle>
-                      </div>
-                      <CardDescription>{problem.description}</CardDescription>
+                {/* Background Decoration */}
+                <div className="absolute right-0 top-0 h-24 w-24 translate-x-8 translate-y--8 bg-gradient-to-br from-purple-500/10 to-transparent blur-2xl transition-opacity group-hover:opacity-100 opacity-0" />
+                
+                <CardHeader className="relative z-10 space-y-4 pb-2">
+                  <div className="flex items-start justify-between">
+                    <Badge variant="outline" className={`uppercase tracking-wider text-[10px] ${diffBorder} ${diffColor} bg-transparent`}>
+                      {problem.difficulty}
+                    </Badge>
+                    <div className="flex items-center gap-1 text-xs font-mono text-slate-500">
+                      <Zap className="h-3 w-3 text-yellow-500/70" />
+                      <span>{effectivePoints} XP</span>
                     </div>
-                    
-                    <div className="space-y-2 shrink-0">
-                      <Badge className={getDifficultyColor(problem.difficulty)}>
-                        {problem.difficulty}
-                      </Badge>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground justify-end">
-                        <Trophy className="h-4 w-4 text-yellow-500" />
-                        <span className="font-semibold">{effectivePoints}</span>
-                      </div>
-                      <div className="text-[11px] text-right text-muted-foreground">
-                        base {basePoints} x {streakMultiplier.toFixed(2)}
-                      </div>
-                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <CardTitle className={`text-lg leading-tight ${isCompleted ? 'text-green-300' : 'text-slate-100 group-hover:text-purple-300'} transition-colors`}>
+                       {problem.title}
+                    </CardTitle>
+                    <CardDescription className="line-clamp-2 text-xs text-slate-400">
+                      {problem.description}
+                    </CardDescription>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col gap-3 sm:flex-row">
+
+                <CardContent className="relative z-10 pt-4">
+                  <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-4">
+                    <div className="flex items-center gap-2">
+                      {isCompleted ? (
+                        <div className="flex items-center gap-1.5 text-xs text-green-400 font-bold tracking-wide">
+                          <CheckCircle className="h-4 w-4" />
+                          <span>CLEARED</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
+                           <Target className="h-3.5 w-3.5" />
+                           <span>PENDING</span>
+                        </div>
+                      )}
+                    </div>
+                    
                     <Button
-                      onClick={() =>
-                        router.push(`/topic/${topicId}/problems/${problem.id}/explain`)
-                      }
-                      variant={isCompleted ? 'outline' : 'default'}
+                      size="sm"
+                      onClick={() => router.push(`/topic/${topicId}/problems/${problem.id}/explain`)}
+                      className={isCompleted 
+                        ? 'bg-transparent border border-green-500/30 text-green-400 hover:bg-green-500/10 h-8 text-xs' 
+                        : 'bg-white/5 hover:bg-purple-600 hover:text-white text-slate-300 border border-white/10 hover:border-purple-500 h-8 text-xs transition-colors'}
                     >
-                      {isCompleted ? 'Review' : 'Start Problem'}
+                      {isCompleted ? 'Review Intel' : 'Engage'}
                     </Button>
-                    {isCompleted && (
-                      <Badge variant="secondary" className="px-3">
-                        ✓ Solved
-                      </Badge>
-                    )}
                   </div>
                 </CardContent>
+                
+                {/* Active Corner Accent */}
+                {!isCompleted && (
+                   <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Unlock className="h-4 w-4 text-purple-400" />
+                   </div>
+                )}
               </Card>
             );
           })}
         </div>
       )}
+      </div>
     </div>
   );
 }

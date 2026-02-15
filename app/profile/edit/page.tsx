@@ -11,6 +11,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, Save, Upload, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { Orbitron, Rajdhani } from 'next/font/google';
+
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
+const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -111,20 +115,24 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="container py-8 max-w-2xl">
+    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
+      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+
+      <div className="relative z-20 container py-8 max-w-2xl">
       <Button
         variant="ghost"
         onClick={() => router.push('/profile')}
-        className="mb-4"
+        className="mb-4 text-slate-200 hover:text-white hover:bg-white/10"
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Hunter Profile
       </Button>
 
-      <Card>
+      <Card className="border-white/15 bg-black/60 text-slate-100">
         <CardHeader>
-          <CardTitle>Edit Hunter Profile</CardTitle>
-          <CardDescription>Update your hunter dossier and portrait</CardDescription>
+          <CardTitle className={orbitron.className}>Edit Hunter Profile</CardTitle>
+          <CardDescription className="text-slate-400">Update your hunter dossier and portrait</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -148,6 +156,7 @@ export default function EditProfilePage() {
                     value={formData.avatar_url}
                     onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
                     placeholder="https://example.com/avatar.jpg"
+                    className="bg-black/60 border-white/15 text-slate-100"
                   />
                   <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => document.getElementById('avatar-file')?.click()}>
                     <Upload className="h-4 w-4" />
@@ -162,7 +171,7 @@ export default function EditProfilePage() {
                     <Sparkles className="mr-2 h-4 w-4" /> Auto-Generate Hunter
                   </Button>
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground">Upload your own image or auto-generate a unique Solo-style hunter avatar.</p>
+                <p className="mt-2 text-xs text-slate-400">Upload your own image or auto-generate a unique Solo-style hunter avatar.</p>
               </div>
             </div>
 
@@ -174,6 +183,7 @@ export default function EditProfilePage() {
                 value={formData.full_name}
                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                 placeholder="John Doe"
+                className="bg-black/60 border-white/15 text-slate-100"
                 required
               />
             </div>
@@ -187,6 +197,7 @@ export default function EditProfilePage() {
                 onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                 placeholder="Write your hunter background..."
                 rows={4}
+                className="bg-black/60 border-white/15 text-slate-100"
               />
             </div>
 
@@ -198,6 +209,7 @@ export default function EditProfilePage() {
                 value={formData.github_username}
                 onChange={(e) => setFormData({ ...formData, github_username: e.target.value })}
                 placeholder="johndoe"
+                className="bg-black/60 border-white/15 text-slate-100"
               />
             </div>
 
@@ -209,6 +221,7 @@ export default function EditProfilePage() {
                 value={formData.linkedin_url}
                 onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
                 placeholder="https://linkedin.com/in/johndoe"
+                className="bg-black/60 border-white/15 text-slate-100"
               />
             </div>
 
@@ -220,9 +233,9 @@ export default function EditProfilePage() {
                 value={user.email}
                 readOnly
                 disabled
-                className="bg-muted"
+                className="bg-black/40 border-white/10 text-slate-400"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-slate-400">
                 Email cannot be changed
               </p>
             </div>
@@ -245,6 +258,7 @@ export default function EditProfilePage() {
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

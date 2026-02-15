@@ -39,6 +39,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { createClient } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { Orbitron, Rajdhani } from 'next/font/google';
+
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
+const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 export default function AdminCoursesPage() {
   const router = useRouter();
@@ -175,27 +179,39 @@ export default function AdminCoursesPage() {
     );
   }
 
+  const averageEnrollments = stats.totalCourses > 0 ? Math.round(stats.totalEnrollments / stats.totalCourses) : 0;
+  const averageModules = stats.totalCourses > 0 ? Math.round(stats.totalModules / stats.totalCourses) : 0;
+
   return (
-    <div className="container py-8 space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Manage Courses</h1>
-          <p className="text-muted-foreground mt-2">
-            Create, edit, and manage all platform courses
-          </p>
+    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-100`}>
+      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+
+      <div className="relative z-20 container py-8 space-y-8">
+      <div className="rounded-2xl border border-purple-500/30 bg-black/50 p-6 shadow-[0_0_30px_rgba(124,58,237,0.2)]">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h1 className={`${orbitron.className} text-3xl font-black tracking-tight md:text-4xl`}>COURSE REGISTRY MATRIX</h1>
+            <p className="mt-2 max-w-2xl text-slate-400">
+              Search, inspect, and update all deployed gates from a single tactical registry.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button asChild className="bg-purple-700 hover:bg-purple-600 text-white">
+              <Link href="/admin/create-course">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Course
+              </Link>
+            </Button>
+            <Button variant="outline" onClick={() => router.push('/admin/dashboard')} className="border-white/20 text-slate-200 hover:bg-white/10">
+              Back to Dashboard
+            </Button>
+          </div>
         </div>
-        <Button asChild>
-          <Link href="/admin/create-course">
-            <Plus className="mr-2 h-4 w-4" />
-            Create Course
-          </Link>
-        </Button>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card className="card-interactive">
+        <Card className="card-interactive border-white/15 bg-black/60 text-slate-100">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
             <BookOpen className="h-4 w-4 text-blue-500" />
@@ -205,7 +221,7 @@ export default function AdminCoursesPage() {
           </CardContent>
         </Card>
 
-        <Card className="card-interactive">
+        <Card className="card-interactive border-white/15 bg-black/60 text-slate-100">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Enrollments</CardTitle>
             <Users className="h-4 w-4 text-green-500" />
@@ -215,7 +231,7 @@ export default function AdminCoursesPage() {
           </CardContent>
         </Card>
 
-        <Card className="card-interactive">
+        <Card className="card-interactive border-white/15 bg-black/60 text-slate-100">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Modules</CardTitle>
             <BookOpen className="h-4 w-4 text-purple-500" />
@@ -225,7 +241,7 @@ export default function AdminCoursesPage() {
           </CardContent>
         </Card>
 
-        <Card className="card-interactive">
+        <Card className="card-interactive border-white/15 bg-black/60 text-slate-100">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Topics</CardTitle>
             <Trophy className="h-4 w-4 text-yellow-500" />
@@ -236,7 +252,35 @@ export default function AdminCoursesPage() {
         </Card>
       </div>
 
-      {/* Search */}
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Card className="border-white/15 bg-black/60 text-slate-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs uppercase tracking-wider text-slate-400">Avg Enrollments</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-cyan-300">{averageEnrollments}</div>
+          </CardContent>
+        </Card>
+        <Card className="border-white/15 bg-black/60 text-slate-100">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs uppercase tracking-wider text-slate-400">Avg Modules</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-300">{averageModules}</div>
+          </CardContent>
+        </Card>
+        <Card className="border-white/15 bg-black/60 text-slate-100 xl:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs uppercase tracking-wider text-slate-400">Registry Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-slate-300">
+              {filteredCourses.length} visible gates from {stats.totalCourses} total. Use search to narrow mission catalogs by title or description.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="flex items-center gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -244,16 +288,15 @@ export default function AdminCoursesPage() {
             placeholder="Search courses by name or description..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-black/60 border-white/15 text-slate-100"
           />
         </div>
       </div>
 
-      {/* Courses Table */}
-      <Card className="card-interactive">
+      <Card className="card-interactive border-white/15 bg-black/60 text-slate-100">
         <CardHeader>
           <CardTitle>All Courses</CardTitle>
-          <CardDescription>
+          <CardDescription className="text-slate-400">
             {filteredCourses.length} course{filteredCourses.length !== 1 ? 's' : ''} found
           </CardDescription>
         </CardHeader>
@@ -261,7 +304,7 @@ export default function AdminCoursesPage() {
           {filteredCourses.length === 0 ? (
             <div className="text-center py-12">
               <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground mb-4">
+              <p className="text-slate-400 mb-4">
                 {searchQuery ? 'No courses match your search' : 'No courses created yet'}
               </p>
               {!searchQuery && (
@@ -274,10 +317,10 @@ export default function AdminCoursesPage() {
               )}
             </div>
           ) : (
-            <div className="rounded-md border overflow-x-auto">
+            <div className="rounded-md border border-white/10 overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="border-white/10">
                     <TableHead>Course Name</TableHead>
                     <TableHead>Modules</TableHead>
                     <TableHead>Topics</TableHead>
@@ -288,11 +331,11 @@ export default function AdminCoursesPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredCourses.map((course) => (
-                    <TableRow key={course.id}>
+                    <TableRow key={course.id} className="border-white/5 hover:bg-white/5">
                       <TableCell>
                         <div>
                           <div className="font-medium">{course.name}</div>
-                          <div className="text-sm text-muted-foreground line-clamp-1">
+                          <div className="text-sm text-slate-400 line-clamp-1">
                             {course.description}
                           </div>
                         </div>
@@ -353,6 +396,7 @@ export default function AdminCoursesPage() {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

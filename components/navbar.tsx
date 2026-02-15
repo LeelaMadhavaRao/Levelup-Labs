@@ -130,9 +130,10 @@ export default function Navbar() {
         ]
     : [];
 
-  const level = playerStats?.level ?? Number(user?.level || 1);
-  const xp = playerStats?.xp ?? Number(user?.xp || 0);
-  const hunterRank = getHunterRankByPoints(Number(playerStats?.points ?? user?.total_points ?? 0));
+  const totalPoints = Number(playerStats?.points ?? user?.total_points ?? 0);
+  const xp = playerStats?.xp || totalPoints || Number(user?.xp || 0);
+  const level = Math.max(1, Math.floor(xp / 1000) + 1);
+  const hunterRank = getHunterRankByPoints(totalPoints);
   
   // Calculate XP percentage within current level
   // Each level needs 1000 XP, so XP within level = xp % 1000

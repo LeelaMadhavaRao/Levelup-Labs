@@ -128,10 +128,11 @@ export default function ProfilePage() {
   const easySolved = Math.round(problemsSolved * 0.34);
   const mediumSolved = Math.round(problemsSolved * 0.48);
   const hardSolved = Math.max(0, problemsSolved - easySolved - mediumSolved);
-  const level = Number(overview?.level || user.level || 1);
-  const xp = Number(overview?.xp || user.xp || 0);
-  const xpTarget = Math.max(1000, Math.ceil(xp / 1000) * 1000);
-  const xpPercent = Math.min(100, Math.round((xp / xpTarget) * 100));
+  const xp = Number(overview?.xp || overview?.total_points || user.xp || user.total_points || 0);
+  const level = Math.max(1, Math.floor(xp / 1000) + 1);
+  const xpInLevel = xp % 1000;
+  const xpTarget = 1000;
+  const xpPercent = Math.min(100, Math.round((xpInLevel / xpTarget) * 100));
 
   const primaryBadges = achievements.slice(0, 5);
   const rankByBadgeIndex = (idx: number): 'S' | 'A' | 'B' => {
@@ -197,7 +198,7 @@ export default function ProfilePage() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs text-slate-400">
                       <span>XP Progress</span>
-                      <span className="text-white">{xp.toLocaleString()} / {xpTarget.toLocaleString()}</span>
+                      <span className="text-white">{xpInLevel.toLocaleString()} / {xpTarget.toLocaleString()}</span>
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
                       <div

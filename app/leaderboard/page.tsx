@@ -1,25 +1,23 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, type SyntheticEvent } from 'react';
+import Link from 'next/link';
 import {
-  getActiveSeason,
   getLeaderboard,
   getLeaderboardAroundMe,
   getTopMovers,
-  type LeaderboardScope,
 } from '@/lib/leaderboard';
 import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
 import { Orbitron, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
+import { ArrowRight, ArrowUp, Code2, Crosshair, Search, Trophy } from 'lucide-react';
 
 const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 const jetBrainsMono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500', '700'] });
 
 export default function LeaderboardPage() {
-  const [scope, setScope] = useState<LeaderboardScope>('all_time');
   const [search, setSearch] = useState('');
   const [user, setUser] = useState<any>(null);
-  const [season, setSeason] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [aroundMe, setAroundMe] = useState<any[]>([]);
   const [movers, setMovers] = useState<any[]>([]);
@@ -27,7 +25,7 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     loadData();
-  }, [scope]);
+  }, []);
 
   const loadData = async () => {
     try {
@@ -35,19 +33,13 @@ export default function LeaderboardPage() {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
 
-      const activeSeason =
-        typeof getActiveSeason === 'function'
-          ? await getActiveSeason().catch(() => null)
-          : null;
-      setSeason(activeSeason);
-
-      const leaders = await getLeaderboard(50, scope, activeSeason?.season_id);
+      const leaders = await getLeaderboard(50, 'all_time');
       setLeaderboard(leaders);
 
       if (currentUser) {
         const aroundMePromise =
           typeof getLeaderboardAroundMe === 'function'
-            ? getLeaderboardAroundMe(currentUser.id, scope, 4, activeSeason?.season_id).catch(() => [])
+            ? getLeaderboardAroundMe(currentUser.id, 'all_time', 4).catch(() => [])
             : Promise.resolve([]);
         const topMoversPromise =
           typeof getTopMovers === 'function'
@@ -93,30 +85,20 @@ export default function LeaderboardPage() {
   const podium = leaderboard.slice(0, 3);
   const boardRows = leaderboard.length > 3 ? leaderboard.slice(3) : leaderboard;
 
-  const filteredRows = useMemo(
-    () =>
-      boardRows.filter((entry) => {
-        if (!search.trim()) return true;
-        const q = search.toLowerCase();
-        return (
-          entry.full_name?.toLowerCase().includes(q) ||
-          String(entry.rank).includes(q) ||
-          entry.title?.toLowerCase().includes(q)
-        );
-      }),
-    [boardRows, search]
-  );
-
-  const scopeLabel = scope === 'all_time' ? 'Global' : scope === 'weekly' ? 'Friends' : 'Guild';
+  const filteredRows = boardRows.filter((entry) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      entry.full_name?.toLowerCase().includes(q) ||
+      String(entry.rank).includes(q) ||
+      entry.title?.toLowerCase().includes(q)
+    );
+  });
 
   const aroundIndex = aroundMe.findIndex((entry) => entry.is_me || entry.id === user?.id);
   const aboveEntry = aroundIndex > 0 ? aroundMe[aroundIndex - 1] : null;
   const meEntry = aroundIndex >= 0 ? aroundMe[aroundIndex] : meInBoard;
   const belowEntry = aroundIndex >= 0 && aroundIndex < aroundMe.length - 1 ? aroundMe[aroundIndex + 1] : null;
-
-  const dailyQuestProgress = meInBoard ? Math.min(95, Math.max(15, Math.round((meInBoard.problems_solved % 50) * 2))) : 0;
-  const dungeonClears = meInBoard ? Math.min(20, meInBoard.courses_completed) : 0;
-  const dungeonProgress = Math.round((dungeonClears / 20) * 100);
 
   const getTier = (rank?: number) => {
     if (!rank) return 'Unranked';
@@ -125,6 +107,25 @@ export default function LeaderboardPage() {
     if (rank <= 100) return 'B-Rank';
     return 'C-Rank';
   };
+
+  const getDisplayName = (profile: any) => {
+    if (!profile) return 'Hunter';
+    return profile.full_name || profile.email?.split('@')[0] || 'Hunter';
+  };
+
+  const getAvatarSource = (id: string, name: string, avatarUrl?: string) => {
+    return avatarUrl || generateHunterAvatarUrl(`${id}-${name}`);
+  };
+
+  const handleAvatarError = (event: SyntheticEvent<HTMLImageElement>, id: string, name: string) => {
+    const fallback = generateHunterAvatarUrl(`${id}-${name}`);
+    if (event.currentTarget.src !== fallback) {
+      event.currentTarget.src = fallback;
+    }
+  };
+
+  const displayName = getDisplayName(user);
+  const profileAvatar = getAvatarSource(user?.id || 'guest', displayName, user?.avatar_url);
 
   const renderPodiumCard = (
     hunter: any,
@@ -146,9 +147,10 @@ export default function LeaderboardPage() {
           <span className={`${rankTextClass} text-lg font-bold mb-1`}>{rankLabel}</span>
           <div className={`w-20 h-20 rounded-full border-2 p-1 bg-background-dark relative ${glowClass} ${frameClass}`}>
             <img
-              src={hunter.avatar_url || generateHunterAvatarUrl(`${hunter.id}-${hunter.full_name}`)}
+              src={getAvatarSource(hunter.id, hunter.full_name || 'hunter', hunter.avatar_url)}
               alt={hunter.full_name}
               className="w-full h-full rounded-full object-cover"
+              onError={(event) => handleAvatarError(event, hunter.id, hunter.full_name || 'hunter')}
             />
             <div className={`absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full text-xs font-bold ${titleBadgeClass}`}>
               {titleBadge}
@@ -177,20 +179,43 @@ export default function LeaderboardPage() {
       />
       <div className="scanlines pointer-events-none absolute inset-0 z-0 opacity-10" />
 
+      <header className="relative z-10 w-full border-b border-white/5 bg-background-dark/80 backdrop-blur-md">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4">
+          <div className="flex items-center space-x-3">
+            <Code2 className="h-8 w-8 text-primary" />
+            <span className={`${orbitron.className} text-lg font-bold uppercase tracking-wider text-white`}>
+              CodeQuest <span className="text-primary">AI</span>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="hidden text-right leading-none sm:block">
+              <span className={`${jetBrainsMono.className} text-xs font-bold text-primary`}>
+                LVL {Math.max(1, Math.floor((meInBoard?.total_points || 0) / 1000) + 1)}
+              </span>
+              <div className="text-sm font-bold text-white">{displayName}</div>
+            </div>
+            <div className="h-10 w-10 overflow-hidden rounded-full border-2 border-primary bg-gray-800">
+              <img
+                src={profileAvatar}
+                alt={`${displayName} avatar`}
+                className="h-full w-full object-cover"
+                onError={(event) => handleAvatarError(event, user?.id || 'guest', displayName)}
+              />
+            </div>
+          </div>
+        </div>
+      </header>
+
       <main className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 p-4 lg:flex-row">
         <div className="flex min-h-0 flex-1 flex-col">
           <section className="flex-none pb-4 pt-2">
             <div className="mb-4 flex items-center justify-between gap-4">
               <h1 className={`${orbitron.className} text-3xl font-black text-glow md:text-4xl`}>Hunter Ranking Leaderboard</h1>
               <span className={`${jetBrainsMono.className} rounded-lg border border-primary/30 bg-primary/10 px-3 py-1 text-xs uppercase tracking-widest text-primary`}>
-                {scopeLabel} Scope
+                Global Scope
               </span>
             </div>
-            {scope === 'seasonal' && season && (
-              <p className={`${jetBrainsMono.className} mb-2 text-xs text-gray-400`}>
-                {season.name}: {season.starts_at} to {season.ends_at}
-              </p>
-            )}
 
             <div className="flex h-64 w-full items-end justify-center gap-4 sm:h-80 sm:gap-8 lg:gap-12">
               {renderPodiumCard(
@@ -210,13 +235,14 @@ export default function LeaderboardPage() {
                   <>
                     <div className="absolute -top-16 left-1/2 z-20 flex -translate-x-1/2 transform flex-col items-center">
                       <span className="mb-1 flex items-center gap-1 text-xl font-bold text-primary">
-                        <span className="material-icons-round text-sm">emoji_events</span> RANK 1
+                        <Trophy className="h-4 w-4" /> RANK 1
                       </span>
                       <div className="relative h-24 w-24 rounded-full border-4 border-primary bg-background-dark p-1 breathing-purple">
                         <img
-                          src={podium[0].avatar_url || generateHunterAvatarUrl(`${podium[0].id}-${podium[0].full_name}`)}
+                          src={getAvatarSource(podium[0].id, podium[0].full_name || 'hunter', podium[0].avatar_url)}
                           alt={podium[0].full_name}
                           className="h-full w-full rounded-full object-cover"
+                          onError={(event) => handleAvatarError(event, podium[0].id, podium[0].full_name || 'hunter')}
                         />
                         <div className="absolute -bottom-2 -right-2 rounded-full border border-black bg-primary px-2 py-0.5 text-xs font-bold text-white">
                           Monarch
@@ -249,9 +275,9 @@ export default function LeaderboardPage() {
 
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-white/10 bg-terminal-black/50 shadow-2xl backdrop-blur-sm">
             <div className="flex flex-col items-center gap-4 border-b border-white/10 bg-background-dark/50 p-4 sm:flex-row">
-              <div className="relative group w-full sm:max-w-md">
+              <div className="relative group w-full">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <span className="material-icons-round text-primary transition-colors group-focus-within:text-white">qr_code_scanner</span>
+                  <Search className="h-5 w-5 text-primary transition-colors group-focus-within:text-white" />
                 </div>
                 <input
                   value={search}
@@ -261,26 +287,6 @@ export default function LeaderboardPage() {
                   type="text"
                 />
                 <div className="absolute bottom-0 left-0 h-[1px] w-0 bg-primary transition-all duration-500 ease-out group-focus-within:w-full" />
-              </div>
-              <div className="flex w-full gap-2 overflow-x-auto pb-1 sm:w-auto sm:pb-0">
-                <button
-                  onClick={() => setScope('all_time')}
-                  className={`px-4 py-2 rounded-lg border text-xs font-bold uppercase tracking-wider transition-all ${scope === 'all_time' ? 'bg-primary/20 text-primary border-primary/30 hover:bg-primary hover:text-white' : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10 hover:text-white'}`}
-                >
-                  Global
-                </button>
-                <button
-                  onClick={() => setScope('weekly')}
-                  className={`px-4 py-2 rounded-lg border text-xs font-bold uppercase tracking-wider transition-all ${scope === 'weekly' ? 'bg-primary/20 text-primary border-primary/30 hover:bg-primary hover:text-white' : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10 hover:text-white'}`}
-                >
-                  Friends
-                </button>
-                <button
-                  onClick={() => setScope('seasonal')}
-                  className={`px-4 py-2 rounded-lg border text-xs font-bold uppercase tracking-wider transition-all ${scope === 'seasonal' ? 'bg-primary/20 text-primary border-primary/30 hover:bg-primary hover:text-white' : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10 hover:text-white'}`}
-                >
-                  Guild
-                </button>
               </div>
             </div>
 
@@ -304,9 +310,10 @@ export default function LeaderboardPage() {
                     <div className="col-span-6 flex items-center gap-3 sm:col-span-5">
                       <div className="relative hidden h-8 w-8 overflow-hidden rounded bg-gray-700 sm:block">
                         <img
-                          src={entry.avatar_url || generateHunterAvatarUrl(`${entry.id}-${entry.full_name}`)}
+                          src={getAvatarSource(entry.id, entry.full_name || 'hunter', entry.avatar_url)}
                           alt={entry.full_name}
                           className="h-full w-full object-cover opacity-80 group-hover:opacity-100"
+                          onError={(event) => handleAvatarError(event, entry.id, entry.full_name || 'hunter')}
                         />
                       </div>
                       <div className="flex min-w-0 flex-col">
@@ -334,7 +341,7 @@ export default function LeaderboardPage() {
         <aside className="w-full flex-none lg:w-80 flex flex-col gap-6">
           <div className="relative overflow-hidden rounded-xl border border-white/10 bg-terminal-black p-6">
             <div className="absolute right-0 top-0 p-2 opacity-20">
-              <span className="material-icons-round text-primary text-6xl">radar</span>
+              <Crosshair className="h-16 w-16 text-primary" />
             </div>
             <h2 className={`${jetBrainsMono.className} mb-6 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-gray-400`}>
               <span className="h-2 w-2 rounded-full bg-primary animate-ping"></span>
@@ -367,9 +374,10 @@ export default function LeaderboardPage() {
                 <div className="relative z-10 -mx-3 flex items-center gap-4 rounded-lg border border-primary/30 bg-primary/10 p-3 shadow-[0_0_15px_rgba(166,13,242,0.45)]">
                   <div className="h-14 w-14 rounded-full border-2 border-primary bg-gray-800 p-0.5">
                     <img
-                      src={meEntry.avatar_url || generateHunterAvatarUrl(`${meEntry.id}-${meEntry.full_name}`)}
+                      src={getAvatarSource(meEntry.id, meEntry.full_name || 'hunter', meEntry.avatar_url)}
                       alt={meEntry.full_name}
                       className="h-full w-full rounded-full object-cover"
+                      onError={(event) => handleAvatarError(event, meEntry.id, meEntry.full_name || 'hunter')}
                     />
                   </div>
                   <div className="flex min-w-0 flex-col">
@@ -379,7 +387,7 @@ export default function LeaderboardPage() {
                     </span>
                   </div>
                   <div className="ml-auto">
-                    <span className="material-icons-round text-sm text-primary animate-bounce">arrow_upward</span>
+                    <ArrowUp className="h-4 w-4 text-primary animate-bounce" />
                   </div>
                 </div>
 
@@ -405,26 +413,20 @@ export default function LeaderboardPage() {
             <h2 className={`${jetBrainsMono.className} mb-2 text-sm font-bold uppercase tracking-widest text-gray-400`}>My Hunter Stats</h2>
 
             <div className="space-y-4">
-              <div>
-                <div className="mb-1 flex justify-between text-xs">
-                  <span className="text-gray-400">Daily Quest Progress</span>
-                  <span className={`${jetBrainsMono.className} text-primary`}>{dailyQuestProgress}%</span>
+              <div className="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 p-3">
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase text-gray-500">Monsters Slayed</span>
+                  <span className={`${jetBrainsMono.className} text-xl font-bold text-primary`}>{meInBoard?.problems_solved ?? 0}</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-gray-700">
-                  <div className="relative h-full bg-primary" style={{ width: `${dailyQuestProgress}%` }}>
-                    <div className="absolute inset-0 animate-pulse bg-white/20"></div>
-                  </div>
-                </div>
+                <span className="text-[10px] uppercase tracking-widest text-gray-500">Problems Solved</span>
               </div>
 
-              <div>
-                <div className="mb-1 flex justify-between text-xs">
-                  <span className="text-gray-400">Dungeon Clears</span>
-                  <span className={`${jetBrainsMono.className} text-white`}>{dungeonClears}/20</span>
+              <div className="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 p-3">
+                <div className="flex flex-col">
+                  <span className="text-xs uppercase text-gray-500">Dungeons Cleared</span>
+                  <span className={`${jetBrainsMono.className} text-xl font-bold text-rank-blue`}>{meInBoard?.courses_completed ?? 0}</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-gray-700">
-                  <div className="h-full bg-rank-blue" style={{ width: `${dungeonProgress}%` }}></div>
-                </div>
+                <span className="text-[10px] uppercase tracking-widest text-gray-500">Courses Completed</span>
               </div>
 
               <div className="mt-2 flex items-center justify-between rounded-lg border border-white/5 bg-white/5 p-3">
@@ -438,10 +440,13 @@ export default function LeaderboardPage() {
               </div>
             </div>
 
-            <button className="group mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 font-bold text-white shadow-[0_0_15px_rgba(166,13,242,0.45)] transition-colors hover:bg-primary-dark">
-              <span>ENTER DUNGEON</span>
-              <span className="material-icons-round text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
-            </button>
+            <Link
+              href="/my-courses"
+              className="group mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-purple-400/40 bg-[#7b1dd8] py-3 font-bold text-white shadow-[0_0_15px_rgba(166,13,242,0.45)] transition-colors hover:bg-[#9228f4] focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+            >
+              <span>MY DUNGEONS</span>
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
 
             {movers.length > 0 && (
               <div className="rounded-lg border border-white/5 bg-white/5 p-3">
@@ -458,11 +463,7 @@ export default function LeaderboardPage() {
             )}
           </div>
 
-          <div className={`${jetBrainsMono.className} rounded-lg border border-green-500/30 bg-black p-4 text-xs text-green-400 shadow-[0_0_10px_rgba(0,255,0,0.1)]`}>
-            <p className="mb-2">&gt; SYSTEM ALERT</p>
-            <p className="opacity-80">A new S-Rank Gate has appeared in the Tokyo district. Guilds are mobilizing.</p>
-            <p className="mt-2 animate-pulse">_</p>
-          </div>
+          
         </aside>
       </main>
     </div>

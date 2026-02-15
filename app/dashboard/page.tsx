@@ -7,28 +7,35 @@ import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
 import { getHunterRankByPoints } from '@/lib/hunter-rank';
 import { getUserCoursesWithProgress } from '@/lib/courses';
 import { getTopLeaderboard } from '@/lib/leaderboard';
-import { getRecentPointEvents } from '@/lib/gamification';
+import { getQuestProgress, getRecentPointEvents, getGamificationOverview, type QuestProgress, type GamificationOverview } from '@/lib/gamification';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
-  BookOpen, 
-  Trophy, 
-  Code, 
-  CheckCircle, 
-  TrendingUp,
-  Award,
-  Clock,
-  Target
+  Settings,
+  Shield,
+  Swords,
+  Trophy,
+  Package,
+  Bell,
+  Flame,
+  ChevronRight,
+  BookOpen,
+  Clock3,
 } from 'lucide-react';
+import { Orbitron, Space_Grotesk } from 'next/font/google';
+
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [courses, setCourses] = useState<any[]>([]);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [dailyQuests, setDailyQuests] = useState<QuestProgress[]>([]);
   const [recentPoints, setRecentPoints] = useState<any[]>([]);
+  const [gamificationOverview, setGamificationOverview] = useState<GamificationOverview | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,30 +43,62 @@ export default function DashboardPage() {
   }, []);
 
   const loadData = async () => {
-    const currentUser = await getCurrentUser();
-    
-    if (!currentUser) {
-      router.push('/auth/login');
-      return;
-    }
-
-    setUser(currentUser);
-    const [userCourses, topUsers] = await Promise.all([
-      getUserCoursesWithProgress(currentUser.id),
-      getTopLeaderboard(5),
-    ]);
-
-    let pointRows: any[] = [];
     try {
-      pointRows = await getRecentPointEvents(currentUser.id, 5);
-    } catch {
-      pointRows = [];
-    }
+      console.log('📊 Dashboard: Loading data...');
+      const currentUser = await getCurrentUser();
+      console.log('📊 Dashboard: Current user:', currentUser ? 'Found' : 'Not found');
+      
+      if (!currentUser) {
+        console.log('📊 Dashboard: No user found, redirecting to login');
+        setLoading(false);
+        router.push('/auth/login');
+        return;
+      }
 
-    setCourses(userCourses);
-    setLeaderboard(topUsers);
-    setRecentPoints(pointRows);
-    setLoading(false);
+      setUser(currentUser);
+      console.log('📊 Dashboard: User data:', {
+        id: currentUser.id,
+        problems_solved: currentUser.problems_solved,
+        total_points: currentUser.total_points,
+        rank: currentUser.rank,
+        xp: currentUser.xp,
+        level: currentUser.level
+      });
+
+      const [userCourses, topUsers, overview] = await Promise.all([
+        getUserCoursesWithProgress(currentUser.id),
+        getTopLeaderboard(5),
+        getGamificationOverview(currentUser.id).catch((err) => {
+          console.error('📊 Dashboard: Error fetching gamification overview:', err);
+          return null;
+        }),
+      ]);
+
+      console.log('📊 Dashboard: Gamification overview:', overview);
+      console.log('📊 Dashboard: User courses:', userCourses?.length || 0);
+
+      let questRows: QuestProgress[] = [];
+      let pointRows: any[] = [];
+      try {
+        [questRows, pointRows] = await Promise.all([
+          getQuestProgress(currentUser.id, 'daily'),
+          getRecentPointEvents(currentUser.id, 5),
+        ]);
+      } catch {
+        questRows = [];
+        pointRows = [];
+      }
+
+      setCourses(userCourses);
+      setLeaderboard(topUsers);
+      setGamificationOverview(overview);
+      setDailyQuests(questRows);
+      setRecentPoints(pointRows);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const calculateProgress = (course: any) => {
@@ -78,25 +117,17 @@ export default function DashboardPage() {
     return Math.round((completedTopics / totalTopics) * 100);
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   if (loading) {
     return (
-      <div className="container py-8">
+      <div className={`${spaceGrotesk.className} min-h-screen bg-[#09090B] p-8`}>
         <div className="animate-pulse space-y-4">
-          <div className="h-8 w-64 bg-muted rounded" />
-          <div className="grid gap-4 md:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-32 bg-muted rounded" />
+          <div className="h-10 w-80 rounded bg-white/10" />
+          <div className="grid gap-4 md:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-24 rounded bg-white/10" />
             ))}
           </div>
+          <div className="h-72 rounded bg-white/10" />
         </div>
       </div>
     );
@@ -106,248 +137,231 @@ export default function DashboardPage() {
     const progress = calculateProgress(c);
     return progress > 0 && progress < 100;
   });
-  const hunterRank = getHunterRankByPoints(Number(user?.total_points || 0));
+
+  const solvedProblems = Number(gamificationOverview?.problems_solved ?? user?.problems_solved ?? 0);
+  const manaCrystals = Number(gamificationOverview?.total_points ?? user?.total_points ?? 0);
+  const userRank = gamificationOverview?.rank ?? user?.rank ?? null;
+  const displayName = user?.full_name || 'Hunter';
+  const avatarSeed = `${user?.id || 'hunter'}-${displayName}`;
+  const avatarSrc = user?.avatar_url || generateHunterAvatarUrl(avatarSeed);
+  const streakDays = Math.max(
+    1,
+    Math.min(
+      365,
+      Number(
+        gamificationOverview?.current_streak ||
+          (user as any)?.streak_days ||
+          0
+      )
+    )
+  );
+  const questCompletion = dailyQuests.length > 0
+    ? Math.round((dailyQuests.filter((q) => q.progress >= q.target_count).length / dailyQuests.length) * 100)
+    : 0;
+
+  const activeQuests = dailyQuests.slice(0, 4).map((quest, index) => {
+    const progress = quest.target_count > 0 ? Math.min(100, Math.round((quest.progress / quest.target_count) * 100)) : 0;
+    const tags = ['S', 'A', 'B', 'E'];
+    const colors = ['border-l-[#7C3AED] text-[#A855F7]', 'border-l-yellow-500 text-yellow-500', 'border-l-cyan-500 text-cyan-400', 'border-l-slate-500 text-slate-400'];
+    return {
+      id: quest.quest_id,
+      title: quest.title,
+      description: quest.description || 'Complete this mission to unlock rewards.',
+      progress,
+      rank: quest.completed ? 'CLEARED' : (tags[index] || 'A'),
+      color: colors[index] || colors[1],
+    };
+  });
+
+  const manaGoalUnits = 10;
+  const manaUnitsDone = Math.min(manaGoalUnits, Math.max(0, Math.round((questCompletion / 100) * manaGoalUnits)));
+  const hunterRank = getHunterRankByPoints(manaCrystals);
+  const currentCourses = courses
+    .map((course) => {
+      const progress = calculateProgress(course);
+      return {
+        id: course.id,
+        name: course.name,
+        progress,
+        modulesCount: Array.isArray(course.modules) ? course.modules.length : 0,
+        isCompleted: progress >= 100,
+      };
+    })
+    .sort((a, b) => {
+      if (a.isCompleted !== b.isCompleted) return a.isCompleted ? 1 : -1;
+      return b.progress - a.progress;
+    })
+    .slice(0, 6);
 
   return (
-    <div className="container py-8 space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Welcome back, Hunter {user?.full_name?.split(' ')[0] || 'User'}! 👋
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Here's your gate progress and hunter achievements
-        </p>
-      </div>
+    <div className={`${spaceGrotesk.className} min-h-screen bg-[#09090B] text-slate-200 flex overflow-hidden`}>
+      
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total XP</CardTitle>
-            <Trophy className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{user?.total_points || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Hunter Rank {hunterRank.label}
-            </p>
-          </CardContent>
-        </Card>
+      <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#7C3AED]/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#A855F7]/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Raid Gates Joined</CardTitle>
-            <BookOpen className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{courses.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {user?.courses_completed || 0} gates cleared
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Boss Fights Cleared</CardTitle>
-            <Code className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{user?.problems_solved || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Keep coding!
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Learning Streak</CardTitle>
-            <TrendingUp className="h-4 w-4 text-purple-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {inProgressCourses.length > 0 ? '🔥 Active' : '😴 Start'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {inProgressCourses.length} active gates in progress
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        {/* Continue Learning */}
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Continue Raids</CardTitle>
-            <CardDescription>
-              Re-enter your active gates
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {inProgressCourses.length === 0 ? (
-              <div className="text-center py-8">
-                <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">
-                  No active gates. Enter a new raid now!
-                </p>
-                <Button asChild>
-                  <Link href="/courses">Browse Raid Gates</Link>
-                </Button>
+        <header className="bg-[#09090B]/80 backdrop-blur-xl border-b border-white/5 z-10 sticky top-0">
+          <div className="max-w-7xl mx-auto px-6 py-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex items-center gap-5">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded bg-slate-800 overflow-hidden border-2 border-[#7C3AED]/50 breathing-purple">
+                    <img
+                      alt="Hunter Avatar"
+                      className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
+                      src={avatarSrc}
+                      onError={(event) => {
+                        event.currentTarget.src = generateHunterAvatarUrl(avatarSeed);
+                      }}
+                    />
+                  </div>
+                  <div className="absolute -top-2 -right-2 bg-[#7C3AED] text-[10px] font-black px-2 py-0.5 rounded border border-[#A855F7] text-white">{hunterRank.label}</div>
+                </div>
+                <div>
+                  <h1 className={`text-2xl font-bold text-white leading-none tracking-tight uppercase ${orbitron.className} text-glow`}>{displayName}</h1>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#A855F7]">Shadow Monarch</span>
+                    <span className="text-xs text-slate-600">/</span>
+                    <span className="text-xs text-slate-500 font-mono">SYSTEM_ID: {String(user?.id || '0001').slice(0, 10)}</span>
+                  </div>
+                </div>
               </div>
-            ) : (
-              inProgressCourses.slice(0, 3).map((course) => {
-                const progress = calculateProgress(course);
-                return (
-                  <Card key={course.id} className="hover:bg-muted/50 transition-colors">
-                    <CardContent className="pt-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <h3 className="font-semibold mb-1">{course.name}</h3>
-                          <p className="text-sm text-muted-foreground line-clamp-1">
-                            {course.description}
+
+              <div className="flex-1 max-w-xl w-full">
+                <div className="flex justify-between items-end mb-2">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Level</span>
+                    <span className={`text-2xl font-black text-white italic ${orbitron.className} text-glow`}>{Math.max(1, Math.floor(manaCrystals / 1000) + 1)}</span>
+                  </div>
+                  <span className="text-xs font-bold text-[#A855F7] tracking-widest uppercase">{manaCrystals.toLocaleString()} / 100,000 XP</span>
+                </div>
+                <div className="h-3 w-full bg-white/5 rounded-sm overflow-hidden relative border border-white/10">
+                  <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#7C3AED] via-[#A855F7] to-blue-500 shadow-[0_0_15px_#7C3AED]" style={{ width: `${Math.min(100, (manaCrystals / 100000) * 100)}%` }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto p-6 terminal-scroll">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8 space-y-8">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-[#121214] border border-[#A855F7]/30 p-6 flex flex-col items-center justify-center">
+                  <span className={`text-4xl font-black text-white ${orbitron.className} text-glow`}>{solvedProblems.toLocaleString()}</span>
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 mt-2 font-bold">Monsters Slain</span>
+                </div>
+                
+                <div className="bg-[#121214] border border-[#A855F7]/30 p-6 flex flex-col items-center justify-center">
+                  <span className={`text-4xl font-black text-[#A855F7] italic ${orbitron.className} text-glow`}>{hunterRank.label[0]}</span>
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 mt-2 font-bold">Clearance Rank</span>
+                </div>
+
+                <div className="bg-[#121214] border border-[#A855F7]/30 p-6 flex flex-col items-center justify-center">
+                  <span className={`text-4xl font-black text-white ${orbitron.className} text-glow`}>#{userRank || '—'}</span>
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 mt-2 font-bold">Global Rank</span>
+                </div>
+              </div>
+
+
+
+              <div className="bg-[#121214] border border-[#A855F7]/20 rounded-md p-5">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className={`text-lg font-black text-white uppercase tracking-widest ${orbitron.className}`}>
+                    Current Courses
+                  </h2>
+                  <Link href="/my-courses" className="text-xs font-bold text-[#A855F7] hover:text-white transition-colors inline-flex items-center gap-1">
+                    MANAGE <ChevronRight className="h-3 w-3" />
+                  </Link>
+                </div>
+
+                {currentCourses.length === 0 ? (
+                  <div className="rounded border border-white/10 bg-black/20 px-4 py-6 text-sm text-slate-400">
+                    No active courses detected yet. Enroll in a gate to start progression.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {currentCourses.map((course) => (
+                      <div key={course.id} className="rounded border border-white/10 bg-black/20 px-4 py-3">
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-white">{course.name}</p>
+                            <p className="text-[11px] text-slate-500">{course.modulesCount} modules</p>
+                          </div>
+                          <span className="text-xs font-bold text-[#A855F7]">{course.progress}%</span>
+                        </div>
+                        <div className="h-1.5 w-full overflow-hidden rounded bg-white/10">
+                          <div className="h-full bg-gradient-to-r from-[#7C3AED] to-[#A855F7]" style={{ width: `${course.progress}%` }} />
+                        </div>
+                        <div className="mt-2 flex items-center justify-between">
+                          <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 uppercase tracking-wider">
+                            <Clock3 className="h-3 w-3" />
+                            {course.isCompleted ? 'Completed' : 'In Progress'}
+                          </span>
+                          <Button asChild size="sm" variant="outline" className="h-7 border-[#A855F7]/30 text-[#A855F7] hover:text-white hover:bg-[#7C3AED]/20">
+                            <Link href="/my-courses">Continue</Link>
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              
+            </div>
+
+            <div className="lg:col-span-4 space-y-6">
+              <div className="bg-[#121214] p-8 rounded border border-[#A855F7]/30 relative overflow-hidden flex flex-col items-center text-center shadow-[0_0_10px_rgba(124,58,237,0.22)]">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#A855F7] to-transparent"></div>
+                <div className="relative w-28 h-28 mb-6 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-[#A855F7]/30 rounded-full blur-2xl animate-pulse"></div>
+                  <Flame className="h-16 w-16 text-[#A855F7] relative z-10" />
+                </div>
+                <h2 className={`text-6xl font-black text-white mb-2 italic ${orbitron.className} text-glow`}>{streakDays}</h2>
+                <p className="text-[#A855F7] uppercase tracking-[0.4em] text-xs font-black mb-6">Consecutive Days</p>
+                <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6">"You've grown stronger. Do not stop now, Hunter."</p>
+                <div className="w-full bg-white/5 h-3 p-0.5 border border-white/10">
+                  <div className="bg-gradient-to-r from-[#7C3AED] to-[#A855F7] h-full w-full shadow-[0_0_15px_#A855F7]"></div>
+                </div>
+              </div>
+
+              <div className="bg-[#121214] border border-[#A855F7]/30 rounded p-6">
+                <h2 className={`text-lg font-black text-white uppercase tracking-widest mb-4 ${orbitron.className}`}>
+                  Recent XP Logs
+                </h2>
+                <div className="space-y-3">
+                  {recentPoints.length === 0 ? (
+                    <p className="text-sm text-slate-500">No point activity yet.</p>
+                  ) : (
+                    recentPoints.map((event: any) => (
+                      <div key={event.id} className="flex items-center justify-between border-b border-white/10 pb-3 last:border-b-0">
+                        <div>
+                          <p className="text-sm font-medium text-white">{event.event_type.replace(/_/g, ' ')}</p>
+                          <p className="text-xs text-slate-500">
+                            {new Date(event.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </p>
                         </div>
-                        <Button size="sm" asChild>
-                          <Link href="/my-courses">
-                            Continue
-                          </Link>
-                        </Button>
-                      </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Progress</span>
-                          <span className="font-medium">{progress}%</span>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-[#A855F7]">+{event.points} pts</p>
+                          <p className="text-xs text-slate-500">+{event.xp} XP</p>
                         </div>
-                        <Progress value={progress} className="h-2" />
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })
-            )}
-
-            {courses.length > 3 && (
-              <Button variant="outline" className="w-full" asChild>
-                <Link href="/my-courses">View All Gates</Link>
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Leaderboard Preview */}
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Top Hunters</CardTitle>
-            <CardDescription>
-              Track your rank among hunters
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {leaderboard.map((leader, index) => (
-                <div key={`${leader.id ?? leader.full_name ?? 'leader'}-${index}`} className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted font-semibold text-sm">
-                    {index === 0 && '🥇'}
-                    {index === 1 && '🥈'}
-                    {index === 2 && '🥉'}
-                    {index > 2 && `#${index + 1}`}
-                  </div>
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={leader.avatar_url || generateHunterAvatarUrl(`${leader.id}-${leader.full_name}`)} />
-                    <AvatarFallback>{getInitials(leader.full_name)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">
-                      {leader.full_name}
-                      {leader.id === user?.id && (
-                        <span className="text-xs text-primary ml-2">(You)</span>
-                      )}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {leader.total_points} points
-                    </p>
-                  </div>
+                    ))
+                  )}
                 </div>
-              ))}
-              
-              <Button variant="outline" className="w-full" asChild>
-                <Link href="/leaderboard">View Hunter Rankings</Link>
-              </Button>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-1">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent XP Logs</CardTitle>
-            <CardDescription>Latest rewards earned</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {recentPoints.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No point activity yet.</p>
-            ) : (
-              recentPoints.map((event: any) => (
-                <div key={event.id} className="flex items-center justify-between border-b pb-2 last:border-b-0">
-                  <div>
-                    <p className="text-sm font-medium">{event.event_type.replace(/_/g, ' ')}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(event.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </p>
-                  </div>
-                  <div className="text-right text-sm">
-                    <p className="font-semibold">+{event.points} pts</p>
-                    <p className="text-xs text-muted-foreground">+{event.xp} XP</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
-            What would you like to do today?
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
-            <Button variant="outline" className="h-24 flex flex-col gap-2" asChild>
-              <Link href="/courses">
-                <BookOpen className="h-6 w-6" />
-                <span>Browse Courses</span>
-              </Link>
-            </Button>
-            <Button variant="outline" className="h-24 flex flex-col gap-2" asChild>
-              <Link href="/my-courses">
-                <Clock className="h-6 w-6" />
-                <span>My Courses</span>
-              </Link>
-            </Button>
-            <Button variant="outline" className="h-24 flex flex-col gap-2" asChild>
-              <Link href="/leaderboard">
-                <Trophy className="h-6 w-6" />
-                <span>Leaderboard</span>
-              </Link>
-            </Button>
-            <Button variant="outline" className="h-24 flex flex-col gap-2" asChild>
-              <Link href="/profile">
-                <Award className="h-6 w-6" />
-                <span>My Profile</span>
-              </Link>
-            </Button>
           </div>
-        </CardContent>
-      </Card>
+
+          <footer className="max-w-7xl mx-auto mt-12 pt-8 border-t border-white/5 text-center pb-12">
+            <p className={`text-slate-600 text-[10px] font-black tracking-[0.5em] uppercase ${orbitron.className} text-glow`}>
+              Solo Leveling System // Protocol v4.2.0 // Monarch Consciousness Online
+            </p>
+          </footer>
+        </div>
+      </main>
     </div>
   );
 }

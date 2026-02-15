@@ -9,6 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Orbitron, Rajdhani } from 'next/font/google';
+
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
+const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 export default function SignupPage() {
   const router = useRouter();
@@ -88,11 +92,14 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md border-neutral-800 bg-card/80">
+    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#050508] text-slate-100 p-4 flex items-center justify-center`}>
+      <div className="pointer-events-none fixed inset-0 z-0 nebula-bg animate-pulse" style={{ animationDuration: '4s' }} />
+      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-20" />
+
+      <Card className="relative z-20 w-full max-w-md border-white/15 bg-black/70 text-slate-100 shadow-[0_0_24px_rgba(166,13,242,0.35)]">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Awaken Hunter Account</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className={`${orbitron.className} text-2xl font-bold text-center`}>Awaken Hunter Account</CardTitle>
+          <CardDescription className="text-center text-slate-400">
             Join Levelup-Labs and enter the Solo Leveling system
           </CardDescription>
         </CardHeader>
@@ -117,6 +124,7 @@ export default function SignupPage() {
                 name="fullName"
                 type="text"
                 placeholder="John Doe"
+                className="bg-black/60 border-white/15 text-slate-100"
                 value={formData.fullName}
                 onChange={handleChange}
                 required
@@ -131,6 +139,7 @@ export default function SignupPage() {
                 name="email"
                 type="email"
                 placeholder="your@email.com"
+                className="bg-black/60 border-white/15 text-slate-100"
                 value={formData.email}
                 onChange={handleChange}
                 required
@@ -145,6 +154,7 @@ export default function SignupPage() {
                 name="password"
                 type="password"
                 placeholder="••••••••"
+                className="bg-black/60 border-white/15 text-slate-100"
                 value={formData.password}
                 onChange={handleChange}
                 required
@@ -159,6 +169,7 @@ export default function SignupPage() {
                 name="confirmPassword"
                 type="password"
                 placeholder="••••••••"
+                className="bg-black/60 border-white/15 text-slate-100"
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
@@ -168,7 +179,7 @@ export default function SignupPage() {
           </CardContent>
           
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full bg-purple-700 hover:bg-purple-600 text-white" disabled={loading}>
               {loading ? 'Awakening account...' : 'Register Hunter'}
             </Button>
 
@@ -182,7 +193,7 @@ export default function SignupPage() {
               <span className="text-sm tracking-wider">{googleLoading ? 'CONNECTING...' : 'Continue with Google'}</span>
             </Button>
 
-            <div className="text-sm text-center text-muted-foreground">
+            <div className="text-sm text-center text-slate-400">
               Already have an account?{' '}
               <Link href="/auth/login" className="text-primary hover:underline">
                 Sign in

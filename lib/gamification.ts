@@ -32,6 +32,8 @@ export interface GamificationOverview {
   longest_streak: number
   achievements_unlocked: number
   next_achievement: NextAchievement | null
+  problems_solved: number
+  courses_completed: number
 }
 
 export interface UserAchievement {
@@ -135,6 +137,8 @@ export async function getGamificationOverview(userId: string): Promise<Gamificat
     longest_streak: Number(streakData.longest_streak ?? 0),
     achievements_unlocked: unlockedCount,
     next_achievement: nextAchievement,
+    problems_solved: Number(userData.problems_solved ?? 0),
+    courses_completed: Number(userData.courses_completed ?? 0),
   }
 }
 

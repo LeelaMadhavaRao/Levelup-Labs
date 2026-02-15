@@ -9,6 +9,10 @@ import { Card } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { resetPassword } from '@/lib/auth'
 import { Eye, EyeOff, CheckCircle2 } from 'lucide-react'
+import { Orbitron, Rajdhani } from 'next/font/google'
+
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] })
+const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] })
 
 export default function ResetPasswordClient() {
   const router = useRouter()
@@ -73,19 +77,22 @@ export default function ResetPasswordClient() {
 
   if (!tokenValid) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md border-red-500/40 bg-card/80 p-8">
+      <div className={`${rajdhani.className} relative min-h-screen bg-[#050508] flex items-center justify-center p-4 text-slate-100`}>
+        <div className="pointer-events-none fixed inset-0 z-0 nebula-bg animate-pulse" style={{ animationDuration: '4s' }} />
+        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-20" />
+
+        <Card className="relative z-20 w-full max-w-md border-red-500/40 bg-black/70 p-8 text-slate-100">
           <div className="text-center space-y-4">
             <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle2 className="h-8 w-8 text-red-500" />
             </div>
-            <h1 className="text-2xl font-bold">Invalid Reset Link</h1>
-            <p className="text-muted-foreground">
+            <h1 className={`${orbitron.className} text-2xl font-bold`}>Invalid Reset Link</h1>
+            <p className="text-slate-400">
               This password reset link is invalid or has expired. Please request a new one.
             </p>
             <Button
               onClick={() => router.push('/auth/forgot-password')}
-              className="w-full"
+              className="w-full bg-purple-700 hover:bg-purple-600 text-white"
             >
               Request New Reset Link
             </Button>
@@ -97,19 +104,22 @@ export default function ResetPasswordClient() {
 
   if (resetSuccess) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md border-emerald-500/40 bg-card/80 p-8">
+      <div className={`${rajdhani.className} relative min-h-screen bg-[#050508] flex items-center justify-center p-4 text-slate-100`}>
+        <div className="pointer-events-none fixed inset-0 z-0 nebula-bg animate-pulse" style={{ animationDuration: '4s' }} />
+        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-20" />
+
+        <Card className="relative z-20 w-full max-w-md border-emerald-500/40 bg-black/70 p-8 text-slate-100">
           <div className="text-center space-y-4">
             <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle2 className="h-8 w-8 text-emerald-500" />
             </div>
-            <h1 className="text-2xl font-bold">Password Reset!</h1>
-            <p className="text-muted-foreground">
+            <h1 className={`${orbitron.className} text-2xl font-bold`}>Password Reset!</h1>
+            <p className="text-slate-400">
               Your password has been successfully reset. You can now log in with your new password.
             </p>
             <Button
               onClick={() => router.push('/auth/login')}
-              className="w-full"
+              className="w-full bg-purple-700 hover:bg-purple-600 text-white"
             >
               Go to Login
             </Button>
@@ -120,11 +130,14 @@ export default function ResetPasswordClient() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md border-neutral-800 bg-card/80 p-8">
+    <div className={`${rajdhani.className} relative min-h-screen bg-[#050508] flex items-center justify-center p-4 text-slate-100`}>
+      <div className="pointer-events-none fixed inset-0 z-0 nebula-bg animate-pulse" style={{ animationDuration: '4s' }} />
+      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-20" />
+
+      <Card className="relative z-20 w-full max-w-md border-white/15 bg-black/70 p-8 text-slate-100">
         <div className="text-center space-y-2 mb-8">
-          <h1 className="text-2xl font-bold">Reset Password</h1>
-          <p className="text-muted-foreground">
+          <h1 className={`${orbitron.className} text-2xl font-bold`}>Reset Password</h1>
+          <p className="text-slate-400">
             Enter your new password below
           </p>
         </div>
@@ -139,7 +152,7 @@ export default function ResetPasswordClient() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter new password"
-                className="bg-background pr-10"
+                className="bg-black/60 border-white/15 text-slate-100 pr-10"
                 disabled={loading}
                 required
               />
@@ -162,7 +175,7 @@ export default function ResetPasswordClient() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password"
-                className="bg-background pr-10"
+                className="bg-black/60 border-white/15 text-slate-100 pr-10"
                 disabled={loading}
                 required
               />
@@ -176,7 +189,7 @@ export default function ResetPasswordClient() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full bg-purple-700 hover:bg-purple-600 text-white" disabled={loading}>
             {loading ? 'Resetting...' : 'Reset Password'}
           </Button>
         </form>
