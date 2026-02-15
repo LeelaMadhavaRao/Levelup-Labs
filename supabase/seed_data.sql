@@ -4,11 +4,6 @@
 -- Run this AFTER database_setup.sql and database_functions.sql
 -- This creates realistic course data for a coding learning platform
 --
--- Seeded system user credentials:
---   Email: system@levelup-labs.com
---   Password: SystemAdmin123!
---
--- NOTE: Change this password immediately outside local/dev environments.
 
 -- ============================================================
 -- STEP 1: Get Admin User ID (If exists)
@@ -19,8 +14,7 @@
 -- 3. Password: (choose secure password)
 -- 4. Then run this script to set admin role
 
--- This will be set by the admin creation process later
--- We'll use auth.uid() in the course inserts to reference current admin
+-- Then make sure that user's profile row in public.users has role='admin'.
 
 -- ============================================================
 -- STEP 2: Sample Users - SKIP FOR NOW
@@ -49,70 +43,44 @@ ON CONFLICT (user_id) DO UPDATE SET
 */
 
 -- ============================================================
--- STEP 3: Create System Admin (For Course Creation)
+-- STEP 3: Validate Admin Profile Exists (For Course Creation)
 -- ============================================================
--- This creates a system admin user that can own courses
--- Note: This is a special user just for course ownership
+-- This script intentionally does NOT write to auth.users.
+-- It requires at least one existing admin in public.users.
 
 DO $$
 DECLARE
-  system_admin_id UUID;
+  admin_count INT;
 BEGIN
-  -- Check if system admin already exists in auth.users
-  SELECT id INTO system_admin_id FROM auth.users WHERE email = 'system@levelup-labs.com' LIMIT 1;
-  
-  IF system_admin_id IS NULL THEN
-    -- Create system admin in auth.users
-    system_admin_id := gen_random_uuid();
-    
-    INSERT INTO auth.users (
-      id,
-      instance_id,
-      email,
-      encrypted_password,
-      email_confirmed_at,
-      created_at,
-      updated_at,
-      raw_app_meta_data,
-      raw_user_meta_data,
-      is_super_admin,
-      role,
-      aud
-    ) VALUES (
-      system_admin_id,
-      '00000000-0000-0000-0000-000000000000',
-      'system@levelup-labs.com',
-      crypt('SystemAdmin123!', gen_salt('bf')),
-      NOW(),
-      NOW(),
-      NOW(),
-      '{"provider":"email","providers":["email"]}'::jsonb,
-      '{"full_name":"System Admin"}'::jsonb,
-      false,
-      'authenticated',
-      'authenticated'
-    );
+  SELECT COUNT(*) INTO admin_count
+  FROM users
+  WHERE role = 'admin';
+
+  IF admin_count = 0 THEN
+    RAISE EXCEPTION 'No admin user found in public.users. Create an auth user first and set role=''admin'' in public.users.';
   END IF;
-  
-  -- Insert or update in users table
-  INSERT INTO users (id, email, full_name, role, total_points, rank, courses_completed, problems_solved)
-  VALUES (system_admin_id, 'system@levelup-labs.com', 'System Admin', 'admin', 0, 0, 0, 0)
-  ON CONFLICT (id) DO UPDATE
-  SET role = 'admin';
-  
-  RAISE NOTICE 'System admin created with ID: %', system_admin_id;
+
+  RAISE NOTICE 'Found % admin user(s) in public.users. Proceeding with seed data.', admin_count;
 END $$;
 
 -- ============================================================
 -- STEP 4: Create Courses
 -- ============================================================
 
--- Get the system admin ID for course creation
+-- Use the first available admin ID for course ownership
 DO $$
 DECLARE
   admin_uuid UUID;
 BEGIN
-  SELECT id INTO admin_uuid FROM users WHERE email = 'system@levelup-labs.com' AND role = 'admin' LIMIT 1;
+  SELECT id INTO admin_uuid
+  FROM users
+  WHERE role = 'admin'
+  ORDER BY created_at ASC
+  LIMIT 1;
+
+  IF admin_uuid IS NULL THEN
+    RAISE EXCEPTION 'No admin user found in public.users. Seed aborted.';
+  END IF;
 
 INSERT INTO courses (id, admin_id, name, description, thumbnail_url, completion_reward_points) VALUES
   (
@@ -449,7 +417,7 @@ ON CONFLICT (user_id, course_id) DO NOTHING;
 -- Seed Data Complete!
 -- ============================================================
 -- Summary:
--- ✅ 1 System Admin user created (for course ownership)
+-- ✅ Uses an existing admin user for course ownership
 -- ✅ 4 Courses (DSA, System Design, Full Stack, Python)
 -- ✅ 18 Modules across all courses
 -- ✅ 25+ Topics with video links

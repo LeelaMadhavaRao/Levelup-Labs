@@ -324,8 +324,16 @@ CREATE POLICY "Users can update their own profile (except role)" ON users
         role = (SELECT role FROM users WHERE id = auth.uid())
     );
 
+CREATE POLICY "Users can insert own profile" ON users
+    FOR INSERT TO authenticated
+    WITH CHECK (
+        auth.uid() = id
+        AND role = 'user'
+    );
+
 CREATE POLICY "Service role can create users" ON users
-    FOR INSERT WITH CHECK (true);
+    FOR INSERT TO service_role
+    WITH CHECK (true);
 
 -- Courses Table Policies
 CREATE POLICY "Anyone can read courses" ON courses
@@ -509,8 +517,9 @@ CREATE POLICY "Anyone can read season snapshots" ON season_leaderboard_snapshots
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
 -- Authenticated users can only modify their own data via RLS policies
+GRANT SELECT, INSERT, UPDATE ON users TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON quiz_responses, problem_solutions, user_courses, topic_progress TO authenticated;
-GRANT SELECT ON users, courses, modules, topics, coding_problems, leaderboard, point_events, achievements, user_achievements, daily_streaks, quests, user_quest_progress, seasons, season_leaderboard_snapshots TO authenticated;
+GRANT SELECT ON courses, modules, topics, coding_problems, leaderboard, point_events, achievements, user_achievements, daily_streaks, quests, user_quest_progress, seasons, season_leaderboard_snapshots TO authenticated;
 -- Leaderboard modifications only via SECURITY DEFINER functions
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT SELECT ON TABLES TO anon;

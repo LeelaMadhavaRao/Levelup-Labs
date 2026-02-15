@@ -80,8 +80,24 @@ export async function signUpWithEmail(email: string, password: string, fullName:
   const needsConfirmation = authData.user && !authData.session
   
   // If user is created without confirmation (session exists), create profile immediately
+  // only when a stable authenticated session is available for PostgREST writes.
   if (authData.user && authData.session) {
     try {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const hasStableSession =
+        !!sessionData.session &&
+        sessionData.session.user?.id === authData.user.id &&
+        typeof sessionData.session.access_token === 'string' &&
+        sessionData.session.access_token.length > 0
+
+      if (!hasStableSession) {
+        return {
+          user: authData.user,
+          error: null,
+          needsConfirmation,
+        }
+      }
+
       // Create user profile in public.users table
       const { error: profileError } = await supabase
         .from('users')
@@ -219,6 +235,13 @@ export async function getUserProfile(userId: string) {
   const { data: authData } = await supabase.auth.getUser()
   const authUser = authData.user
   if (!authUser) return null
+
+  const { data: sessionData } = await supabase.auth.getSession()
+  const hasStableSession =
+    !!sessionData.session &&
+    sessionData.session.user?.id === authUser.id &&
+    typeof sessionData.session.access_token === 'string' &&
+    sessionData.session.access_token.length > 0
   
   const fullName =
     (authUser.user_metadata?.full_name as string) ||
@@ -226,6 +249,28 @@ export async function getUserProfile(userId: string) {
     authUser.email?.split('@')[0] ||
     'User'
   const defaultAvatar = generateHunterAvatarUrl(`${authUser.id}-${authUser.email}-${fullName}`)
+
+  if (!hasStableSession) {
+    return {
+      id: authUser.id,
+      email: authUser.email,
+      full_name: fullName,
+      avatar_url: defaultAvatar,
+      role: 'user',
+      total_points: 0,
+      xp: 0,
+      level: 1,
+      title: 'Rookie',
+      rank: null,
+      courses_completed: 0,
+      problems_solved: 0,
+      bio: null,
+      github_username: null,
+      linkedin_url: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+  }
   
   const { error: insertError } = await supabase
     .from('users')

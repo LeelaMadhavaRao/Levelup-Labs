@@ -7,8 +7,10 @@ import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
 import { getHunterRankByPoints } from '@/lib/hunter-rank';
 import { getUserCoursesWithProgress } from '@/lib/courses';
 import { getTopLeaderboard } from '@/lib/leaderboard';
-import { getGamificationOverview, getQuestProgress, getRecentPointEvents, type GamificationOverview, type QuestProgress } from '@/lib/gamification';
+import { getQuestProgress, getRecentPointEvents, getGamificationOverview, type QuestProgress, type GamificationOverview } from '@/lib/gamification';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { 
   Settings,
   Shield,
@@ -41,38 +43,62 @@ export default function DashboardPage() {
   }, []);
 
   const loadData = async () => {
-    const currentUser = await getCurrentUser();
-    
-    if (!currentUser) {
-      router.push('/auth/login');
-      return;
-    }
-
-    setUser(currentUser);
-    const [userCourses, topUsers, overview] = await Promise.all([
-      getUserCoursesWithProgress(currentUser.id),
-      getTopLeaderboard(5),
-      getGamificationOverview(currentUser.id).catch(() => null),
-    ]);
-
-    let questRows: QuestProgress[] = [];
-    let pointRows: any[] = [];
     try {
-      [questRows, pointRows] = await Promise.all([
-        getQuestProgress(currentUser.id, 'daily'),
-        getRecentPointEvents(currentUser.id, 5),
-      ]);
-    } catch {
-      questRows = [];
-      pointRows = [];
-    }
+      console.log('📊 Dashboard: Loading data...');
+      const currentUser = await getCurrentUser();
+      console.log('📊 Dashboard: Current user:', currentUser ? 'Found' : 'Not found');
+      
+      if (!currentUser) {
+        console.log('📊 Dashboard: No user found, redirecting to login');
+        setLoading(false);
+        router.push('/auth/login');
+        return;
+      }
 
-    setCourses(userCourses);
-    setLeaderboard(topUsers);
-    setGamificationOverview(overview);
-    setDailyQuests(questRows);
-    setRecentPoints(pointRows);
-    setLoading(false);
+      setUser(currentUser);
+      console.log('📊 Dashboard: User data:', {
+        id: currentUser.id,
+        problems_solved: currentUser.problems_solved,
+        total_points: currentUser.total_points,
+        rank: currentUser.rank,
+        xp: currentUser.xp,
+        level: currentUser.level
+      });
+
+      const [userCourses, topUsers, overview] = await Promise.all([
+        getUserCoursesWithProgress(currentUser.id),
+        getTopLeaderboard(5),
+        getGamificationOverview(currentUser.id).catch((err) => {
+          console.error('📊 Dashboard: Error fetching gamification overview:', err);
+          return null;
+        }),
+      ]);
+
+      console.log('📊 Dashboard: Gamification overview:', overview);
+      console.log('📊 Dashboard: User courses:', userCourses?.length || 0);
+
+      let questRows: QuestProgress[] = [];
+      let pointRows: any[] = [];
+      try {
+        [questRows, pointRows] = await Promise.all([
+          getQuestProgress(currentUser.id, 'daily'),
+          getRecentPointEvents(currentUser.id, 5),
+        ]);
+      } catch {
+        questRows = [];
+        pointRows = [];
+      }
+
+      setCourses(userCourses);
+      setLeaderboard(topUsers);
+      setGamificationOverview(overview);
+      setDailyQuests(questRows);
+      setRecentPoints(pointRows);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const calculateProgress = (course: any) => {
@@ -112,8 +138,9 @@ export default function DashboardPage() {
     return progress > 0 && progress < 100;
   });
 
-  const solvedProblems = Number(user?.problems_solved || 0);
-  const manaCrystals = Number(user?.total_points || 0);
+  const solvedProblems = Number(gamificationOverview?.problems_solved ?? user?.problems_solved ?? 0);
+  const manaCrystals = Number(gamificationOverview?.total_points ?? user?.total_points ?? 0);
+  const userRank = gamificationOverview?.rank ?? user?.rank ?? null;
   const displayName = user?.full_name || 'Hunter';
   const avatarSeed = `${user?.id || 'hunter'}-${displayName}`;
   const avatarSrc = user?.avatar_url || generateHunterAvatarUrl(avatarSeed);
@@ -148,7 +175,7 @@ export default function DashboardPage() {
 
   const manaGoalUnits = 10;
   const manaUnitsDone = Math.min(manaGoalUnits, Math.max(0, Math.round((questCompletion / 100) * manaGoalUnits)));
-  const hunterRank = getHunterRankByPoints(Number(user?.total_points || 0));
+  const hunterRank = getHunterRankByPoints(manaCrystals);
   const currentCourses = courses
     .map((course) => {
       const progress = calculateProgress(course);
@@ -168,38 +195,7 @@ export default function DashboardPage() {
 
   return (
     <div className={`${spaceGrotesk.className} min-h-screen bg-[#09090B] text-slate-200 flex overflow-hidden`}>
-      <aside className="w-20 lg:w-64 bg-[#09090B] border-r border-white/5 flex flex-col justify-between shrink-0 z-20">
-        <div>
-          <div className="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-white/5">
-            <div className="w-10 h-10 rounded-sm bg-[#7C3AED] flex items-center justify-center text-white font-bold shadow-[0_0_15px_rgba(124,58,237,0.5)] italic text-xl">S</div>
-            <span className={`hidden lg:block ml-3 font-bold text-lg tracking-widest text-white uppercase ${orbitron.className} text-glow`}>System</span>
-          </div>
-          <nav className="mt-8 flex flex-col gap-2 px-2 lg:px-4">
-            <button className="flex items-center gap-3 px-3 py-3 rounded bg-[#7C3AED]/20 text-[#A855F7] border border-[#7C3AED]/30 shadow-[0_0_12px_rgba(124,58,237,0.45)]">
-              <Shield className="h-4 w-4" />
-              <span className="hidden lg:block font-medium tracking-wide">Status</span>
-            </button>
-            <Link href="/courses" className="flex items-center gap-3 px-3 py-3 rounded text-slate-500 hover:bg-white/5 hover:text-[#A855F7] transition-all">
-              <Swords className="h-4 w-4" />
-              <span className="hidden lg:block font-medium tracking-wide">Instant Dungeon</span>
-            </Link>
-            <Link href="/leaderboard" className="flex items-center gap-3 px-3 py-3 rounded text-slate-500 hover:bg-white/5 hover:text-[#A855F7] transition-all">
-              <Trophy className="h-4 w-4" />
-              <span className="hidden lg:block font-medium tracking-wide">Rankings</span>
-            </Link>
-            <Link href="/my-courses" className="flex items-center gap-3 px-3 py-3 rounded text-slate-500 hover:bg-white/5 hover:text-[#A855F7] transition-all">
-              <Package className="h-4 w-4" />
-              <span className="hidden lg:block font-medium tracking-wide">Inventory</span>
-            </Link>
-          </nav>
-        </div>
-        <div className="p-4 border-t border-white/5">
-          <Link href="/profile/edit" className="flex items-center gap-3 px-3 py-3 rounded text-slate-500 hover:bg-white/5 transition-all">
-            <Settings className="h-4 w-4" />
-            <span className="hidden lg:block font-medium">Settings</span>
-          </Link>
-        </div>
-      </aside>
+      
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#7C3AED]/10 rounded-full blur-[120px] pointer-events-none"></div>
@@ -256,53 +252,19 @@ export default function DashboardPage() {
                   <span className={`text-4xl font-black text-white ${orbitron.className} text-glow`}>{solvedProblems.toLocaleString()}</span>
                   <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 mt-2 font-bold">Monsters Slain</span>
                 </div>
-                <div className="bg-[#121214] border border-[#A855F7]/30 p-6 flex flex-col items-center justify-center">
-                  <span className={`text-4xl font-black text-white ${orbitron.className} text-glow`}>{Math.round(manaCrystals / 1000)}k</span>
-                  <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 mt-2 font-bold">Mana Crystals</span>
-                </div>
+                
                 <div className="bg-[#121214] border border-[#A855F7]/30 p-6 flex flex-col items-center justify-center">
                   <span className={`text-4xl font-black text-[#A855F7] italic ${orbitron.className} text-glow`}>{hunterRank.label[0]}</span>
                   <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 mt-2 font-bold">Clearance Rank</span>
                 </div>
-              </div>
 
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className={`text-xl font-black text-white flex items-center gap-3 uppercase tracking-widest ${orbitron.className} text-glow`}>
-                    <BookOpen className="h-5 w-5 text-[#A855F7]" />
-                    Current Quests
-                  </h2>
-                  <Link href="/my-courses" className="text-xs font-bold text-[#A855F7] hover:text-white transition-colors border-b border-[#A855F7]/30 pb-1">VIEW ALL MISSIONS</Link>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {activeQuests.length === 0 ? (
-                    <div className="md:col-span-2 bg-[#121214] border border-white/10 p-5">
-                      <p className="text-sm text-slate-400 mb-4">No daily/weekly missions available right now.</p>
-                      <Button asChild className="bg-[#A855F7] hover:bg-[#7C3AED] text-white">
-                        <Link href="/my-courses">Go to My Courses</Link>
-                      </Button>
-                    </div>
-                  ) : (
-                    activeQuests.map((quest) => (
-                      <div key={quest.id} className={`bg-[#121214] border border-[#A855F7]/30 p-5 relative overflow-hidden border-l-4 ${quest.color.split(' ')[0]}`}>
-                        <div className="absolute top-3 right-3">
-                          <span className="bg-[#7C3AED]/20 text-[#A855F7] text-[10px] font-black px-2 py-1 border border-[#7C3AED]/30">RANK: {quest.rank}</span>
-                        </div>
-                        <h3 className={`font-bold text-lg text-white mb-2 uppercase ${orbitron.className}`}>{quest.title}</h3>
-                        <p className="text-sm text-slate-400 mb-4 h-10 line-clamp-2 leading-relaxed">{quest.description}</p>
-                        <div className="flex items-center justify-between text-[10px] font-black text-slate-500 mb-2 uppercase tracking-tighter">
-                          <span>Completion</span>
-                          <span className="text-[#A855F7]">{quest.progress}%</span>
-                        </div>
-                        <div className="h-1.5 w-full bg-white/5 overflow-hidden border border-white/5">
-                          <div className="h-full bg-gradient-to-r from-[#7C3AED] to-[#A855F7] shadow-[0_0_10px_#7C3AED]" style={{ width: `${quest.progress}%` }}></div>
-                        </div>
-                      </div>
-                    ))
-                  )}
+                <div className="bg-[#121214] border border-[#A855F7]/30 p-6 flex flex-col items-center justify-center">
+                  <span className={`text-4xl font-black text-white ${orbitron.className} text-glow`}>#{userRank || '—'}</span>
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 mt-2 font-bold">Global Rank</span>
                 </div>
               </div>
+
+
 
               <div className="bg-[#121214] border border-[#A855F7]/20 rounded-md p-5">
                 <div className="mb-4 flex items-center justify-between">
@@ -347,20 +309,7 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              <div className="rounded overflow-hidden border border-[#7C3AED]/30 relative h-72 group">
-                <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-[#7C3AED]/10 to-transparent z-10"></div>
-                <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(124,58,237,0.4)] z-10 pointer-events-none"></div>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.18),transparent_65%)]"></div>
-                <div className="absolute bottom-6 left-6 z-20">
-                  <span className="text-[10px] font-black text-[#A855F7] tracking-[0.4em] uppercase mb-1 block">Raid Zone</span>
-                  <h3 className={`text-white font-black text-2xl uppercase italic ${orbitron.className} text-glow`}>The Eternal Slumber</h3>
-                  <p className="text-[#A855F7] text-xs font-bold flex items-center gap-2 mt-1">
-                    <span className="w-2 h-2 rounded-full bg-[#A855F7] animate-ping"></span>
-                    HIDDEN CLASS • LEGENDARY LOOT
-                  </p>
-                </div>
-                <Link href="/courses" className="absolute bottom-6 right-6 z-20 bg-[#A855F7] text-white font-black px-8 py-3 rounded-sm shadow-[0_0_10px_rgba(168,85,247,0.28)] hover:bg-[#7C3AED] transition-all uppercase tracking-widest">ENTER RAID</Link>
-              </div>
+              
             </div>
 
             <div className="lg:col-span-4 space-y-6">
@@ -378,36 +327,30 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="bg-[#121214] border border-white/5 rounded p-5">
-                <h3 className={`font-black text-white mb-6 text-xs uppercase tracking-[0.3em] border-b border-white/5 pb-3 ${orbitron.className} text-glow`}>System Notifications</h3>
-                <div className="space-y-5">
-                  {(recentPoints.length > 0 ? recentPoints.slice(0, 3) : [{ id: 'default', event_type: 'Danger: Gate Detected', created_at: new Date().toISOString(), points: 0 }]).map((event: any, index: number) => (
-                    <div key={event.id || index} className="flex gap-4 group">
-                      <div className={`w-10 h-10 rounded-sm flex items-center justify-center shrink-0 border ${index === 0 ? 'bg-red-600/10 text-red-500 border-red-600/20' : index === 1 ? 'bg-[#A855F7]/10 text-[#A855F7] border-[#A855F7]/20' : 'bg-blue-600/10 text-blue-400 border-blue-600/20'}`}>
-                        <Bell className="h-4 w-4" />
+              <div className="bg-[#121214] border border-[#A855F7]/30 rounded p-6">
+                <h2 className={`text-lg font-black text-white uppercase tracking-widest mb-4 ${orbitron.className}`}>
+                  Recent XP Logs
+                </h2>
+                <div className="space-y-3">
+                  {recentPoints.length === 0 ? (
+                    <p className="text-sm text-slate-500">No point activity yet.</p>
+                  ) : (
+                    recentPoints.map((event: any) => (
+                      <div key={event.id} className="flex items-center justify-between border-b border-white/10 pb-3 last:border-b-0">
+                        <div>
+                          <p className="text-sm font-medium text-white">{event.event_type.replace(/_/g, ' ')}</p>
+                          <p className="text-xs text-slate-500">
+                            {new Date(event.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-[#A855F7]">+{event.points} pts</p>
+                          <p className="text-xs text-slate-500">+{event.xp} XP</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs text-slate-300 font-bold uppercase tracking-wide">{String(event.event_type || 'System Notice').replace(/_/g, ' ')}</p>
-                        <p className="text-[10px] text-slate-500 font-mono mt-0.5">{new Date(event.created_at).toLocaleString()}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
-              </div>
-
-              <div className="bg-[#121214] border border-white/5 rounded p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className={`font-black text-white text-xs uppercase tracking-widest ${orbitron.className} text-glow`}>Daily Mana Goal</h3>
-                  <span className="text-[10px] text-[#A855F7] font-black">{manaUnitsDone} / {manaGoalUnits}</span>
-                </div>
-                <div className="flex gap-1.5 h-10">
-                  {Array.from({ length: manaGoalUnits }).map((_, index) => (
-                    <div key={index} className={`flex-1 ${index < manaUnitsDone ? 'bg-[#A855F7] shadow-[0_0_12px_rgba(168,85,247,0.45)]' : 'bg-white/5 border border-white/10'}`}></div>
-                  ))}
-                </div>
-                <p className="text-[10px] text-slate-500 mt-4 text-center font-bold tracking-widest uppercase italic">
-                  {Math.max(0, manaGoalUnits - manaUnitsDone)} more units to unlock hidden reward
-                </p>
               </div>
             </div>
           </div>

@@ -141,7 +141,7 @@ export default function PracticePage() {
             <div className="absolute inset-0 w-1 bg-purple-500 opacity-10 transition-all duration-300 group-hover:w-full" />
             <div className="relative flex items-center justify-center gap-2 px-4 py-4">
               <PlusCircle className="h-5 w-5" />
-              <span className="font-mono text-sm font-bold uppercase tracking-widest">Open Gate</span>
+              <span className="font-mono text-sm font-bold uppercase tracking-widest">View all Dungeons</span>
             </div>
           </button>
         </div>
@@ -242,14 +242,7 @@ export default function PracticePage() {
                   <h2 className={`${orbitron.className} mb-1 text-3xl font-bold text-white`}>Practice Gate</h2>
                   <p className="font-mono text-sm text-slate-400">Execute boss-fight coding drills and extract XP.</p>
                 </div>
-                <div className="flex gap-3">
-                  <button className="flex items-center gap-2 rounded border border-purple-500/30 bg-[#050507] px-4 py-2 font-mono text-xs uppercase tracking-wider text-purple-400 transition-all hover:bg-purple-500/10">
-                    <SearchCode className="h-4 w-4" /> Inject Code
-                  </button>
-                  <button className="flex items-center gap-2 rounded bg-purple-700 px-6 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_12px_rgba(168,85,247,0.5)] transition-all hover:bg-purple-600">
-                    <Rocket className="h-4 w-4" /> Deploy Solution
-                  </button>
-                </div>
+                
               </div>
 
               {!selectedProblem ? (
@@ -331,48 +324,9 @@ export default function PracticePage() {
                 </div>
               </div>
 
-              <div className="rounded-lg border border-white/5 bg-[#121215] p-4">
-                <h4 className="mb-4 font-mono text-xs uppercase tracking-widest text-slate-400">Mission_Checklist</h4>
-                <div className="space-y-3">
-                  {[
-                    { label: 'Entered Practice Gate', done: true },
-                    { label: 'Selected Trial', done: !!selectedProblem },
-                    { label: 'Solved at least 1 boss', done: stats.solved > 0 },
-                    { label: 'Maintain streak multiplier > 1', done: streakMultiplier > 1 },
-                  ].map((item) => (
-                    <div key={item.label} className="flex items-center gap-3">
-                      <div className={`flex h-5 w-5 items-center justify-center rounded border ${item.done ? 'border-purple-500/50 bg-purple-500/10' : 'border-slate-600 bg-[#09090b]'}`}>
-                        {item.done ? <Check className="h-3.5 w-3.5 text-purple-400" /> : <Circle className="h-3.5 w-3.5 text-transparent" />}
-                      </div>
-                      <span className={`font-mono text-xs ${item.done ? 'text-slate-300' : 'text-slate-500'}`}>{item.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+             
 
-              <div className="rounded-lg border border-white/5 bg-[#121215] p-4">
-                <h4 className="mb-4 font-mono text-xs uppercase tracking-widest text-slate-400">Projected_Rewards</h4>
-                <div className="space-y-4">
-                  <div>
-                    <div className="mb-1 flex justify-between font-mono text-[10px] text-slate-400">
-                      <span>XP Gain Potential</span>
-                      <span className="font-bold text-purple-400">High</span>
-                    </div>
-                    <div className="h-1 rounded-full bg-[#09090b] overflow-hidden">
-                      <div className="h-full w-3/4 bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_0_10px_rgba(168,85,247,0.7)]" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="mb-1 flex justify-between font-mono text-[10px] text-slate-400">
-                      <span>Gem Drop Rate</span>
-                      <span className="font-bold text-purple-400">Minimal</span>
-                    </div>
-                    <div className="h-1 rounded-full bg-[#09090b] overflow-hidden">
-                      <div className="h-full w-1/4 bg-gradient-to-r from-purple-500 to-blue-500" />
-                    </div>
-                  </div>
-                </div>
-              </div>
+              
 
               <div className="rounded-lg border border-purple-500/20 bg-purple-500/5 p-4 text-xs text-slate-300">
                 <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">

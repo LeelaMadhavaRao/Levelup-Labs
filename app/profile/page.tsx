@@ -165,10 +165,11 @@ export default function ProfilePage() {
   const easySolved = Math.round(problemsSolved * 0.34);
   const mediumSolved = Math.round(problemsSolved * 0.48);
   const hardSolved = Math.max(0, problemsSolved - easySolved - mediumSolved);
-  const level = Number(overview?.level ?? user.level ?? 1);
-  const xp = Number(overview?.xp ?? user.xp ?? 0);
-  const xpTarget = Math.max(1000, Math.ceil(xp / 1000) * 1000);
-  const xpPercent = Math.min(100, Math.round((xp / xpTarget) * 100));
+  const xp = Number(overview?.xp || overview?.total_points || user.xp || user.total_points || 0);
+  const level = Math.max(1, Math.floor(xp / 1000) + 1);
+  const xpInLevel = xp % 1000;
+  const xpTarget = 1000;
+  const xpPercent = Math.min(100, Math.round((xpInLevel / xpTarget) * 100));
   const recentActivityAt = pointEvents[0]?.created_at ?? null;
   const memberSince = formatJoinedDate(user.created_at);
   const totalAchievements = achievements.length;
@@ -184,15 +185,6 @@ export default function ProfilePage() {
     return rankByBadgeIndex(idx) === badgeFilter;
   });
   const recentFeats = pointEvents.slice(0, 3);
-  const dailyCompleted = dailyQuests.filter((q) => q.completed).length;
-  const weeklyCompleted = weeklyQuests.filter((q) => q.completed).length;
-  const dailyPercent = dailyQuests.length ? Math.round((dailyCompleted / dailyQuests.length) * 100) : 0;
-  const weeklyPercent = weeklyQuests.length ? Math.round((weeklyCompleted / weeklyQuests.length) * 100) : 0;
-  const masteryData = [
-    { name: 'Daily Quests', value: dailyPercent, color: 'bg-purple-500', text: 'text-purple-300' },
-    { name: 'Weekly Quests', value: weeklyPercent, color: 'bg-blue-500', text: 'text-blue-300' },
-    { name: 'Course Completion', value: Math.min(100, coursesCompleted * 10), color: 'bg-cyan-500', text: 'text-cyan-300' },
-  ];
 
   return (
     <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-200`}>
@@ -247,7 +239,7 @@ export default function ProfilePage() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs text-slate-400">
                       <span>XP Progress</span>
-                      <span className="text-white">{xp.toLocaleString()} / {xpTarget.toLocaleString()}</span>
+                      <span className="text-white">{xpInLevel.toLocaleString()} / {xpTarget.toLocaleString()}</span>
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
                       <div
@@ -406,23 +398,6 @@ export default function ProfilePage() {
                 <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
                   <div className="h-full bg-orange-500" style={{ width: `${Math.min(100, Math.max(15, streak * 6))}%` }} />
                 </div>
-              </div>
-            </div>
-
-            <div className="rounded-lg border border-white/10 bg-slate-900 p-5">
-              <p className="mb-4 text-xs uppercase text-slate-400">Mastery Distribution</p>
-              <div className="space-y-3">
-                {masteryData.map((item) => (
-                  <div key={item.name}>
-                    <div className="mb-1 flex justify-between text-xs">
-                      <span className="text-slate-300">{item.name}</span>
-                      <span className={item.text}>{item.value}%</span>
-                    </div>
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
-                      <div className={`${item.color} h-full`} style={{ width: `${item.value}%` }} />
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
 

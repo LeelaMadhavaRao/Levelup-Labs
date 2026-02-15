@@ -33,7 +33,7 @@ export function isGeneratedHunterAvatarUrl(url: string | null | undefined): bool
 }
 
 export function generateHunterAvatarUrl(seedInput: string): string {
-  const normalized = (seedInput.trim().toLowerCase() || `hunter-${Date.now()}`).slice(0, 120)
+  const normalized = (seedInput.trim().toLowerCase() || 'solo-leveling-hunter').slice(0, 120)
   const hash = hashSeed(normalized)
   const initials = getInitials(normalized)
   const rankList = ['E', 'D', 'C', 'B', 'A', 'S']

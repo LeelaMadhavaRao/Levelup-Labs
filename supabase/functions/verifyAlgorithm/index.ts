@@ -163,7 +163,7 @@ Be strict but fair. Minor wording issues are okay, but the core logic must be so
     const validation = JSON.parse(jsonStr)
 
     // Update problem solution status
-    const { error: updateError } = await supabaseClient
+    const { data: updatedSolution, error: updateError } = await supabaseClient
       .from('problem_solutions')
       .upsert(
         {
@@ -178,10 +178,17 @@ Be strict but fair. Minor wording issues are okay, but the core logic must be so
           ignoreDuplicates: false,
         }
       )
+      .select()
 
     if (updateError) {
-      console.error('Failed to save solution status:', updateError)
+      console.error('❌ Failed to save solution status:', updateError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to save verification result' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+      )
     }
+
+    console.log(`✅ Solution status updated to: ${updatedSolution?.[0]?.status}`)
 
     return new Response(
       JSON.stringify({

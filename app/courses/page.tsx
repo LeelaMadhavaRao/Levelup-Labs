@@ -295,7 +295,7 @@ export default function CoursesPage() {
                               className={`w-full clip-corner border ${rank.border} bg-white/5 text-xs uppercase tracking-[0.2em] ${rank.tint} hover:bg-white/10`}
                               onClick={() => router.push('/my-courses')}
                             >
-                              Buy Gate <ChevronRight className="ml-2 h-4 w-4" />
+                              Enter Gate <ChevronRight className="ml-2 h-4 w-4" />
                             </Button>
                             <Button
                               variant="outline"
@@ -310,7 +310,7 @@ export default function CoursesPage() {
                             className={`w-full clip-corner border ${rank.border} bg-white/5 text-xs uppercase tracking-[0.2em] ${rank.tint} hover:bg-white/10`}
                             onClick={() => handleRegister(course.id, course.name)}
                           >
-                            Enter Gate <Swords className="ml-2 h-4 w-4" />
+                            Buy Gate <Swords className="ml-2 h-4 w-4" />
                           </Button>
                         )}
                       </div>

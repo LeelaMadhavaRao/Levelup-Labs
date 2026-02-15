@@ -1529,26 +1529,30 @@ CREATE TRIGGER trigger_update_courses_completed
     FOR EACH ROW
     EXECUTE FUNCTION update_user_courses_completed();
 
-CREATE OR REPLACE FUNCTION initialize_user_leaderboard()
-RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION public.initialize_user_leaderboard()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
-    INSERT INTO leaderboard (user_id, total_points, updated_at)
+    INSERT INTO public.leaderboard (user_id, total_points, updated_at)
     VALUES (NEW.id, COALESCE(NEW.total_points, 0), now())
     ON CONFLICT (user_id) DO NOTHING;
 
-    INSERT INTO daily_streaks (user_id, current_streak, longest_streak, updated_at)
+    INSERT INTO public.daily_streaks (user_id, current_streak, longest_streak, updated_at)
     VALUES (NEW.id, 0, 0, now())
     ON CONFLICT (user_id) DO NOTHING;
 
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
-DROP TRIGGER IF EXISTS trigger_initialize_leaderboard ON users;
+DROP TRIGGER IF EXISTS trigger_initialize_leaderboard ON public.users;
 CREATE TRIGGER trigger_initialize_leaderboard
-    AFTER INSERT ON users
+    AFTER INSERT ON public.users
     FOR EACH ROW
-    EXECUTE FUNCTION initialize_user_leaderboard();
+    EXECUTE FUNCTION public.initialize_user_leaderboard();
 
 -- Auth helper (kept for compatibility, trigger intentionally disabled)
 CREATE OR REPLACE FUNCTION handle_new_user()
@@ -2125,3 +2129,42 @@ CREATE POLICY "Service role can insert users" ON public.users
 
 -- Required privileges for profile creation/update flows
 GRANT INSERT, UPDATE ON public.users TO authenticated;
+
+-- ==============================================
+-- Final users access repair (prevents 403 on /rest/v1/users)
+-- ==============================================
+
+-- Ensure read policies are present and deterministic
+DROP POLICY IF EXISTS "Users can read all users" ON public.users;
+CREATE POLICY "Users can read all users" ON public.users
+    FOR SELECT
+    USING (true);
+
+DROP POLICY IF EXISTS "Users can update their own profile (except role)" ON public.users;
+CREATE POLICY "Users can update their own profile (except role)" ON public.users
+    FOR UPDATE
+    USING (auth.uid() = id)
+    WITH CHECK (
+        auth.uid() = id
+        AND role = (SELECT role FROM public.users WHERE id = auth.uid())
+    );
+
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.users;
+CREATE POLICY "Users can insert own profile" ON public.users
+    FOR INSERT TO authenticated
+    WITH CHECK (
+        auth.uid() = id
+        AND role = 'user'
+    );
+
+DROP POLICY IF EXISTS "Service role can create users" ON public.users;
+DROP POLICY IF EXISTS "Service role can insert users" ON public.users;
+CREATE POLICY "Service role can insert users" ON public.users
+    FOR INSERT TO service_role
+    WITH CHECK (true);
+
+-- Ensure role privileges exist after schema reset
+GRANT SELECT ON public.users TO anon, authenticated;
+GRANT INSERT, UPDATE ON public.users TO authenticated;
+GRANT USAGE ON TYPE public.user_role TO anon, authenticated;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon, authenticated;
