@@ -39,25 +39,18 @@ function normalizeAiText(value: unknown): string {
   return String(value)
 }
 
-function getNextGeminiApiKey(): string {
-  if (GEMINI_API_KEYS.length === 0) {
-    throw new Error('No Gemini API keys configured')
-  }
-  const key = GEMINI_API_KEYS[currentKeyIndex]
-  currentKeyIndex = (currentKeyIndex + 1) % GEMINI_API_KEYS.length
-  return key
-}
-
 async function callGeminiAPI(prompt: string): Promise<string> {
   let lastError: Error | null = null
 
-  // Try each model (1.5-flash first, then 2.0-flash-exp)
-  for (const modelName of MODELS) {
-    // For each model, try all API keys using round-robin
-    for (let keyAttempt = 0; keyAttempt < GEMINI_API_KEYS.length; keyAttempt++) {
+  // Try each API key in round-robin fashion
+  for (let keyAttempt = 0; keyAttempt < GEMINI_API_KEYS.length; keyAttempt++) {
+    const apiKey = GEMINI_API_KEYS[currentKeyIndex]
+    currentKeyIndex = (currentKeyIndex + 1) % GEMINI_API_KEYS.length
+    
+    // For each key, try both models (primary then fallback)
+    for (const modelName of MODELS) {
       try {
-        const apiKey = getNextGeminiApiKey()
-        
+        console.log(`🔄 Trying ${modelName} with API key ${keyAttempt + 1}/${GEMINI_API_KEYS.length}`)
         
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({ model: modelName })
@@ -66,12 +59,15 @@ async function callGeminiAPI(prompt: string): Promise<string> {
         const response = await result.response
         const text = response.text()
         
+        console.log(`✅ Success with ${modelName} using key ${keyAttempt + 1}`)
         return text
       } catch (error) {
         lastError = error as Error
-        console.error(`❌ ${modelName} attempt ${keyAttempt + 1} failed:`, (error as Error).message)
+        console.error(`❌ ${modelName} with key ${keyAttempt + 1} failed:`, (error as Error).message)
+        // Continue to next model with same key
       }
     }
+    // If both models failed with this key, continue to next key
   }
 
   throw lastError || new Error('All API keys and models exhausted')

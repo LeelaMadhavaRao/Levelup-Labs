@@ -119,7 +119,7 @@ export default function MyCoursesPage() {
             <div className="absolute inset-0 w-1 bg-purple-500 opacity-10 transition-all duration-300 group-hover:w-full" />
             <div className="relative flex items-center justify-center gap-2 px-4 py-4">
               <PlusCircle className="h-5 w-5" />
-              <span className="font-mono text-sm font-bold uppercase tracking-widest">Open Gate</span>
+              <span className="font-mono text-sm font-bold uppercase tracking-widest">View all Dungeons</span>
             </div>
           </button>
         </div>
@@ -190,10 +190,7 @@ export default function MyCoursesPage() {
               System Online
             </span>
           </div>
-          <div className="hidden items-center gap-3 sm:flex">
-            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-purple-400"><Activity className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-purple-400"><Settings2 className="h-4 w-4" /></Button>
-          </div>
+          
         </header>
 
         <div className="scanlines relative z-10 flex-1 overflow-y-auto p-4 md:p-8">
@@ -210,15 +207,7 @@ export default function MyCoursesPage() {
                 <div className="flex flex-wrap items-end justify-between gap-3">
                   <div>
                     <h2 className={`${orbitron.className} mb-1 text-3xl font-bold text-white`}>Gate Configuration</h2>
-                    <p className="font-mono text-sm text-slate-400">Edit parameters for Sector: {selectedCourse.name}</p>
-                  </div>
-                  <div className="flex gap-3">
-                    <button className="flex items-center gap-2 rounded border border-purple-500/30 bg-[#050507] px-4 py-2 font-mono text-xs uppercase tracking-wider text-purple-400 transition-all hover:bg-purple-500/10">
-                      <Code2 className="h-4 w-4" /> Inject Code
-                    </button>
-                    <button className="flex items-center gap-2 rounded bg-purple-700 px-6 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-[0_0_12px_rgba(168,85,247,0.5)] transition-all hover:bg-purple-600">
-                      <Rocket className="h-4 w-4" /> Deploy Changes
-                    </button>
+                    <p className="text-sm text-slate-400">Manage your gate parameters and monitor your progress.</p>
                   </div>
                 </div>
 
@@ -247,9 +236,7 @@ export default function MyCoursesPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Dungeon Layers (Modules)</h3>
-                    <button onClick={() => router.push('/courses')} className="flex items-center gap-1 font-mono text-xs text-purple-400 transition-colors hover:text-white">
-                      <PlusCircle className="h-4 w-4" /> Add_Layer
-                    </button>
+                    
                   </div>
 
                   {selectedCourse.modules?.length ? (
@@ -275,10 +262,7 @@ export default function MyCoursesPage() {
                                   <span className="rounded border border-purple-500/40 bg-purple-900/30 px-2 py-0.5 font-mono text-[10px] uppercase text-purple-300">Stable</span>
                                 </div>
                               </div>
-                              <div className="flex gap-2">
-                                <button className="rounded p-1.5 text-slate-400 hover:bg-white/10"><Settings2 className="h-4 w-4" /></button>
-                                <button className="rounded p-1.5 text-slate-400 hover:bg-white/10"><Trash2 className="h-4 w-4" /></button>
-                              </div>
+                              
                             </div>
 
                             <div className="space-y-2 border-l-2 border-white/5 pl-4">
@@ -332,48 +316,8 @@ export default function MyCoursesPage() {
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-white/5 bg-[#121215] p-4">
-                  <h4 className="mb-4 font-mono text-xs uppercase tracking-widest text-slate-400">Deployment_Checklist</h4>
-                  <div className="space-y-3">
-                    {[
-                      { label: 'Syntax Validation', done: selectedProgress >= 25 },
-                      { label: 'Asset Compilation', done: selectedProgress >= 45 },
-                      { label: 'Unit Tests Passed', done: selectedProgress >= 70 },
-                      { label: 'Admin Approval', done: selectedProgress >= 90 },
-                    ].map((item) => (
-                      <label key={item.label} className="group flex cursor-pointer items-center gap-3">
-                        <div className={`relative flex h-5 w-5 items-center justify-center rounded border transition-all ${item.done ? 'border-purple-500/50 bg-purple-500/10 shadow-[0_0_8px_rgba(168,85,247,0.6)]' : 'border-slate-600 bg-[#09090b] group-hover:border-purple-500/50'}`}>
-                          {item.done ? <Check className="h-3.5 w-3.5 text-purple-400" /> : <Circle className="h-3.5 w-3.5 text-transparent" />}
-                        </div>
-                        <span className={`font-mono text-xs transition-colors ${item.done ? 'text-slate-300 group-hover:text-purple-300' : 'text-slate-500 group-hover:text-slate-300'}`}>{item.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
+                
 
-                <div className="rounded-lg border border-white/5 bg-[#121215] p-4">
-                  <h4 className="mb-4 font-mono text-xs uppercase tracking-widest text-slate-400">Projected_Resources</h4>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="mb-1 flex justify-between font-mono text-[10px] text-slate-400">
-                        <span>Compute Power</span>
-                        <span className="font-bold text-purple-400">High</span>
-                      </div>
-                      <div className="h-1 overflow-hidden rounded-full bg-[#09090b]">
-                        <div className="h-full w-3/4 bg-gradient-to-r from-purple-500 to-blue-500 shadow-[0_0_10px_rgba(168,85,247,0.7)]" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="mb-1 flex justify-between font-mono text-[10px] text-slate-400">
-                        <span>Storage Blocks</span>
-                        <span className="font-bold text-purple-400">Minimal</span>
-                      </div>
-                      <div className="h-1 overflow-hidden rounded-full bg-[#09090b]">
-                        <div className="h-full w-1/4 bg-gradient-to-r from-purple-500 to-blue-500" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
                 <div className="rounded-lg border border-purple-500/20 bg-purple-500/5 p-4 text-xs text-slate-300">
                   <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">
