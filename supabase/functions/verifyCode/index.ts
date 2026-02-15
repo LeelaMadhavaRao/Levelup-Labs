@@ -183,7 +183,6 @@ Be strict - even one failing test case means allTestsPassed should be false.`
     let pointsAwarded = 0
     let xpAwarded = 0
     let rewardApplied = false
-
     // Award points FIRST (before updating problem_solutions)
     if (allPassed && points > 0) {
       const alreadyAwarded = existingSolution?.points_awarded > 0 && existingSolution?.status === 'completed'
@@ -246,7 +245,6 @@ Be strict - even one failing test case means allTestsPassed should be false.`
             pointsAwarded = points
             xpAwarded = points
             rewardApplied = true
-
             console.log(`✅ Direct fallback: awarded ${points} points to user ${user.id}`)
           } catch (fallbackError) {
             console.error('❌ Direct fallback also failed:', fallbackError)

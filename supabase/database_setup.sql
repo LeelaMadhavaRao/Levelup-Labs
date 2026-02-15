@@ -515,6 +515,7 @@ CREATE POLICY "Anyone can read season snapshots" ON season_leaderboard_snapshots
 -- ==============================================
 -- Ensure anon/authenticated roles can access public schema
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT USAGE ON TYPE user_role, problem_difficulty, solution_status, quest_frequency, achievement_condition_type TO anon, authenticated;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
 -- Authenticated users can only modify their own data via RLS policies
 GRANT SELECT, INSERT, UPDATE ON users TO authenticated;
