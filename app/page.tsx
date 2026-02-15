@@ -74,11 +74,11 @@ export default function HomePage() {
             <span>Powered by Gemini AI</span>
           </div>
           
-          <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-foreground">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-5xl lg:text-6xl text-foreground">
             Master Coding with AI-Powered Learning
           </h1>
           
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base text-muted-foreground max-w-2xl mx-auto sm:text-lg md:text-xl">
             Learn to code through interactive courses, AI-generated challenges, and gamified experiences. 
             Track your progress, earn rewards, and compete on the leaderboard.
           </p>
@@ -109,7 +109,7 @@ export default function HomePage() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto text-left">
+          <div className="grid grid-cols-1 gap-3 max-w-3xl mx-auto text-left sm:grid-cols-2 lg:grid-cols-3">
             {checklist.map((item) => (
               <div key={item} className="rb-card flex items-center gap-2 rounded-lg border border-border/60 bg-card/70 p-3">
                 <CheckCircle2 className="h-4 w-4 text-cyan-300 shrink-0" />
@@ -122,7 +122,7 @@ export default function HomePage() {
 
       {/* Stats Section */}
       <section className="container px-4 py-12 border-y">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
           {stats.map((stat, index) => (
             <div key={index} className="text-center space-y-2">
               <div className="text-3xl md:text-4xl font-bold text-foreground">
@@ -171,7 +171,7 @@ export default function HomePage() {
           </p>
         </div>
         
-        <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
+        <div className="grid gap-6 max-w-6xl mx-auto sm:grid-cols-2 xl:grid-cols-4">
           {[
             { step: '1', title: 'Choose Course', desc: 'Select from our curated courses' },
             { step: '2', title: 'Watch & Learn', desc: 'Follow video tutorials and documentation' },
@@ -232,3 +232,4 @@ export default function HomePage() {
     </div>
   );
 }
+

@@ -1,3 +1,13 @@
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,6 +34,25 @@ body {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cpath fill='none' stroke='rgba(0,0,0,0.05)' stroke-width='1' d='M0 0H160V160H0z M40 0V160 M80 0V160 M120 0V160 M0 40H160 M0 80H160 M0 120H160'/%3E%3C/svg%3E");
     background-size: 160px 160px;
     background-position: 0 0;
+  }
+  .card-interactive {
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
+  }
+  .card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px -18px hsl(var(--foreground) / 0.5);
+    border-color: hsl(var(--foreground) / 0.25);
+  }
+  .card-equal {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .card-equal-content {
+    flex: 1;
+  }
+  .reveal-in {
+    animation: fade-up 320ms ease both;
   }
 }
 
@@ -103,13 +132,23 @@ body {
   .dark .page-shell {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cpath fill='none' stroke='rgba(255,255,255,0.06)' stroke-width='1' d='M0 0H160V160H0z M40 0V160 M80 0V160 M120 0V160 M0 40H160 M0 80H160 M0 120H160'/%3E%3C/svg%3E");
   }
+
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
   body {
     @apply bg-background text-foreground;
   }
 }
+
+

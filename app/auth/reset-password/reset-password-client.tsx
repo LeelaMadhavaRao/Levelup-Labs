@@ -56,7 +56,7 @@ export default function ResetPasswordClient() {
       const { error } = await resetPassword(token, password)
 
       if (error) {
-        toast.error(error)
+        toast.error(typeof error === 'string' ? error : 'Failed to reset password. Please try again.')
         if (error.includes('expired') || error.includes('invalid')) {
           setTokenValid(false)
         }

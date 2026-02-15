@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { getCurrentUser, signOut } from '@/lib/auth';
+import { getGamificationOverview } from '@/lib/gamification';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -15,13 +16,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Menu, X, Trophy, User, LogOut, Sun, Moon } from 'lucide-react';
+import { Flame, Menu, Moon, Star, Sun, Trophy, User, X, LogOut } from 'lucide-react';
 
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const [user, setUser] = useState<any>(null);
+  const [playerStats, setPlayerStats] = useState<{ level: number; streak: number; points: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -41,6 +43,24 @@ export default function Navbar() {
   const loadUser = async () => {
     const currentUser = await getCurrentUser();
     setUser(currentUser);
+    if (currentUser) {
+      try {
+        const overview = await getGamificationOverview(currentUser.id);
+        setPlayerStats({
+          level: overview.level,
+          streak: overview.current_streak,
+          points: overview.total_points,
+        });
+      } catch {
+        setPlayerStats({
+          level: Number(currentUser.level || 1),
+          streak: 0,
+          points: Number(currentUser.total_points || 0),
+        });
+      }
+    } else {
+      setPlayerStats(null);
+    }
     setLoading(false);
   };
 
@@ -120,6 +140,23 @@ export default function Navbar() {
 
         {/* Right side: theme toggle + user/auth buttons */}
         <div className="flex items-center gap-2">
+          {user && playerStats && (
+            <div className="hidden lg:flex items-center gap-1 rounded-full border border-border/70 bg-muted/40 px-2 py-1 text-xs">
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 font-semibold text-primary">
+                <Star className="h-3 w-3" />
+                Lv {playerStats.level}
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-1 font-semibold text-amber-500">
+                <Trophy className="h-3 w-3" />
+                {playerStats.points}
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-2 py-1 font-semibold text-orange-500">
+                <Flame className="h-3 w-3" />
+                {playerStats.streak}d
+              </span>
+            </div>
+          )}
+
           {/* Theme Toggle */}
           {mounted && (
             <Button
@@ -249,15 +286,36 @@ export default function Navbar() {
 
             {/* Sign out in mobile */}
             {user && (
-              <button
-                className="w-full text-left px-4 py-2.5 rounded-md text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors mt-2"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  handleSignOut();
-                }}
-              >
-                Sign Out
-              </button>
+              <>
+                {playerStats && (
+                  <div className="mx-1 mb-2 rounded-lg border border-border/70 bg-muted/40 p-3 text-xs">
+                    <div className="mb-2 font-medium text-foreground/80">Player HUD</div>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 font-semibold text-primary">
+                        <Star className="h-3 w-3" />
+                        Lv {playerStats.level}
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-1 font-semibold text-amber-500">
+                        <Trophy className="h-3 w-3" />
+                        {playerStats.points}
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-2 py-1 font-semibold text-orange-500">
+                        <Flame className="h-3 w-3" />
+                        {playerStats.streak} day streak
+                      </span>
+                    </div>
+                  </div>
+                )}
+                <button
+                  className="w-full text-left px-4 py-2.5 rounded-md text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors mt-2"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleSignOut();
+                  }}
+                >
+                  Sign Out
+                </button>
+              </>
             )}
           </div>
         </div>

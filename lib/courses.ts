@@ -1,5 +1,16 @@
 import { createClient } from './supabase'
 
+function toError(error: unknown, fallback: string): Error {
+  if (error instanceof Error) return error
+  if (error && typeof error === 'object') {
+    const message = (error as { message?: unknown }).message
+    if (typeof message === 'string' && message.trim()) {
+      return new Error(message)
+    }
+  }
+  return new Error(fallback)
+}
+
 export async function createCourse(data: {
   admin_id: string
   name: string
@@ -42,7 +53,7 @@ export async function getCourseById(courseId: string) {
     .eq('id', courseId)
     .single()
   
-  if (error) throw error
+  if (error) throw toError(error, 'Failed to load course')
   return data
 }
 
@@ -74,7 +85,7 @@ export async function getCourseWithModules(courseId: string) {
     .eq('id', courseId)
     .single()
   
-  if (error) throw error
+  if (error) throw toError(error, 'Failed to load course modules')
   return data
 }
 
@@ -132,7 +143,7 @@ export async function isUserRegisteredForCourse(userId: string, courseId: string
     return false // Not found
   }
   
-  if (error) throw error
+  if (error) throw toError(error, 'Failed to check course registration')
   return !!data
 }
 
@@ -145,7 +156,7 @@ export async function getCourseModules(courseId: string) {
     .eq('course_id', courseId)
     .order('order', { ascending: true })
   
-  if (error) throw error
+  if (error) throw toError(error, 'Failed to load modules')
   return data
 }
 
@@ -163,7 +174,7 @@ export async function addModule(courseId: string, title: string, order: number) 
     ])
     .select()
   
-  if (error) throw error
+  if (error) throw toError(error, 'Failed to create module')
   return data
 }
 
@@ -175,7 +186,7 @@ export async function getModuleTopics(moduleId: string) {
     .select('*')
     .eq('module_id', moduleId)
   
-  if (error) throw error
+  if (error) throw toError(error, 'Failed to load module topics')
   return data
 }
 
@@ -201,7 +212,7 @@ export async function addTopic(
     ])
     .select()
   
-  if (error) throw error
+  if (error) throw toError(error, 'Failed to create topic')
   return data
 }
 
@@ -214,7 +225,7 @@ export async function getTopicById(topicId: string) {
     .eq('id', topicId)
     .single()
   
-  if (error) throw error
+  if (error) throw toError(error, 'Failed to load topic')
   return data
 }
 
@@ -233,7 +244,7 @@ export async function getCoursesByAdmin(adminId: string) {
     .eq('admin_id', adminId)
     .order('created_at', { ascending: false })
   
-  if (error) throw error
+  if (error) throw toError(error, 'Failed to load admin courses')
   return data || []
 }
 
@@ -395,7 +406,7 @@ export async function getUserCoursesWithProgress(userId: string) {
     `)
     .eq('user_id', userId)
   
-  if (error) throw error
+  if (error) throw toError(error, 'Failed to load user course progress')
 
   // Fetch topic progress for this user to determine completion status
   // Handle gracefully if topic_progress table doesn't exist

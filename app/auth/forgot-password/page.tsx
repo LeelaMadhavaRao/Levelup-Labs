@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
       const { error } = await requestPasswordReset(email)
 
       if (error) {
-        toast.error(error)
+        toast.error(typeof error === 'string' ? error : 'Failed to send reset email. Please try again.')
       } else {
         setEmailSent(true)
         toast.success('Password reset email sent! Check your inbox.')

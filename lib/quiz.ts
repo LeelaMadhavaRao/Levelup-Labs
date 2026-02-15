@@ -7,6 +7,17 @@ export interface QuizQuestion {
   correctAnswer: number
 }
 
+function toError(error: unknown, fallback: string): Error {
+  if (error instanceof Error) return error
+  if (error && typeof error === 'object') {
+    const message = (error as { message?: unknown }).message
+    if (typeof message === 'string' && message.trim()) {
+      return new Error(message)
+    }
+  }
+  return new Error(fallback)
+}
+
 // Generate quiz using Edge Function (server-side Gemini AI)
 export async function generateQuiz(topicId: string, topicName: string, numQuestions: number, topicOverview?: string) {
   const supabase = createClient()
@@ -103,7 +114,7 @@ export async function getTopic(topicId: string) {
     .eq('id', topicId)
     .single()
   
-  if (error) throw error
+  if (error) throw toError(error, 'Failed to load topic')
   return data
 }
 
@@ -143,7 +154,7 @@ export async function submitQuizResponse(
     ])
     .select()
   
-  if (error) throw error
+  if (error) throw toError(error, 'Failed to submit quiz response')
   return data
 }
 
@@ -163,7 +174,7 @@ export async function getQuizResponse(userId: string, topicId: string) {
     return null // Not found
   }
   
-  if (error) throw error
+  if (error) throw toError(error, 'Failed to load quiz response')
   return data
 }
 

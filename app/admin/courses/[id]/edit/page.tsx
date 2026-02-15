@@ -138,7 +138,7 @@ export default function EditCoursePage() {
       })
 
       if (error) {
-        toast.error(error)
+        toast.error(typeof error === 'string' ? error : 'Operation failed')
       } else {
         toast.success('Course updated successfully')
         await loadCourse()
@@ -155,7 +155,7 @@ export default function EditCoursePage() {
     try {
       const { error } = await deleteCourse(courseId)
       if (error) {
-        toast.error(error)
+        toast.error(typeof error === 'string' ? error : 'Operation failed')
       } else {
         toast.success('Course deleted successfully')
         router.push('/admin/courses')
@@ -184,7 +184,7 @@ export default function EditCoursePage() {
       })
 
       if (error) {
-        toast.error(error)
+        toast.error(typeof error === 'string' ? error : 'Operation failed')
       } else {
         toast.success('Module added successfully')
         setNewModuleName('')
@@ -208,7 +208,7 @@ export default function EditCoursePage() {
       })
 
       if (error) {
-        toast.error(error)
+        toast.error(typeof error === 'string' ? error : 'Operation failed')
       } else {
         toast.success('Module updated successfully')
         setEditingModule(null)
@@ -226,7 +226,7 @@ export default function EditCoursePage() {
     try {
       const { error } = await deleteModule(moduleId)
       if (error) {
-        toast.error(error)
+        toast.error(typeof error === 'string' ? error : 'Operation failed')
       } else {
         toast.success('Module deleted successfully')
         await loadCourse()
@@ -258,7 +258,7 @@ export default function EditCoursePage() {
       })
 
       if (error) {
-        toast.error(error)
+        toast.error(typeof error === 'string' ? error : 'Operation failed')
       } else {
         toast.success('Topic added successfully')
         setNewTopicName('')
@@ -295,7 +295,7 @@ export default function EditCoursePage() {
       })
 
       if (error) {
-        toast.error(error)
+        toast.error(typeof error === 'string' ? error : 'Operation failed')
       } else {
         toast.success('Topic updated successfully')
         setEditingTopic(null)
@@ -313,7 +313,7 @@ export default function EditCoursePage() {
     try {
       const { error } = await deleteTopic(topicId)
       if (error) {
-        toast.error(error)
+        toast.error(typeof error === 'string' ? error : 'Operation failed')
       } else {
         toast.success('Topic deleted successfully')
         await loadCourse()
