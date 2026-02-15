@@ -153,7 +153,7 @@ export default function QuizPage() {
 
     if (finalScore >= 70) {
       if (earnedPoints > 0 || earnedXp > 0) {
-        toast.success(`Quiz cleared! +${earnedPoints} XP and +${earnedXp} bonus XP`);
+        toast.success(`Quiz cleared! +${earnedPoints} points and +${earnedXp} XP`);
       } else {
         toast.success('Congratulations! You passed the quiz!');
       }

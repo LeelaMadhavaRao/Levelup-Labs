@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Orbitron, Rajdhani } from 'next/font/google';
 import { getTopic, markVideoAsWatched } from '@/lib/courses';
-import { getCurrentUser } from '@/lib/auth';
+import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
 import { createClient } from '@/lib/supabase';
 import { hasUserPassedQuiz } from '@/lib/quiz';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,7 @@ export default function WatchVideoPage() {
   const [enhancedOverview, setEnhancedOverview] = useState<string | null>(null);
   const [enhancing, setEnhancing] = useState(false);
   const [systemTime, setSystemTime] = useState<string>(() => new Date().toLocaleTimeString('en-US', { hour12: false }));
+  const [avatarSrc, setAvatarSrc] = useState<string>('');
 
   useEffect(() => {
     loadData();
@@ -41,6 +42,7 @@ export default function WatchVideoPage() {
     }
 
     setUser(currentUser);
+    setAvatarSrc(currentUser.avatar_url || generateHunterAvatarUrl(`${currentUser.id}-${currentUser.full_name || currentUser.email || 'hunter'}`));
     const topicData = await getTopic(topicId);
     setTopic(topicData);
     setWatched(topicData?.video_watched || false);
@@ -191,8 +193,13 @@ export default function WatchVideoPage() {
                   </div>
                 </div>
                 <div className="h-10 w-10 rounded-full border-2 border-purple-400 p-0.5 ml-2 breathing-purple">
-                  {user?.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name} className="h-full w-full rounded-full object-cover" />
+                  {user ? (
+                    <img
+                      src={avatarSrc}
+                      alt={user.full_name || 'Hunter'}
+                      className="h-full w-full rounded-full object-cover"
+                      onError={() => setAvatarSrc(generateHunterAvatarUrl(`${user.id}-${user.full_name || user.email || 'hunter'}`))}
+                    />
                   ) : (
                     <div className="h-full w-full rounded-full bg-white/10" />
                   )}

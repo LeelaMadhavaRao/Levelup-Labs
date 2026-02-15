@@ -66,10 +66,46 @@ export async function completeCourse(userId: string, courseId: string) {
     })
     
     if (error) {
+      const { data: courseData } = await supabase
+        .from('courses')
+        .select('completion_reward_points')
+        .eq('id', courseId)
+        .maybeSingle()
+
+      const rewardPoints = Number(courseData?.completion_reward_points ?? 0)
+      const eventKey = `complete_course:${userId}:${courseId}`
+      const { data: fallbackReward, error: fallbackError } = await supabase.rpc('award_points_event', {
+        p_user_id: userId,
+        p_event_type: 'complete_course',
+        p_event_key: eventKey,
+        p_points: rewardPoints,
+        p_xp: rewardPoints * 2,
+        p_metadata: { course_id: courseId, source: 'client_fallback' },
+      })
+
+      if (fallbackError) {
+        return {
+          error: error.message || 'Failed to complete course',
+          pointsAwarded: 0,
+          xpAwarded: 0,
+        }
+      }
+
+      const fallbackRow = Array.isArray(fallbackReward) ? fallbackReward[0] : null
+      await supabase
+        .from('user_courses')
+        .update({
+          completed_at: new Date().toISOString(),
+          completion_points_awarded: Number(fallbackRow?.points_awarded ?? 0),
+        })
+        .eq('user_id', userId)
+        .eq('course_id', courseId)
+
       return {
-        error: error.message || 'Failed to complete course',
-        pointsAwarded: 0,
-        xpAwarded: 0,
+        error: null,
+        pointsAwarded: Number(fallbackRow?.points_awarded ?? 0),
+        xpAwarded: Number(fallbackRow?.xp_awarded ?? 0),
+        message: fallbackRow?.applied ? 'Course completed successfully' : 'Course already completed',
       }
     }
     

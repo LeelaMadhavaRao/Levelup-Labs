@@ -1,11 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-
-function generateHunterAvatarUrl(seedInput: string) {
-  const seed = encodeURIComponent(seedInput.trim().toLowerCase() || `hunter-${Date.now()}`)
-  return `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${seed}&backgroundType=gradientLinear&backgroundColor=190B2A,2A0E45,00E5FF&eyes=bulging,cute,round&mouth=grill01,smile01,smile02`
-}
+import { generateHunterAvatarUrl } from '@/lib/avatar'
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
@@ -68,5 +64,6 @@ export async function GET(request: Request) {
   }
 
   // Redirect to dashboard after successful OAuth login or email confirmation
-  return NextResponse.redirect(new URL('/dashboard', requestUrl.origin))
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || requestUrl.origin
+  return NextResponse.redirect(new URL('/dashboard', siteUrl))
 }

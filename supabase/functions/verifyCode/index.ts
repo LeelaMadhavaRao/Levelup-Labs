@@ -166,35 +166,50 @@ Be strict - even one failing test case means allTestsPassed should be false.`
     }
     const points = allPassed ? (difficultyPoints[problem.difficulty] || 0) : 0
 
-    // Award points FIRST (before updating problem_solutions) so the
-    // idempotency check inside add_points_to_user sees the old row
-    // where points_awarded is still 0.
+    let pointsAwarded = 0
+    let xpAwarded = 0
+    let rewardApplied = false
+    let existingAwardedPoints = 0
+
+    // Always route successful submissions through award_points_event.
+    // Points remain idempotent via event_key, while streak still gets daily activity updates.
     if (allPassed && points > 0) {
-      // Check if points were already awarded for this problem (idempotency)
       const { data: existingSolution } = await supabaseClient
         .from('problem_solutions')
-        .select('points_awarded, status')
+        .select('points_awarded')
         .eq('user_id', user.id)
         .eq('problem_id', problemId)
-        .single()
+        .maybeSingle()
 
-      const alreadyAwarded = existingSolution?.points_awarded > 0 && existingSolution?.status === 'completed'
+      existingAwardedPoints = Number(existingSolution?.points_awarded ?? 0)
 
-      if (!alreadyAwarded) {
-        // Try RPC first (handles users + leaderboard + ranks)
-        const { error: rpcError } = await supabaseClient.rpc('add_points_to_user', {
-          p_user_id: user.id,
-          p_points: points,
-          p_problem_id: problemId,
-        })
+      const eventKey = `solve_problem:${user.id}:${problemId}`
+      const { data: rewardData, error: rewardError } = await supabaseClient.rpc('award_points_event', {
+        p_user_id: user.id,
+        p_event_type: 'solve_problem',
+        p_event_key: eventKey,
+        p_points: points,
+        p_xp: points,
+        p_metadata: {
+          problem_id: problemId,
+          source: 'verifyCode',
+        },
+      })
 
-        if (rpcError) {
-          console.error('RPC add_points_to_user failed:', rpcError.message)
-        }
+      if (rewardError) {
+        console.error('RPC award_points_event failed:', rewardError.message)
+      } else if (Array.isArray(rewardData) && rewardData.length > 0) {
+        pointsAwarded = Number(rewardData[0]?.points_awarded ?? 0)
+        xpAwarded = Number(rewardData[0]?.xp_awarded ?? 0)
+        rewardApplied = !!rewardData[0]?.applied
       }
     }
 
     // Now update the solution row with code, status, and points_awarded
+    const persistedPointsAwarded = allPassed
+      ? Math.max(existingAwardedPoints, pointsAwarded)
+      : 0
+
     const { error: updateError } = await supabaseClient
       .from('problem_solutions')
       .update({
@@ -202,7 +217,7 @@ Be strict - even one failing test case means allTestsPassed should be false.`
         language: language,
         status: allPassed ? 'completed' : 'code_failed',
         code_verified_at: new Date().toISOString(),
-        points_awarded: points,
+        points_awarded: persistedPointsAwarded,
       })
       .eq('user_id', user.id)
       .eq('problem_id', problemId)
@@ -251,7 +266,9 @@ Be strict - even one failing test case means allTestsPassed should be false.`
         allTestsPassed: allPassed,
         testResults: validation.testResults,
         feedback: validation.feedback,
-        pointsAwarded: points,
+        pointsAwarded,
+        xpAwarded,
+        rewardApplied,
       }),
       { status: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
     )

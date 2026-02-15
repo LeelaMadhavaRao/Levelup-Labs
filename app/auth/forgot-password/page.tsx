@@ -48,19 +48,21 @@ export default function ForgotPasswordPage() {
 
   if (emailSent) {
     return (
-      <div className={`${rajdhani.className} relative min-h-screen bg-[#050508] flex items-center justify-center p-4 text-slate-100`}>
+      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#050508] text-slate-100`}>
         <div className="pointer-events-none fixed inset-0 z-0 nebula-bg animate-pulse" style={{ animationDuration: '4s' }} />
+        <div className="hunter-grid-bg pointer-events-none fixed inset-0 z-0 opacity-70" />
         <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-20" />
 
-        <Card className="relative z-20 w-full max-w-md border-white/15 bg-black/70 p-8 text-slate-100">
+        <main className="relative z-20 mx-auto flex min-h-screen w-full max-w-5xl items-center justify-center p-6">
+        <Card className="relative z-20 w-full max-w-xl border-white/15 bg-black/75 p-8 text-slate-100 holo-card">
           <div className="text-center space-y-6">
             <div className="flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center border border-neutral-800">
+              <div className="h-16 w-16 rounded-full border border-cyan-500/40 bg-cyan-500/10 flex items-center justify-center">
                 <Mail className="w-8 h-8 text-cyan-300" />
               </div>
             </div>
             <div>
-              <h1 className={`${orbitron.className} text-3xl font-bold mb-2`}>Check Your Email</h1>
+              <h1 className={`${orbitron.className} text-3xl font-bold mb-2 uppercase tracking-[0.16em]`}>Check Your Email</h1>
               <p className="text-slate-400">
                 We've sent a password reset link to <strong className="text-foreground">{email}</strong>
               </p>
@@ -76,13 +78,13 @@ export default function ForgotPasswordPage() {
                   setEmail('')
                 }}
                 variant="outline"
-                className="w-full"
+                className="w-full border-white/20 bg-transparent text-slate-100 hover:bg-white/10"
               >
                 Try Another Email
               </Button>
               <Button
                 onClick={() => router.push('/auth/login')}
-                className="w-full"
+                className="btn-hunter w-full border border-purple-400/40 bg-purple-700 text-white hover:bg-purple-600"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Login
@@ -90,20 +92,39 @@ export default function ForgotPasswordPage() {
             </div>
           </div>
         </Card>
+        </main>
       </div>
     )
   }
 
   return (
-    <div className={`${rajdhani.className} relative min-h-screen bg-[#050508] flex items-center justify-center p-4 text-slate-100`}>
+    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#050508] text-slate-100`}>
       <div className="pointer-events-none fixed inset-0 z-0 nebula-bg animate-pulse" style={{ animationDuration: '4s' }} />
+      <div className="hunter-grid-bg pointer-events-none fixed inset-0 z-0 opacity-70" />
       <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-20" />
 
-      <Card className="relative z-20 w-full max-w-md border-white/15 bg-black/70 p-8 text-slate-100">
+      <main className="relative z-20 mx-auto flex w-full max-w-6xl flex-col items-center gap-10 p-6 md:min-h-screen md:flex-row md:gap-12">
+        <section className="hidden flex-1 space-y-8 select-none md:flex md:flex-col">
+          <div className="space-y-2">
+            <h1 className={`${orbitron.className} text-4xl font-bold tracking-tight text-white`}>
+              SYSTEM<span className="text-cyan-300">_RECOVERY</span>
+            </h1>
+            <p className="pl-1 font-mono text-sm tracking-[0.25em] text-slate-400">ACCESS KEY RESET // V.2.9.1</p>
+          </div>
+          <div className="holo-card rounded-lg border-l-4 border-l-cyan-300 bg-black/40 p-6">
+            <div className="space-y-2 font-mono text-xs text-slate-300">
+              <p>&gt; Opening secure recovery channel...</p>
+              <p>&gt; Validating hunter identity hash...</p>
+              <p className="text-green-400">&gt; Email relay online.</p>
+            </div>
+          </div>
+        </section>
+
+      <Card className="relative z-20 w-full max-w-md border-white/15 bg-black/75 p-8 text-slate-100 holo-card">
         <div className="space-y-6">
           {/* Header */}
           <div className="text-center">
-            <h1 className={`${orbitron.className} text-3xl font-bold mb-2`}>Forgot Password?</h1>
+            <h1 className={`${orbitron.className} text-3xl font-bold mb-2 uppercase tracking-[0.16em]`}>Forgot Password</h1>
             <p className="text-slate-400">
               Enter your email address and we'll send you a link to reset your password.
             </p>
@@ -121,13 +142,13 @@ export default function ForgotPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@levelup-labs.com"
-                className="bg-black/60 border-white/15 text-slate-100"
+                className="bg-black/60 border-white/15 text-slate-100 font-mono"
                 disabled={loading}
                 required
               />
             </div>
 
-            <Button type="submit" className="w-full bg-purple-700 hover:bg-purple-600 text-white" disabled={loading}>
+            <Button type="submit" className="btn-hunter w-full border border-purple-400/40 bg-purple-700 hover:bg-purple-600 text-white" disabled={loading}>
               {loading ? 'Sending...' : 'Send Reset Link'}
             </Button>
           </form>
@@ -144,6 +165,7 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
       </Card>
+      </main>
     </div>
   )
 }

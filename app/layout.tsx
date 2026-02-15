@@ -28,7 +28,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Navbar />
-          <main className="page-shell min-h-screen">{children}</main>
+          <main className="page-shell solo-root relative min-h-screen overflow-hidden bg-[#050508] text-slate-100">
+            <div className="pointer-events-none fixed inset-0 z-[1] nebula-bg opacity-55" />
+            <div className="hunter-grid-bg pointer-events-none fixed inset-0 z-[1] opacity-40" />
+            <div className="scanlines pointer-events-none fixed inset-0 z-[2] opacity-[0.08]" />
+            <div className="relative z-[3]">{children}</div>
+          </main>
           <Toaster />
         </ThemeProvider>
       </body>

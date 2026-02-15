@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Orbitron, Rajdhani } from 'next/font/google';
 import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
+import { isGeneratedHunterAvatarUrl } from '@/lib/avatar';
 import { getHunterRankByPoints } from '@/lib/hunter-rank';
 import {
   getGamificationOverview,
@@ -15,7 +16,6 @@ import {
   type UserAchievement,
 } from '@/lib/gamification';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Trophy,
   Edit,
@@ -35,31 +35,54 @@ import {
 const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
 const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
+type ProfileUser = {
+  id: string;
+  email: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  rank: number | null;
+  title: string | null;
+  level: number | null;
+  xp: number | null;
+  total_points: number | null;
+  problems_solved: number | null;
+  courses_completed: number | null;
+  github_username: string | null;
+  linkedin_url: string | null;
+  created_at: string | null;
+};
+
+type PointEvent = {
+  id: string;
+  event_type: string;
+  created_at: string;
+  points_awarded?: number;
+};
+
 export default function ProfilePage() {
   const router = useRouter();
   const [badgeFilter, setBadgeFilter] = useState<'all' | 'S' | 'A' | 'B'>('all');
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<ProfileUser | null>(null);
   const [overview, setOverview] = useState<GamificationOverview | null>(null);
   const [achievements, setAchievements] = useState<UserAchievement[]>([]);
   const [dailyQuests, setDailyQuests] = useState<QuestProgress[]>([]);
   const [weeklyQuests, setWeeklyQuests] = useState<QuestProgress[]>([]);
-  const [pointEvents, setPointEvents] = useState<any[]>([]);
+  const [pointEvents, setPointEvents] = useState<PointEvent[]>([]);
+  const [avatarSrc, setAvatarSrc] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    const currentUser = await getCurrentUser();
-    
-    if (!currentUser) {
-      router.push('/auth/login');
-      return;
-    }
-
-    setUser(currentUser);
+  const loadData = useCallback(async () => {
     try {
+      const currentUser = (await getCurrentUser()) as ProfileUser | null;
+
+      if (!currentUser) {
+        router.push('/auth/login');
+        return;
+      }
+
+      setUser(currentUser);
+      setAvatarSrc(currentUser.avatar_url || generateHunterAvatarUrl(`${currentUser.id}-${currentUser.full_name || currentUser.email || 'hunter'}`));
+
       const [overviewRes, dailyRes, weeklyRes, pointsRes, achievementsRes] = await Promise.all([
         getGamificationOverview(currentUser.id),
         getQuestProgress(currentUser.id, 'daily'),
@@ -67,10 +90,11 @@ export default function ProfilePage() {
         getRecentPointEvents(currentUser.id, 8),
         getUserAchievements(currentUser.id),
       ]);
+
       setOverview(overviewRes);
       setDailyQuests(dailyRes);
       setWeeklyQuests(weeklyRes);
-      setPointEvents(pointsRes);
+      setPointEvents(pointsRes as PointEvent[]);
       setAchievements(achievementsRes);
     } catch {
       setOverview(null);
@@ -78,9 +102,14 @@ export default function ProfilePage() {
       setWeeklyQuests([]);
       setPointEvents([]);
       setAchievements([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }, [router]);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
 
   const getInitials = (name: string) => {
     return name
@@ -96,6 +125,11 @@ export default function ProfilePage() {
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  const formatJoinedDate = (dateString: string | null) => {
+    if (!dateString) return 'Unknown';
+    return new Date(dateString).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   };
 
   if (loading) {
@@ -122,16 +156,22 @@ export default function ProfilePage() {
 
   const rankLabel = overview?.rank ? `#${overview.rank}` : user.rank ? `#${user.rank}` : '#405';
   const streak = overview?.current_streak ?? 0;
-  const totalPoints = Number(user.total_points || overview?.total_points || 0);
+  const totalPoints = Number(overview?.total_points ?? user.total_points ?? 0);
   const hunterRank = getHunterRankByPoints(totalPoints);
-  const problemsSolved = Number(user.problems_solved || 0);
+  const problemsSolved = Number(user.problems_solved ?? 0);
+  const coursesCompleted = Number(user.courses_completed ?? 0);
+  const githubUsername = user.github_username ? String(user.github_username) : null;
+  const linkedinUrl = user.linkedin_url ? String(user.linkedin_url) : null;
   const easySolved = Math.round(problemsSolved * 0.34);
   const mediumSolved = Math.round(problemsSolved * 0.48);
   const hardSolved = Math.max(0, problemsSolved - easySolved - mediumSolved);
-  const level = Number(overview?.level || user.level || 1);
-  const xp = Number(overview?.xp || user.xp || 0);
+  const level = Number(overview?.level ?? user.level ?? 1);
+  const xp = Number(overview?.xp ?? user.xp ?? 0);
   const xpTarget = Math.max(1000, Math.ceil(xp / 1000) * 1000);
   const xpPercent = Math.min(100, Math.round((xp / xpTarget) * 100));
+  const recentActivityAt = pointEvents[0]?.created_at ?? null;
+  const memberSince = formatJoinedDate(user.created_at);
+  const totalAchievements = achievements.length;
 
   const primaryBadges = achievements.slice(0, 5);
   const rankByBadgeIndex = (idx: number): 'S' | 'A' | 'B' => {
@@ -144,10 +184,14 @@ export default function ProfilePage() {
     return rankByBadgeIndex(idx) === badgeFilter;
   });
   const recentFeats = pointEvents.slice(0, 3);
+  const dailyCompleted = dailyQuests.filter((q) => q.completed).length;
+  const weeklyCompleted = weeklyQuests.filter((q) => q.completed).length;
+  const dailyPercent = dailyQuests.length ? Math.round((dailyCompleted / dailyQuests.length) * 100) : 0;
+  const weeklyPercent = weeklyQuests.length ? Math.round((weeklyCompleted / weeklyQuests.length) * 100) : 0;
   const masteryData = [
-    { name: 'Python', value: Math.min(95, 55 + level), color: 'bg-purple-500', text: 'text-purple-300' },
-    { name: 'JavaScript', value: Math.min(90, 45 + Math.round(level * 0.8)), color: 'bg-blue-500', text: 'text-blue-300' },
-    { name: 'Go', value: Math.min(80, 20 + Math.round(level * 0.6)), color: 'bg-cyan-500', text: 'text-cyan-300' },
+    { name: 'Daily Quests', value: dailyPercent, color: 'bg-purple-500', text: 'text-purple-300' },
+    { name: 'Weekly Quests', value: weeklyPercent, color: 'bg-blue-500', text: 'text-blue-300' },
+    { name: 'Course Completion', value: Math.min(100, coursesCompleted * 10), color: 'bg-cyan-500', text: 'text-cyan-300' },
   ];
 
   return (
@@ -181,10 +225,11 @@ export default function ProfilePage() {
 
                 <div className="relative flex-grow overflow-hidden bg-slate-900 rankup-orb">
                   <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#140c1c] via-transparent to-transparent" />
-                  {user.avatar_url || user.id ? (
+                  {user.id ? (
                     <img
-                      src={user.avatar_url || generateHunterAvatarUrl(`${user.id}-${user.full_name}`)}
-                      alt={user.full_name}
+                      src={avatarSrc}
+                      alt={user.full_name || 'Hunter avatar'}
+                      onError={() => setAvatarSrc(generateHunterAvatarUrl(`${user.id}-${user.full_name || user.email || 'hunter'}`))}
                       className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                     />
                   ) : (
@@ -192,13 +237,13 @@ export default function ProfilePage() {
                   )}
                   <div className="absolute bottom-0 left-0 right-0 z-0 h-1/2 bg-gradient-to-t from-purple-500/20 to-transparent" />
                 </div>
-                {user.avatar_url && user.avatar_url.includes('dicebear') && (
+                {isGeneratedHunterAvatarUrl(avatarSrc) && (
                   <div className="mt-2 text-xs text-slate-400">Auto-generated avatar</div>
                 )}
 
                 <div className="relative z-20 border-t border-white/10 bg-[#140c1c] p-6">
                   <h2 className="mb-1 text-3xl font-bold text-white">{user.full_name || 'Unknown Hunter'}</h2>
-                  <p className="mb-4 text-sm font-medium text-purple-300">{overview?.title || 'Shadow Coder'} // Lvl. {level}</p>
+                  <p className="mb-4 text-sm font-medium text-purple-300">{overview?.title || user.title || 'Shadow Coder'} · Lvl. {level}</p>
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs text-slate-400">
                       <span>XP Progress</span>
@@ -221,7 +266,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <div className="text-xs uppercase text-slate-400">Current Guild</div>
-                <div className="font-medium text-white">Neural Netrunners</div>
+                <div className="font-medium text-white">{githubUsername ? `@${githubUsername}` : 'Independent Hunter'}</div>
               </div>
             </div>
           </div>
@@ -297,7 +342,7 @@ export default function ProfilePage() {
                 {recentFeats.length === 0 ? (
                   <div className="text-sm text-slate-500">No recent feats yet. Complete missions to generate activity.</div>
                 ) : (
-                  recentFeats.map((event: any, index: number) => (
+                  recentFeats.map((event, index) => (
                     <div key={event.id} className="flex items-center gap-3 text-sm">
                       <div className={`h-2 w-2 rounded-full ${index === 0 ? 'bg-purple-400 shadow-[0_0_5px_#7f0df2]' : 'bg-slate-600'}`} />
                       <span className="text-slate-300">{String(event.event_type || 'progress_update').replace(/_/g, ' ')}</span>
@@ -383,10 +428,17 @@ export default function ProfilePage() {
 
             <div className="rounded-lg border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
               <div className="mb-1 font-semibold text-white">Hunter Score</div>
-              <div className="text-xs text-slate-400">Total XP: <span className="text-purple-300">{totalPoints.toLocaleString()}</span></div>
+              <div className="text-xs text-slate-400">Total Points: <span className="text-purple-300">{totalPoints.toLocaleString()}</span></div>
+              <div className="text-xs text-slate-400">XP: <span className="text-purple-300">{xp.toLocaleString()}</span></div>
               <div className="text-xs text-slate-400">Current Rank: <span className="text-purple-300">{hunterRank.label}</span></div>
               <div className="text-xs text-slate-400">Daily Quests: <span className="text-cyan-300">{dailyQuests.filter((q) => q.completed).length}/{dailyQuests.length}</span></div>
               <div className="text-xs text-slate-400">Weekly Quests: <span className="text-cyan-300">{weeklyQuests.filter((q) => q.completed).length}/{weeklyQuests.length}</span></div>
+              <div className="text-xs text-slate-400">Courses Completed: <span className="text-cyan-300">{coursesCompleted.toLocaleString()}</span></div>
+              <div className="text-xs text-slate-400">Achievements: <span className="text-cyan-300">{totalAchievements.toLocaleString()}</span></div>
+              <div className="text-xs text-slate-400">Member Since: <span className="text-slate-300">{memberSince}</span></div>
+              <div className="text-xs text-slate-400">Last Activity: <span className="text-slate-300">{recentActivityAt ? formatShortDate(recentActivityAt) : 'No activity yet'}</span></div>
+              <div className="text-xs text-slate-400">GitHub: <span className="text-slate-300">{githubUsername ? `@${githubUsername}` : 'Not set'}</span></div>
+              <div className="text-xs text-slate-400">LinkedIn: <span className="text-slate-300">{linkedinUrl || 'Not set'}</span></div>
               <div className="text-xs text-slate-400">Email: <span className="text-slate-300">{user.email}</span></div>
             </div>
           </div>

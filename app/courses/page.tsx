@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Orbitron, Rajdhani } from 'next/font/google';
 import { getAllCourses, registerForCourse, unregisterFromCourse, getUserCourses } from '@/lib/courses';
-import { getCurrentUser } from '@/lib/auth';
+import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
 import { getHunterRankByPoints } from '@/lib/hunter-rank';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +30,7 @@ export default function CoursesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRank, setFilterRank] = useState<'all' | 'S' | 'A' | 'B' | 'C' | 'E'>('all');
   const [sortMode, setSortMode] = useState<'threat' | 'reward' | 'name'>('threat');
+  const [avatarSrc, setAvatarSrc] = useState<string>('');
 
   const hunterRank = useMemo(() => {
     return getHunterRankByPoints(Number(user?.total_points || 0)).label;
@@ -59,6 +60,11 @@ export default function CoursesPage() {
   const loadData = async () => {
     const currentUser = await getCurrentUser();
     setUser(currentUser);
+    setAvatarSrc(
+      currentUser
+        ? currentUser.avatar_url || generateHunterAvatarUrl(`${currentUser.id}-${currentUser.full_name || currentUser.email || 'hunter'}`)
+        : ''
+    );
 
     const allCourses = await getAllCourses();
     setCourses(allCourses);
@@ -166,8 +172,15 @@ export default function CoursesPage() {
                   <p className={`${orbitron.className} text-lg font-semibold`}>{hunterRank}</p>
                 </div>
                 <div className="h-11 w-11 overflow-hidden rounded-full border-2 border-white/20 bg-white/10 flex-shrink-0">
-                  {user?.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name} className="h-full w-full object-cover" />
+                  {user ? (
+                    <img
+                      src={avatarSrc}
+                      alt={user.full_name || 'Hunter'}
+                      className="h-full w-full object-cover"
+                      onError={() =>
+                        setAvatarSrc(generateHunterAvatarUrl(`${user.id}-${user.full_name || user.email || 'hunter'}`))
+                      }
+                    />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">LVL</div>
                   )}

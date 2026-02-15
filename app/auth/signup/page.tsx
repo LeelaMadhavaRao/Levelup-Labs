@@ -1,18 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signUpWithEmail, loginWithGoogle } from '@/lib/auth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Orbitron, Rajdhani } from 'next/font/google';
-
-const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
-const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
+import { ShieldCheck, Settings, BadgeCheck, Lock, UserPlus, Users, Terminal } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -26,13 +18,25 @@ export default function SignupPage() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [clock, setClock] = useState<string>('');
+
+  useEffect(() => {
+    setClock(new Date().toLocaleTimeString('en-US', { hour12: false }));
+    const timer = setInterval(() => {
+      setClock(new Date().toLocaleTimeString('en-US', { hour12: false }));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
 
-    // Validation
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -59,26 +63,15 @@ export default function SignupPage() {
       }
 
       if (needsConfirmation) {
-        // Email confirmation required
-        setSuccess(
-          `Account created! Please check your email (${formData.email}) and click the confirmation link to activate your account.`
-        );
+        setSuccess('Account created! Please check your email and click the confirmation link.');
         setLoading(false);
       } else {
-        // No confirmation needed, redirect to home
         router.push('/');
       }
     } catch (err) {
       setError('An unexpected error occurred');
       setLoading(false);
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
   };
 
   const handleGoogleSignup = async () => {
@@ -92,116 +85,203 @@ export default function SignupPage() {
   };
 
   return (
-    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#050508] text-slate-100 p-4 flex items-center justify-center`}>
+    <div className="relative min-h-screen overflow-hidden bg-[#050508] text-slate-100 selection:bg-purple-500 selection:text-white">
+      {/* Background Ambience */}
       <div className="pointer-events-none fixed inset-0 z-0 nebula-bg animate-pulse" style={{ animationDuration: '4s' }} />
       <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-20" />
+      <div
+        className="pointer-events-none fixed inset-0 z-0 opacity-20"
+        style={{ backgroundImage: 'radial-gradient(rgba(168, 85, 247, 0.2) 1px, transparent 1px)', backgroundSize: '50px 50px' }}
+      />
+      
+      {/* Header/Clock */}
+      <header className="fixed top-0 left-0 right-0 z-30 flex justify-between p-6 opacity-60 mix-blend-screen pointer-events-none">
+        <div className="flex items-center gap-2 font-mono text-xs text-purple-400">
+           <Terminal className="h-4 w-4" />
+           <span>SYSTEM_REGISTRY_V.2.0.4</span>
+        </div>
+        <div className="font-mono text-xs tracking-widest text-slate-500">{clock}</div>
+      </header>
 
-      <Card className="relative z-20 w-full max-w-md border-white/15 bg-black/70 text-slate-100 shadow-[0_0_24px_rgba(166,13,242,0.35)]">
-        <CardHeader className="space-y-1">
-          <CardTitle className={`${orbitron.className} text-2xl font-bold text-center`}>Awaken Hunter Account</CardTitle>
-          <CardDescription className="text-center text-slate-400">
-            Join Levelup-Labs and enter the Solo Leveling system
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSignup}>
-          <CardContent className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            
-            {success && (
-              <Alert className="bg-emerald-500/10 text-emerald-200 border-emerald-500/30">
-                <AlertDescription>{success}</AlertDescription>
-              </Alert>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input
-                id="fullName"
-                name="fullName"
-                type="text"
-                placeholder="John Doe"
-                className="bg-black/60 border-white/15 text-slate-100"
-                value={formData.fullName}
-                onChange={handleChange}
-                required
-                disabled={loading}
-              />
+      <main className="relative z-20 mx-auto flex w-full max-w-6xl flex-col items-center gap-10 p-6 md:min-h-screen md:flex-row md:gap-12 justify-center">
+        
+        {/* Left Concept Panel */}
+        <section className="hidden flex-1 space-y-8 select-none md:flex md:flex-col justify-center">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <UserPlus className="h-8 w-8 animate-pulse text-purple-400" />
+              <h1 className="text-4xl font-bold tracking-tight text-white font-orbitron">
+                HUNTER<span className="text-purple-400">_REGISTRATION</span>
+              </h1>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="your@email.com"
-                className="bg-black/60 border-white/15 text-slate-100"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                disabled={loading}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="••••••••"
-                className="bg-black/60 border-white/15 text-slate-100"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                disabled={loading}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                className="bg-black/60 border-white/15 text-slate-100"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                disabled={loading}
-              />
-            </div>
-          </CardContent>
-          
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full bg-purple-700 hover:bg-purple-600 text-white" disabled={loading}>
-              {loading ? 'Awakening account...' : 'Register Hunter'}
-            </Button>
+            <p className="pl-1 font-mono text-sm tracking-[0.25em] text-slate-400">AWAKEN YOUR POTENTIAL // JOIN THE RANKS</p>
+          </div>
 
-            <Button onClick={handleGoogleSignup} className="group/google flex w-full items-center justify-center gap-3 border border-cyan-300/30 bg-black/40 px-6 py-3 font-mono text-white transition-all duration-300 hover:border-cyan-300 hover:bg-cyan-300/10 hover:shadow-[0_0_15px_rgba(0,243,255,0.3)] disabled:opacity-50" disabled={googleLoading || loading}>
-              <svg className="h-5 w-5 group-hover/google:animate-pulse" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-                <path d="M21.35 11.1H12v2.8h5.35c-.23 1.37-1.19 2.53-2.53 3.25v2.7h4.08C20.68 19.03 22 15.43 22 12c0-.56-.04-1.11-.11-1.65z" fill="#4285F4"/>
-                <path d="M12 22c2.7 0 4.98-.9 6.64-2.45l-4.08-2.7c-.98.64-2.24 1.02-3.96 1.02-3.04 0-5.61-2.06-6.53-4.83H1.29v3.03C3.02 19.6 7.24 22 12 22z" fill="#34A853"/>
-                <path d="M5.47 13.04A6.99 6.99 0 0 1 5 12c0-.34.03-.67.08-1.04V7.92H1.29A10.99 10.99 0 0 0 0 12c0 1.86.45 3.62 1.29 5.08l4.18-4.04z" fill="#FBBC05"/>
-                <path d="M12 6.5c1.47 0 2.78.5 3.82 1.48l2.86-2.86C16.98 3.66 14.7 2.5 12 2.5 7.24 2.5 3.02 4.9 1.29 7.92l4.18 3.04C6.39 8.56 8.96 6.5 12 6.5z" fill="#EA4335"/>
-              </svg>
-              <span className="text-sm tracking-wider">{googleLoading ? 'CONNECTING...' : 'Continue with Google'}</span>
-            </Button>
-
-            <div className="text-sm text-center text-slate-400">
-              Already have an account?{' '}
-              <Link href="/auth/login" className="text-primary hover:underline">
-                Sign in
-              </Link>
+          <div className="holo-card rounded-lg border-l-4 border-l-purple-500 bg-black/40 p-6 backdrop-blur-sm">
+            <div className="space-y-2 font-mono text-xs text-slate-300">
+              <p>&gt; Scanning new user signature...</p>
+              <p>&gt; Allocating system resources...</p>
+              <p className="text-green-400">&gt; Profile slot available.</p>
+              <p className="animate-pulse">&gt; Waiting for input...</p>
             </div>
-          </CardFooter>
-        </form>
-      </Card>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+              <div className="mb-1 text-xs uppercase tracking-wider text-slate-500 font-mono">Global Rank</div>
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-slate-500" />
+                <span className="font-bold text-slate-300 font-rajdhani">UNRANKED</span>
+              </div>
+            </div>
+            <div className="rounded border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+              <div className="mb-1 text-xs uppercase tracking-wider text-slate-500 font-mono">Guild Capacity</div>
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-purple-300" />
+                <span className="font-bold text-white font-rajdhani">OPEN</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Right Form Panel */}
+        <section className="w-full max-w-[500px]">
+          <div className="holo-card group relative overflow-hidden rounded-xl bg-black/60 p-8 shadow-[0_0_30px_rgba(168,85,247,0.25)] backdrop-blur-xl border border-white/10">
+            <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-80" />
+
+            <div className="relative mb-8 text-center">
+              <h2 className="mb-2 text-2xl font-bold uppercase tracking-[0.2em] text-white font-orbitron">New Hunter Profile</h2>
+              <div className="mx-auto h-0.5 w-16 bg-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.6)]" />
+            </div>
+
+            <form className="space-y-5" onSubmit={handleSignup}>
+              {error && (
+                <div className="rounded border border-red-500/30 bg-red-500/10 p-3 text-red-200">
+                  <span className="text-xs font-mono">{error}</span>
+                </div>
+              )}
+              {success && (
+                <div className="rounded border border-green-500/30 bg-green-500/10 p-3 text-green-200">
+                   <span className="text-xs font-mono">{success}</span>
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <label className="ml-1 font-mono text-[10px] uppercase tracking-wider text-purple-400">Full Name</label>
+                <div className="relative group">
+                   <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/0 via-purple-500/30 to-purple-500/0 rounded opacity-0 group-hover:opacity-100 transition-opacity blur"></div>
+                   <input
+                    name="fullName"
+                    type="text"
+                    placeholder="ENTER_NAME"
+                    className="relative w-full bg-black/50 border border-white/10 p-3 pl-4 font-mono text-sm tracking-wider text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500/50 focus:bg-black/70 rounded transition-all font-rajdhani"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    required
+                    disabled={loading || googleLoading}
+                  />
+                  <BadgeCheck className="pointer-events-none absolute right-3 top-3 h-4 w-4 text-slate-600" />
+                </div>
+              </div>
+
+               <div className="space-y-1">
+                <label className="ml-1 font-mono text-[10px] uppercase tracking-wider text-purple-400">Email Address</label>
+                <div className="relative group">
+                   <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/0 via-purple-500/30 to-purple-500/0 rounded opacity-0 group-hover:opacity-100 transition-opacity blur"></div>
+                   <input
+                    name="email"
+                    type="email"
+                    placeholder="ENTER_EMAIL"
+                    className="relative w-full bg-black/50 border border-white/10 p-3 pl-4 font-mono text-sm tracking-wider text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500/50 focus:bg-black/70 rounded transition-all font-rajdhani"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    disabled={loading || googleLoading}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                    <label className="ml-1 font-mono text-[10px] uppercase tracking-wider text-purple-400">Password</label>
+                    <div className="relative group">
+                         <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/0 via-purple-500/30 to-purple-500/0 rounded opacity-0 group-hover:opacity-100 transition-opacity blur"></div>
+                        <input
+                            name="password"
+                            type="password"
+                            placeholder="******"
+                            className="relative w-full bg-black/50 border border-white/10 p-3 pl-4 font-mono text-sm tracking-wider text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500/50 focus:bg-black/70 rounded transition-all font-rajdhani"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                            disabled={loading || googleLoading}
+                        />
+                         <Lock className="pointer-events-none absolute right-3 top-3 h-4 w-4 text-slate-600" />
+                    </div>
+                </div>
+
+                 <div className="space-y-1">
+                    <label className="ml-1 font-mono text-[10px] uppercase tracking-wider text-purple-400">Confirm</label>
+                    <div className="relative group">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/0 via-purple-500/30 to-purple-500/0 rounded opacity-0 group-hover:opacity-100 transition-opacity blur"></div>
+                        <input
+                            name="confirmPassword"
+                            type="password"
+                            placeholder="******"
+                            className="relative w-full bg-black/50 border border-white/10 p-3 pl-4 font-mono text-sm tracking-wider text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500/50 focus:bg-black/70 rounded transition-all font-rajdhani"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            required
+                            disabled={loading || googleLoading}
+                        />
+                    </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || googleLoading}
+                className="group relative w-full overflow-hidden rounded bg-purple-600 p-3 font-mono text-sm font-bold uppercase tracking-widest text-white transition-all hover:bg-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.5)] disabled:opacity-50"
+              >
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  {loading ? 'Initializing...' : 'Initialize System'}
+                  {!loading && <UserPlus className="h-4 w-4 transition-transform group-hover:translate-x-1" />}
+                </span>
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
+              </button>
+
+               <div className="relative flex items-center gap-4 py-2">
+                <span className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                <span className="font-mono text-xs text-slate-500">OR CONNECT WITH</span>
+                <span className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              </div>
+
+              <button
+                type="button"
+                className="flex w-full items-center justify-center gap-2 rounded border border-white/10 bg-white/5 p-3 text-sm font-bold text-white transition-colors hover:bg-white/10 hover:shadow-[0_0_10px_rgba(255,255,255,0.1)] disabled:opacity-50 font-rajdhani"
+                onClick={handleGoogleSignup}
+                disabled={loading || googleLoading}
+              >
+                <svg className="h-4 w-4" aria-hidden="true" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
+                </svg>
+                GOOGLE_LINK
+              </button>
+
+            </form>
+
+            <div className="mt-6 text-center">
+               <Link 
+                href="/auth/login" 
+                className="text-xs text-slate-400 hover:text-purple-400 transition-colors font-mono tracking-wide"
+              >
+                  &lt; RETURN_TO_LOGIN /&gt;
+               </Link>
+            </div>
+            
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

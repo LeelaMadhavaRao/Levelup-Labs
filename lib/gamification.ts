@@ -248,6 +248,8 @@ export async function getStreakMultiplier(userId: string): Promise<number> {
 
 export async function claimQuizPassReward(topicId: string) {
   const supabase = createClient()
+  const basePoints = 40
+
   const { data, error } = await supabase.functions.invoke('updatePoints', {
     body: {
       action: 'pass_quiz',
@@ -255,14 +257,40 @@ export async function claimQuizPassReward(topicId: string) {
     },
   })
 
-  if (error) {
-    throw new Error(toErrorMessage(error, 'Failed to apply quiz reward'))
+  if (!error) {
+    return {
+      pointsAwarded: Number(data?.pointsAwarded ?? 0),
+      xpAwarded: Number(data?.xpAwarded ?? 0),
+      applied: !!data?.applied,
+      message: data?.message as string | undefined,
+    }
   }
 
+  const { data: authData } = await supabase.auth.getUser()
+  const userId = authData.user?.id
+  if (!userId) {
+    throw new Error('Failed to apply quiz reward: not authenticated')
+  }
+
+  const eventKey = `pass_quiz:${userId}:${topicId}`
+  const { data: rpcData, error: rpcError } = await supabase.rpc('award_points_event', {
+    p_user_id: userId,
+    p_event_type: 'pass_quiz',
+    p_event_key: eventKey,
+    p_points: basePoints,
+    p_xp: basePoints,
+    p_metadata: { topic_id: topicId, source: 'client_fallback' },
+  })
+
+  if (rpcError) {
+    throw new Error(toErrorMessage(rpcError, 'Failed to apply quiz reward'))
+  }
+
+  const row = Array.isArray(rpcData) ? rpcData[0] : null
   return {
-    pointsAwarded: Number(data?.pointsAwarded ?? 0),
-    xpAwarded: Number(data?.xpAwarded ?? 0),
-    applied: !!data?.applied,
-    message: data?.message as string | undefined,
+    pointsAwarded: Number(row?.points_awarded ?? 0),
+    xpAwarded: Number(row?.xp_awarded ?? 0),
+    applied: !!row?.applied,
+    message: row?.applied ? 'Quiz reward granted' : 'Quiz reward already claimed',
   }
 }

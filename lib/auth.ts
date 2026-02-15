@@ -1,9 +1,7 @@
 import { createClient } from './supabase'
+import { generateHunterAvatarUrl } from './avatar'
 
-export function generateHunterAvatarUrl(seedInput: string) {
-  const seed = encodeURIComponent(seedInput.trim().toLowerCase() || `hunter-${Date.now()}`)
-  return `https://api.dicebear.com/9.x/bottts-neutral/svg?seed=${seed}&backgroundType=gradientLinear&backgroundColor=190B2A,2A0E45,00E5FF&eyes=bulging,cute,round&mouth=grill01,smile01,smile02`
-}
+export { generateHunterAvatarUrl } from './avatar'
 
 function toError(error: unknown, fallback: string): Error {
   if (error instanceof Error) return error
@@ -155,10 +153,12 @@ export async function loginWithEmail(email: string, password: string) {
 export async function loginWithGoogle() {
   const supabase = createClient()
   
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: `${siteUrl}/auth/callback`,
     },
   })
   
@@ -197,7 +197,11 @@ export async function getUserProfile(userId: string) {
   }
   
   if (data) {
-    if (!data.avatar_url) {
+    const hasLegacyGeneratedAvatar =
+      typeof data.avatar_url === 'string' &&
+      data.avatar_url.includes('api.dicebear.com')
+
+    if (!data.avatar_url || hasLegacyGeneratedAvatar) {
       const generatedAvatar = generateHunterAvatarUrl(`${data.id}-${data.email}-${data.full_name || 'hunter'}`)
       const { data: updated } = await supabase
         .from('users')
