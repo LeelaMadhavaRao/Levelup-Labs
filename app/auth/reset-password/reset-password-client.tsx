@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { resetPassword } from '@/lib/auth'
+import { createClient } from '@/lib/supabase'
 import { Eye, EyeOff, CheckCircle2, ShieldCheck, KeyRound, LockKeyhole } from 'lucide-react'
 import { Orbitron, Rajdhani } from 'next/font/google'
 
@@ -26,12 +27,34 @@ export default function ResetPasswordClient() {
   const [tokenValid, setTokenValid] = useState(true)
 
   useEffect(() => {
-    // Check if we have the required token in the URL
-    const token = searchParams.get('token')
-    if (!token) {
+    const validateRecoveryContext = async () => {
+      const token = searchParams.get('token')
+      const code = searchParams.get('code')
+      const tokenHash = searchParams.get('token_hash')
+      const hasUrlRecoveryToken = !!(token || code || tokenHash)
+
+      if (hasUrlRecoveryToken) {
+        setTokenValid(true)
+        return
+      }
+
+      try {
+        const supabase = createClient()
+        const { data: { session } } = await supabase.auth.getSession()
+
+        if (session) {
+          setTokenValid(true)
+          return
+        }
+      } catch {
+        // Fall through to invalid state
+      }
+
       setTokenValid(false)
       toast.error('Invalid or missing reset token')
     }
+
+    void validateRecoveryContext()
   }, [searchParams])
 
   async function handleSubmit(e: React.FormEvent) {

@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "db:setup": "node setup-database.js"
+    "db:setup": "node setup-database.js",
+    "supabase:functions:deploy:no-jwt": "npx supabase functions deploy updatePoints --no-verify-jwt; npx supabase functions deploy verifyCode --no-verify-jwt; npx supabase functions deploy verifyAlgorithm --no-verify-jwt; npx supabase functions deploy generateQuiz --no-verify-jwt; npx supabase functions deploy generateProblems --no-verify-jwt; npx supabase functions deploy enhanceOverview --no-verify-jwt",
+    "supabase:functions:serve:no-jwt": "npx supabase functions serve --no-verify-jwt"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

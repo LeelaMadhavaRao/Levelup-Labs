@@ -169,7 +169,9 @@ export async function addModule(courseId: string, title: string, order: number) 
       {
         course_id: courseId,
         title,
+        name: title,
         order,
+        order_index: order,
       },
     ])
     .select()

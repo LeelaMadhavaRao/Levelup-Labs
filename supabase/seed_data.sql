@@ -3,6 +3,12 @@
 -- ============================================================
 -- Run this AFTER database_setup.sql and database_functions.sql
 -- This creates realistic course data for a coding learning platform
+--
+-- Seeded system user credentials:
+--   Email: system@levelup-labs.com
+--   Password: SystemAdmin123!
+--
+-- NOTE: Change this password immediately outside local/dev environments.
 
 -- ============================================================
 -- STEP 1: Get Admin User ID (If exists)
@@ -150,37 +156,37 @@ END $$;
 -- ============================================================
 
 -- Course 1: Data Structures & Algorithms Mastery
-INSERT INTO modules (id, course_id, title, "order") VALUES
-  ('20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'Arrays & Strings', 1),
-  ('20000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001', 'Linked Lists & Stacks', 2),
-  ('20000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', 'Trees & Graphs', 3),
-  ('20000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', 'Sorting & Searching', 4),
-  ('20000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001', 'Dynamic Programming', 5)
+INSERT INTO modules (id, course_id, title, name, "order", order_index) VALUES
+  ('20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'Arrays & Strings', 'Arrays & Strings', 1, 1),
+  ('20000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001', 'Linked Lists & Stacks', 'Linked Lists & Stacks', 2, 2),
+  ('20000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', 'Trees & Graphs', 'Trees & Graphs', 3, 3),
+  ('20000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', 'Sorting & Searching', 'Sorting & Searching', 4, 4),
+  ('20000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001', 'Dynamic Programming', 'Dynamic Programming', 5, 5)
 ON CONFLICT (course_id, "order") DO NOTHING;
 
 -- Course 2: System Design Fundamentals
-INSERT INTO modules (id, course_id, title, "order") VALUES
-  ('20000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000002', 'Scalability Basics', 1),
-  ('20000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000002', 'Database Design', 2),
-  ('20000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000002', 'Caching Strategies', 3),
-  ('20000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000002', 'Microservices Architecture', 4)
+INSERT INTO modules (id, course_id, title, name, "order", order_index) VALUES
+  ('20000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000002', 'Scalability Basics', 'Scalability Basics', 1, 1),
+  ('20000000-0000-0000-0000-000000000012', '10000000-0000-0000-0000-000000000002', 'Database Design', 'Database Design', 2, 2),
+  ('20000000-0000-0000-0000-000000000013', '10000000-0000-0000-0000-000000000002', 'Caching Strategies', 'Caching Strategies', 3, 3),
+  ('20000000-0000-0000-0000-000000000014', '10000000-0000-0000-0000-000000000002', 'Microservices Architecture', 'Microservices Architecture', 4, 4)
 ON CONFLICT (course_id, "order") DO NOTHING;
 
 -- Course 3: Full Stack Web Development
-INSERT INTO modules (id, course_id, title, "order") VALUES
-  ('20000000-0000-0000-0000-000000000021', '10000000-0000-0000-0000-000000000003', 'Frontend Foundations', 1),
-  ('20000000-0000-0000-0000-000000000022', '10000000-0000-0000-0000-000000000003', 'React & State Management', 2),
-  ('20000000-0000-0000-0000-000000000023', '10000000-0000-0000-0000-000000000003', 'Backend with Node.js', 3),
-  ('20000000-0000-0000-0000-000000000024', '10000000-0000-0000-0000-000000000003', 'Database & Authentication', 4),
-  ('20000000-0000-0000-0000-000000000025', '10000000-0000-0000-0000-000000000003', 'Deployment & DevOps', 5)
+INSERT INTO modules (id, course_id, title, name, "order", order_index) VALUES
+  ('20000000-0000-0000-0000-000000000021', '10000000-0000-0000-0000-000000000003', 'Frontend Foundations', 'Frontend Foundations', 1, 1),
+  ('20000000-0000-0000-0000-000000000022', '10000000-0000-0000-0000-000000000003', 'React & State Management', 'React & State Management', 2, 2),
+  ('20000000-0000-0000-0000-000000000023', '10000000-0000-0000-0000-000000000003', 'Backend with Node.js', 'Backend with Node.js', 3, 3),
+  ('20000000-0000-0000-0000-000000000024', '10000000-0000-0000-0000-000000000003', 'Database & Authentication', 'Database & Authentication', 4, 4),
+  ('20000000-0000-0000-0000-000000000025', '10000000-0000-0000-0000-000000000003', 'Deployment & DevOps', 'Deployment & DevOps', 5, 5)
 ON CONFLICT (course_id, "order") DO NOTHING;
 
 -- Course 4: Python Programming for Data Science
-INSERT INTO modules (id, course_id, title, "order") VALUES
-  ('20000000-0000-0000-0000-000000000031', '10000000-0000-0000-0000-000000000004', 'Python Basics', 1),
-  ('20000000-0000-0000-0000-000000000032', '10000000-0000-0000-0000-000000000004', 'NumPy & Pandas', 2),
-  ('20000000-0000-0000-0000-000000000033', '10000000-0000-0000-0000-000000000004', 'Data Visualization', 3),
-  ('20000000-0000-0000-0000-000000000034', '10000000-0000-0000-0000-000000000004', 'Machine Learning Basics', 4)
+INSERT INTO modules (id, course_id, title, name, "order", order_index) VALUES
+  ('20000000-0000-0000-0000-000000000031', '10000000-0000-0000-0000-000000000004', 'Python Basics', 'Python Basics', 1, 1),
+  ('20000000-0000-0000-0000-000000000032', '10000000-0000-0000-0000-000000000004', 'NumPy & Pandas', 'NumPy & Pandas', 2, 2),
+  ('20000000-0000-0000-0000-000000000033', '10000000-0000-0000-0000-000000000004', 'Data Visualization', 'Data Visualization', 3, 3),
+  ('20000000-0000-0000-0000-000000000034', '10000000-0000-0000-0000-000000000004', 'Machine Learning Basics', 'Machine Learning Basics', 4, 4)
 ON CONFLICT (course_id, "order") DO NOTHING;
 
 -- ============================================================
