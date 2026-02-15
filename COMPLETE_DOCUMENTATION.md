@@ -668,7 +668,6 @@ ORDER BY total_points DESC
 - `/my-courses` (MY QUESTS)
 - `/practice` (PRACTICE)
 - `/leaderboard` (RANKINGS)
-- `/profile` (PROFILE)
 
 **Admin Navbar**
 - `/dashboard` (HOME)
@@ -678,7 +677,6 @@ ORDER BY total_points DESC
 - `/courses` (GATES)
 - `/practice` (PRACTICE)
 - `/leaderboard` (RANKINGS)
-- `/profile` (PROFILE)
 
 ### Public Routes (No Auth Required)
 ```

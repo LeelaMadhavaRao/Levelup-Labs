@@ -116,7 +116,6 @@ export default function Navbar() {
           { href: '/courses', label: 'GATES' },
           { href: '/practice', label: 'PRACTICE' },
           { href: '/leaderboard', label: 'RANKINGS' },
-          { href: '/profile', label: 'PROFILE' },
         ]
       : [
           { href: '/dashboard', label: 'HOME' },
@@ -124,7 +123,6 @@ export default function Navbar() {
           { href: '/my-courses', label: 'MY QUESTS' },
           { href: '/practice', label: 'PRACTICE' },
           { href: '/leaderboard', label: 'RANKINGS' },
-          { href: '/profile', label: 'PROFILE' },
         ]
     : [];
 

@@ -169,7 +169,6 @@ levelup-labs/
 - `/my-courses` → MY QUESTS
 - `/practice` → PRACTICE
 - `/leaderboard` → RANKINGS
-- `/profile` → PROFILE
 
 ### Admin Navbar
 - `/dashboard` → HOME
@@ -179,7 +178,6 @@ levelup-labs/
 - `/courses` → GATES
 - `/practice` → PRACTICE
 - `/leaderboard` → RANKINGS
-- `/profile` → PROFILE
 
 ---
 
