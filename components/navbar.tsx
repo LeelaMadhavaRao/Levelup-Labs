@@ -86,8 +86,13 @@ export default function Navbar() {
       <div className="container flex h-16 items-center justify-between gap-3">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2 shrink-0">
-          <div className="h-8 w-8 rounded-lg bg-primary/10 border border-border flex items-center justify-center">
-            <span className="text-primary font-bold text-lg">L</span>
+          <div 
+            className="h-8 w-8 rounded-lg flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(135deg, #06b6d4 0%, #9333ea 100%)',
+            }}
+          >
+            <span className="text-white font-bold text-sm">LL</span>
           </div>
           <span className="font-bold text-xl hidden sm:inline-block tracking-tight">
             Levelup-Labs

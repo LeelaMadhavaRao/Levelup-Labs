@@ -198,7 +198,7 @@ export default function DashboardPage() {
                           </p>
                         </div>
                         <Button size="sm" asChild>
-                          <Link href={`/courses/${course.id}`}>
+                          <Link href="/my-courses">
                             Continue
                           </Link>
                         </Button>

@@ -24,8 +24,7 @@ import {
   Edit, 
   Trash2,
   Users,
-  Trophy,
-  Eye
+  Trophy
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -314,11 +313,6 @@ export default function AdminCoursesPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="sm" asChild>
-                            <Link href={`/courses/${course.id}`}>
-                              <Eye className="h-4 w-4" />
-                            </Link>
-                          </Button>
                           <Button variant="ghost" size="sm" asChild>
                             <Link href={`/admin/courses/${course.id}/edit`}>
                               <Edit className="h-4 w-4" />
