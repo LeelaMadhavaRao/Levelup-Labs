@@ -7,7 +7,7 @@ import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
 import { getHunterRankByPoints } from '@/lib/hunter-rank';
 import { getUserCoursesWithProgress } from '@/lib/courses';
 import { getTopLeaderboard } from '@/lib/leaderboard';
-import { getQuestProgress, getRecentPointEvents, type QuestProgress } from '@/lib/gamification';
+import { getRecentPointEvents } from '@/lib/gamification';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -28,7 +28,6 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [courses, setCourses] = useState<any[]>([]);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
-  const [dailyQuests, setDailyQuests] = useState<QuestProgress[]>([]);
   const [recentPoints, setRecentPoints] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,21 +49,15 @@ export default function DashboardPage() {
       getTopLeaderboard(5),
     ]);
 
-    let questRows: QuestProgress[] = [];
     let pointRows: any[] = [];
     try {
-      [questRows, pointRows] = await Promise.all([
-        getQuestProgress(currentUser.id, 'daily'),
-        getRecentPointEvents(currentUser.id, 5),
-      ]);
+      pointRows = await getRecentPointEvents(currentUser.id, 5);
     } catch {
-      questRows = [];
       pointRows = [];
     }
 
     setCourses(userCourses);
     setLeaderboard(topUsers);
-    setDailyQuests(questRows);
     setRecentPoints(pointRows);
     setLoading(false);
   };
@@ -289,37 +282,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Daily Missions</CardTitle>
-            <CardDescription>Small clears that boost your XP</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {dailyQuests.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No daily quests available.</p>
-            ) : (
-              dailyQuests.map((quest) => (
-                <div key={quest.quest_id} className="rounded-lg border p-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">{quest.title}</p>
-                      <p className="text-xs text-muted-foreground">{quest.description}</p>
-                    </div>
-                    <span className="text-xs text-muted-foreground">+{quest.reward_points} pts</span>
-                  </div>
-                  <div className="mt-2 flex items-center gap-3">
-                    <Progress value={(quest.progress / Math.max(quest.target_count, 1)) * 100} className="h-2" />
-                    <span className="text-xs text-muted-foreground">
-                      {quest.progress}/{quest.target_count}
-                    </span>
-                  </div>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
+      <div className="grid gap-4 md:grid-cols-1">
         <Card>
           <CardHeader>
             <CardTitle>Recent XP Logs</CardTitle>

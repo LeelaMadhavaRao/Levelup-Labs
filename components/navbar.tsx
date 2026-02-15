@@ -26,7 +26,7 @@ export default function Navbar() {
   const { theme, setTheme } = useTheme();
 
   const [user, setUser] = useState<any>(null);
-  const [playerStats, setPlayerStats] = useState<{ level: number; streak: number; points: number } | null>(null);
+  const [playerStats, setPlayerStats] = useState<{ level: number; streak: number; points: number; xp: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -51,19 +51,23 @@ export default function Navbar() {
 
     if (currentUser) {
       let points = Number(currentUser.total_points || 0);
+      let xp = Number(currentUser.xp || 0);
       try {
         const overview = await getGamificationOverview(currentUser.id);
         points = Number(overview.total_points || points);
+        xp = Number(overview.xp || xp);
         setPlayerStats({
           level: overview.level,
           streak: overview.current_streak,
           points,
+          xp,
         });
       } catch {
         setPlayerStats({
           level: Number(currentUser.level || 1),
           streak: 0,
           points,
+          xp,
         });
       }
 
@@ -109,7 +113,7 @@ export default function Navbar() {
   const navLinks = user
     ? user.role === 'admin'
       ? [
-          { href: '/dashboard', label: 'HOME' },
+          { href: '/dashboard', label: 'DASHBOARD' },
           { href: '/admin/dashboard', label: 'ADMIN' },
           { href: '/admin/create-course', label: 'CREATE' },
           { href: '/admin/courses', label: 'CONSOLE' },
@@ -118,7 +122,7 @@ export default function Navbar() {
           { href: '/leaderboard', label: 'RANKINGS' },
         ]
       : [
-          { href: '/dashboard', label: 'HOME' },
+          { href: '/dashboard', label: 'DASHBOARD' },
           { href: '/courses', label: 'DUNGEONS' },
           { href: '/my-courses', label: 'MY DUNGEONS' },
           { href: '/practice', label: 'PRACTICE' },
@@ -127,12 +131,19 @@ export default function Navbar() {
     : [];
 
   const level = playerStats?.level ?? Number(user?.level || 1);
+  const xp = playerStats?.xp ?? Number(user?.xp || 0);
   const hunterRank = getHunterRankByPoints(Number(playerStats?.points ?? user?.total_points ?? 0));
+  
+  // Calculate XP percentage within current level
+  // Each level needs 1000 XP, so XP within level = xp % 1000
+  const xpInCurrentLevel = xp % 1000;
+  const xpNeededForNextLevel = 1000;
+  const xpPercentage = Math.round((xpInCurrentLevel / xpNeededForNextLevel) * 100);
 
   return (
     <nav className="sticky top-0 z-50 h-20 w-full border-b border-purple-500/40 bg-[#0b0f1a]/85 backdrop-blur-xl shadow-[0_4px_20px_-5px_rgba(147,13,242,0.5)]">
       <div className="mx-auto flex h-full w-full max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href={user ? '/dashboard' : '/'} className="group flex items-center">
+        <Link href="/" className="group flex items-center">
           <div className="relative mr-3 flex h-10 w-10 items-center justify-center">
             <div className="absolute inset-0 rounded-full bg-purple-500/30 blur-md transition-all group-hover:bg-purple-500/50" />
             <Code2 className="relative z-10 h-7 w-7 text-purple-400 transition-colors group-hover:text-white" />
@@ -219,11 +230,11 @@ export default function Navbar() {
                     <p className="truncate text-sm font-bold text-white">{user.full_name}</p>
                     <p className="text-[10px] uppercase tracking-wider text-purple-300">{hunterRank.label}</p>
                     <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-800">
-                      <div className="h-full rounded-full bg-purple-500" style={{ width: `${Math.min(100, Math.max(5, level * 3))}%` }} />
+                      <div className="h-full rounded-full bg-purple-500" style={{ width: `${xpPercentage}%` }} />
                     </div>
                     <div className="mt-1 flex justify-between font-mono text-[10px] text-gray-500">
-                      <span>XP</span>
-                      <span>{Math.min(100, Math.max(5, level * 3))}%</span>
+                      <span>XP: {xpInCurrentLevel}/{xpNeededForNextLevel}</span>
+                      <span>{xpPercentage}%</span>
                     </div>
                   </div>
                 </DropdownMenuLabel>

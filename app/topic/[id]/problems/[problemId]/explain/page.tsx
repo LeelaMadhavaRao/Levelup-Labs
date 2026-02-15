@@ -144,6 +144,10 @@ export default function ExplainProblemPage() {
       if (result.isCorrect) {
         toast.success('Great work! Your algorithm is correct!');
         setApprovedText(explanation);
+        
+        // Wait to ensure database has fully updated before allowing navigation
+        // This prevents race conditions when clicking "Go to Code" immediately
+        await new Promise(resolve => setTimeout(resolve, 1500));
       } else {
         setApprovedText(null);
         toast.error('Not quite right. Check the feedback and try again!');

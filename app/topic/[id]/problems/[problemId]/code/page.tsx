@@ -57,24 +57,59 @@ export default function CodeProblemPage() {
     setUser(currentUser);
 
     // Guard: check if algorithm explanation was approved before allowing code
-    try {
-      const solution = await getProblemSolution(currentUser.id, problemId);
-      if (!solution || (solution.status !== 'algorithm_approved' && solution.status !== 'completed')) {
-        toast.error('You must get your approach approved before writing code.');
-        router.push(`/topic/${params.id}/problems/${problemId}/explain`);
-        return;
-      }
-      // If already solved, load the saved code and mark as read-only
-      if (solution.status === 'completed') {
-        setIsSolved(true);
-        if (solution.code_solution) {
-          setSavedCode(solution.code_solution);
+    // Retry up to 3 times to handle race conditions between UI and DB updates
+    const maxRetries = 3;
+    let solution = null;
+    let isApproved = false;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`Attempt ${attempt}/${maxRetries}: Checking algorithm approval status...`);
+        
+        solution = await getProblemSolution(currentUser.id, problemId);
+        
+        // Check if solution exists and is approved
+        isApproved = solution && (
+          solution.status === 'algorithm_approved' || 
+          solution.status === 'completed'
+        );
+        
+        console.log(`Attempt ${attempt}: Solution status = ${solution?.status || 'not found'}, isApproved = ${isApproved}`);
+        
+        if (isApproved) {
+          // Success! Break the retry loop
+          console.log('✅ Algorithm approved, proceeding to code page');
+          break;
+        }
+        
+        // If not the last attempt, wait before retrying
+        if (attempt < maxRetries) {
+          console.log(`⏳ Waiting 1 second before retry ${attempt + 1}...`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      } catch (error) {
+        console.error(`Attempt ${attempt} error:`, error);
+        // If not the last attempt, wait before retrying
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
-    } catch {
-      toast.error('You must explain your approach first.');
+    }
+    
+    // After all retries, check if approved
+    if (!isApproved) {
+      console.error('❌ Algorithm not approved after all retries');
+      toast.error('You must get your approach approved before writing code.');
       router.push(`/topic/${params.id}/problems/${problemId}/explain`);
       return;
+    }
+    
+    // If already solved, load the saved code and mark as read-only
+    if (solution && solution.status === 'completed') {
+      setIsSolved(true);
+      if (solution.code_solution) {
+        setSavedCode(solution.code_solution);
+      }
     }
 
     const problemData = await getProblemById(problemId);

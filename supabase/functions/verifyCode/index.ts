@@ -166,36 +166,91 @@ Be strict - even one failing test case means allTestsPassed should be false.`
     }
     const points = allPassed ? (difficultyPoints[problem.difficulty] || 0) : 0
 
-    // Award points FIRST (before updating problem_solutions) so the
-    // idempotency check inside add_points_to_user sees the old row
-    // where points_awarded is still 0.
-    if (allPassed && points > 0) {
-      // Check if points were already awarded for this problem (idempotency)
-      const { data: existingSolution } = await supabaseClient
-        .from('problem_solutions')
-        .select('points_awarded, status')
-        .eq('user_id', user.id)
-        .eq('problem_id', problemId)
-        .single()
+    // Use service role client to bypass RLS for points operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
+    // Check if solution already exists (for idempotency)
+    const { data: existingSolution } = await supabaseAdmin
+      .from('problem_solutions')
+      .select('points_awarded, status')
+      .eq('user_id', user.id)
+      .eq('problem_id', problemId)
+      .single()
+
+    // Award points FIRST (before updating problem_solutions)
+    if (allPassed && points > 0) {
       const alreadyAwarded = existingSolution?.points_awarded > 0 && existingSolution?.status === 'completed'
 
       if (!alreadyAwarded) {
         // Try RPC first (handles users + leaderboard + ranks)
-        const { error: rpcError } = await supabaseClient.rpc('add_points_to_user', {
+        const { error: rpcError } = await supabaseAdmin.rpc('add_points_to_user', {
           p_user_id: user.id,
           p_points: points,
           p_problem_id: problemId,
         })
 
         if (rpcError) {
-          console.error('RPC add_points_to_user failed:', rpcError.message)
+          console.error('RPC add_points_to_user failed, using direct fallback:', rpcError.message)
+
+          // Direct fallback: update users table and insert point event
+          try {
+            // Update user points directly
+            const { data: currentUser } = await supabaseAdmin
+              .from('users')
+              .select('total_points, xp, level')
+              .eq('id', user.id)
+              .single()
+
+            const newTotalPoints = (currentUser?.total_points || 0) + points
+            const newXp = (currentUser?.xp || 0) + points
+            const newLevel = Math.max(1, Math.floor(newXp / 1000) + 1)
+
+            await supabaseAdmin
+              .from('users')
+              .update({
+                total_points: newTotalPoints,
+                xp: newXp,
+                level: newLevel,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', user.id)
+
+            // Insert point event for XP log tracking
+            await supabaseAdmin
+              .from('point_events')
+              .insert({
+                user_id: user.id,
+                event_type: 'solve_problem',
+                event_key: `solve_problem:${user.id}:${problemId}`,
+                points: points,
+                xp: points,
+                metadata: { problem_id: problemId },
+              })
+
+            // Update leaderboard
+            await supabaseAdmin
+              .from('leaderboard')
+              .upsert({
+                user_id: user.id,
+                total_points: newTotalPoints,
+                updated_at: new Date().toISOString(),
+              }, { onConflict: 'user_id' })
+
+            console.log(`✅ Direct fallback: awarded ${points} points to user ${user.id}`)
+          } catch (fallbackError) {
+            console.error('❌ Direct fallback also failed:', fallbackError)
+          }
+        } else {
+          console.log(`✅ RPC awarded ${points} points to user ${user.id}`)
         }
       }
     }
 
     // Now update the solution row with code, status, and points_awarded
-    const { error: updateError } = await supabaseClient
+    const { error: updateError } = await supabaseAdmin
       .from('problem_solutions')
       .update({
         code_solution: code,
@@ -211,37 +266,65 @@ Be strict - even one failing test case means allTestsPassed should be false.`
       console.error('Failed to update solution:', updateError)
     }
 
-    // Increment problems_solved on users table if completed
-    // (DB trigger should handle this, but do it as fallback too)
+    // Update problems_solved count on users table
     if (allPassed) {
-      const { data: existingCheck } = await supabaseClient
+      // Get the topic_id for this problem
+      const topicId = problem.topic_id
+
+      // Check if this problem was already completed before (to avoid double-counting in topic_progress)
+      const wasAlreadyCompleted = existingSolution?.status === 'completed'
+
+      // Count actual completed problems to be accurate
+      const { data: allSolved } = await supabaseAdmin
         .from('problem_solutions')
-        .select('status')
+        .select('id')
         .eq('user_id', user.id)
-        .eq('problem_id', problemId)
-        .single()
-      
-      // Only increment if status just changed to completed
-      if (existingCheck?.status === 'completed') {
-        const { data: userData } = await supabaseClient
-          .from('users')
-          .select('problems_solved')
-          .eq('id', user.id)
-          .single()
+        .eq('status', 'completed')
 
-        // Count actual completed problems to be accurate
-        const { data: allSolved } = await supabaseClient
-          .from('problem_solutions')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('status', 'completed')
+      const actualSolvedCount = allSolved?.length || 0
 
-        const actualSolvedCount = allSolved?.length || 0
-        if (userData && (userData.problems_solved || 0) < actualSolvedCount) {
-          await supabaseClient
-            .from('users')
-            .update({ problems_solved: actualSolvedCount })
-            .eq('id', user.id)
+      await supabaseAdmin
+        .from('users')
+        .update({ problems_solved: actualSolvedCount })
+        .eq('id', user.id)
+
+      // Update topic_progress: increment problems_completed ONLY if this is a new completion
+      if (topicId && !wasAlreadyCompleted) {
+        try {
+          // Count how many problems in this topic the user has completed
+          const { data: topicProblems } = await supabaseAdmin
+            .from('coding_problems')
+            .select('id')
+            .eq('topic_id', topicId)
+
+          const topicProblemIds = topicProblems?.map((p: any) => p.id) || []
+
+          const { data: completedInTopic } = await supabaseAdmin
+            .from('problem_solutions')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('status', 'completed')
+            .in('problem_id', topicProblemIds)
+
+          const completedCount = completedInTopic?.length || 0
+
+          // Upsert topic_progress with accurate count
+          await supabaseAdmin
+            .from('topic_progress')
+            .upsert({
+              user_id: user.id,
+              topic_id: topicId,
+              problems_completed: completedCount,
+              updated_at: new Date().toISOString(),
+            }, {
+              onConflict: 'user_id,topic_id',
+              ignoreDuplicates: false,
+            })
+
+          console.log(`✅ Updated topic_progress: ${completedCount} problems completed in topic ${topicId}`)
+        } catch (topicError) {
+          console.error('Failed to update topic_progress:', topicError)
+          // Don't fail the entire operation if topic progress update fails
         }
       }
     }

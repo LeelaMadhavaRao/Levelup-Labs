@@ -144,11 +144,6 @@ export default function ProfilePage() {
     return rankByBadgeIndex(idx) === badgeFilter;
   });
   const recentFeats = pointEvents.slice(0, 3);
-  const masteryData = [
-    { name: 'Python', value: Math.min(95, 55 + level), color: 'bg-purple-500', text: 'text-purple-300' },
-    { name: 'JavaScript', value: Math.min(90, 45 + Math.round(level * 0.8)), color: 'bg-blue-500', text: 'text-blue-300' },
-    { name: 'Go', value: Math.min(80, 20 + Math.round(level * 0.6)), color: 'bg-cyan-500', text: 'text-cyan-300' },
-  ];
 
   return (
     <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-200`}>
@@ -364,29 +359,10 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-white/10 bg-slate-900 p-5">
-              <p className="mb-4 text-xs uppercase text-slate-400">Mastery Distribution</p>
-              <div className="space-y-3">
-                {masteryData.map((item) => (
-                  <div key={item.name}>
-                    <div className="mb-1 flex justify-between text-xs">
-                      <span className="text-slate-300">{item.name}</span>
-                      <span className={item.text}>{item.value}%</span>
-                    </div>
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
-                      <div className={`${item.color} h-full`} style={{ width: `${item.value}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             <div className="rounded-lg border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
               <div className="mb-1 font-semibold text-white">Hunter Score</div>
               <div className="text-xs text-slate-400">Total XP: <span className="text-purple-300">{totalPoints.toLocaleString()}</span></div>
               <div className="text-xs text-slate-400">Current Rank: <span className="text-purple-300">{hunterRank.label}</span></div>
-              <div className="text-xs text-slate-400">Daily Quests: <span className="text-cyan-300">{dailyQuests.filter((q) => q.completed).length}/{dailyQuests.length}</span></div>
-              <div className="text-xs text-slate-400">Weekly Quests: <span className="text-cyan-300">{weeklyQuests.filter((q) => q.completed).length}/{weeklyQuests.length}</span></div>
               <div className="text-xs text-slate-400">Email: <span className="text-slate-300">{user.email}</span></div>
             </div>
           </div>
