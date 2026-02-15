@@ -156,7 +156,7 @@ export default function ProfilePage() {
 
   const rankLabel = overview?.rank ? `#${overview.rank}` : user.rank ? `#${user.rank}` : '#405';
   const streak = overview?.current_streak ?? 0;
-  const totalXp = Number(overview?.xp ?? overview?.total_xp ?? user.xp ?? user.total_xp ?? user.total_points ?? 0);
+  const totalXp = Number(overview?.total_xp ?? overview?.xp ?? user.total_xp ?? user.xp ?? user.total_points ?? 0);
   const hunterRank = getHunterRankByXp(totalXp);
   const problemsSolved = Number(user.problems_solved ?? 0);
   const coursesCompleted = Number(user.courses_completed ?? 0);

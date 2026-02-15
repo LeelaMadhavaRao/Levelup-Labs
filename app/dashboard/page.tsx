@@ -171,7 +171,7 @@ export default function DashboardPage() {
   });
 
   const solvedProblems = Number(gamificationOverview?.problems_solved ?? user?.problems_solved ?? 0);
-  const totalXp = Number(gamificationOverview?.xp ?? gamificationOverview?.total_xp ?? user?.xp ?? user?.total_xp ?? user?.total_points ?? 0);
+  const totalXp = Number(gamificationOverview?.total_xp ?? gamificationOverview?.xp ?? user?.total_xp ?? user?.xp ?? user?.total_points ?? 0);
   const userRank = gamificationOverview?.rank ?? user?.rank ?? null;
   const displayName = user?.full_name || 'Hunter';
   const avatarSeed = `${user?.id || 'hunter'}-${displayName}`;
@@ -376,7 +376,7 @@ export default function DashboardPage() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-bold text-[#A855F7]">+{Number(event.xp ?? event.points ?? 0)} XP</p>
+                          <p className="text-sm font-bold text-[#A855F7]">+{Number(event.xp_delta ?? event.xp ?? event.points ?? 0)} XP</p>
                         </div>
                       </div>
                     ))

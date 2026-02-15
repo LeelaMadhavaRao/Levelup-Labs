@@ -33,7 +33,7 @@ export default function CoursesPage() {
   const [avatarSrc, setAvatarSrc] = useState<string>('');
 
   const hunterRank = useMemo(() => {
-    return getHunterRankByXp(Number(user?.xp ?? user?.total_xp ?? user?.total_points ?? 0)).label;
+    return getHunterRankByXp(Number(user?.total_xp ?? user?.xp ?? user?.total_points ?? 0)).label;
   }, [user]);
 
   const rankConfig = (course: any) => {

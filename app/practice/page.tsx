@@ -102,7 +102,7 @@ export default function PracticePage() {
     unsolved: problems.filter((problem) => getProblemStatus(problem) === 'unsolved').length,
   }), [problems]);
 
-  const hunterRank = getHunterRankByXp(Number(user?.xp ?? user?.total_points ?? 0));
+  const hunterRank = getHunterRankByXp(Number(user?.total_xp ?? user?.xp ?? user?.total_points ?? 0));
 
   if (loading) {
     return (
@@ -335,7 +335,7 @@ export default function PracticePage() {
                 <div className="space-y-1 font-mono text-[11px]">
                   <div className="flex justify-between"><span className="text-slate-500">Hunter</span><span>{user?.full_name || 'Unknown'}</span></div>
                   <div className="flex justify-between"><span className="text-slate-500">Current Rank</span><span>{hunterRank.label}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Total XP</span><span>{Number(user?.xp ?? user?.total_points ?? 0)}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500">Total XP</span><span>{Number(user?.total_xp ?? user?.xp ?? user?.total_points ?? 0)}</span></div>
                   <div className="flex justify-between"><span className="text-slate-500">Streak Boost</span><span>x{streakMultiplier.toFixed(2)}</span></div>
                 </div>
               </div>

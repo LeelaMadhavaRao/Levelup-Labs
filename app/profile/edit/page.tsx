@@ -27,6 +27,7 @@ type EditableUser = {
   role: string | null;
   level?: number | null;
   xp?: number | null;
+  total_xp?: number | null;
   total_points?: number | null;
   created_at?: string | null;
 };
@@ -225,11 +226,11 @@ export default function EditProfilePage() {
               </div>
               <div className="rounded border border-cyan-500/20 bg-slate-900/80 px-2 py-3">
                 <p className="text-[10px] uppercase tracking-wide text-slate-400">XP</p>
-                <p className={`${orbitron.className} text-lg text-white`}>{Number(user?.xp ?? 0).toLocaleString()}</p>
+                <p className={`${orbitron.className} text-lg text-white`}>{Number(user?.total_xp ?? user?.xp ?? user?.total_points ?? 0).toLocaleString()}</p>
               </div>
               <div className="rounded border border-indigo-500/20 bg-slate-900/80 px-2 py-3">
                 <p className="text-[10px] uppercase tracking-wide text-slate-400">XP (Synced)</p>
-                <p className={`${orbitron.className} text-lg text-white`}>{Number(user?.xp ?? user?.total_points ?? 0).toLocaleString()}</p>
+                <p className={`${orbitron.className} text-lg text-white`}>{Number(user?.total_xp ?? user?.xp ?? user?.total_points ?? 0).toLocaleString()}</p>
               </div>
             </div>
           </CardContent>
