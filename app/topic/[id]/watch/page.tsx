@@ -13,7 +13,6 @@ export default function WatchVideoPage() {
   const router = useRouter();
   const params = useParams();
   const topicId = params.id as string;
-  const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [topic, setTopic] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -113,7 +112,7 @@ export default function WatchVideoPage() {
             />
           </div>
 
-          <div className="flex items-center justify-between pt-4">
+          <div className="flex flex-wrap items-center gap-3 pt-4">
             {!watched ? (
               <Button onClick={handleMarkAsWatched} size="lg">
                 <CheckCircle className="mr-2 h-5 w-5" />
@@ -125,7 +124,10 @@ export default function WatchVideoPage() {
               </Button>
             )}
             
-            <Button variant="outline" onClick={() => router.push('/my-courses')}>
+            <Button variant="outline" onClick={() => router.push(`/topic/${topic.id}`)}>
+              Topic Overview
+            </Button>
+            <Button variant="ghost" onClick={() => router.push('/my-courses')}>
               Back to Courses
             </Button>
           </div>

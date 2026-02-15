@@ -12,25 +12,83 @@ export async function generateQuiz(topicId: string, topicName: string, numQuesti
   const supabase = createClient()
 
   try {
-    const { data, error } = await supabase.functions.invoke('generateQuiz', {
-      body: {
+    // Refresh session to ensure it's current
+    const { data: { session }, error: sessionError } = await supabase.auth.refreshSession()
+    
+    console.log('🔍 Session check (after refresh):', { 
+      hasSession: !!session, 
+      hasToken: !!session?.access_token,
+      tokenPreview: session?.access_token?.substring(0, 20) + '...',
+      sessionError 
+    })
+    
+    if (!session) {
+      console.error('❌ No session found - user may not be logged in')
+      return {
+        questions: null,
+        error: 'You must be logged in to generate a quiz. Please refresh and try again.',
+      }
+    }
+
+    if (!session.access_token) {
+      console.error('❌ Session exists but no access token')
+      return {
+        questions: null,
+        error: 'Authentication token missing. Please log out and log back in.',
+      }
+    }
+
+    console.log('✅ Invoking generateQuiz via direct fetch')
+
+    // Use direct fetch to have full control over headers
+    const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generateQuiz`
+    
+    const response = await fetch(functionUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      },
+      body: JSON.stringify({
         topicId,
         topicName,
         numQuestions,
-      },
+      }),
     })
 
-    if (error) {
-      console.error('Error generating quiz:', error)
-      throw new Error(error.message || 'Failed to generate quiz questions')
+    console.log('📡 Response status:', response.status, response.statusText)
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('❌ Function error:', errorText)
+      return {
+        questions: null,
+        error: `Edge Function failed with status ${response.status}: ${errorText}`,
+      }
+    }
+
+    const data = await response.json()
+    console.log('📡 Function response:', { hasData: !!data, hasQuestions: !!data?.questions })
+
+    if (!data || !data.questions) {
+      return {
+        questions: null,
+        error: 'Edge Function returned invalid data',
+      }
     }
 
     return {
       questions: data.questions,
+      error: null,
     }
   } catch (error) {
     console.error('Error generating quiz:', error)
-    throw new Error('Failed to generate quiz questions')
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return {
+      questions: null,
+      error: `Failed to generate quiz: ${errorMessage}`,
+    }
   }
 }
 

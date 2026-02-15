@@ -206,6 +206,12 @@ CREATE TRIGGER trigger_initialize_leaderboard
     EXECUTE FUNCTION initialize_user_leaderboard();
 
 -- Function: Auto-create user profile when auth user confirms email
+-- NOTE: This trigger is DISABLED as it causes 500 errors on signup
+-- because auth.users is a protected system table in Supabase.
+-- User profile creation is now handled in application code:
+-- 1. lib/auth.ts signUpWithEmail() - creates profile on signup
+-- 2. app/auth/callback/route.ts - creates profile after email confirmation
+-- 3. lib/auth.ts getUserProfile() - fallback creation if profile missing
 CREATE OR REPLACE FUNCTION handle_new_user() 
 RETURNS TRIGGER AS $$
 BEGIN
@@ -222,12 +228,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Trigger: Create user profile on auth signup
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW
-  EXECUTE FUNCTION handle_new_user();
+-- Trigger: DISABLED - Do not create this trigger as it causes errors
+-- DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+-- CREATE TRIGGER on_auth_user_created
+--   AFTER INSERT ON auth.users
+--   FOR EACH ROW
+--   EXECUTE FUNCTION handle_new_user();
 
 -- ==============================================
 -- Additional Columns for PRD Requirements

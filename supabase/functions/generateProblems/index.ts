@@ -6,6 +6,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 // @ts-ignore - Deno imports
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+// @ts-ignore - Deno imports
+import { GoogleGenerativeAI } from 'https://esm.sh/@google/generative-ai@0.21.0'
 
 // Type declaration for Deno global
 declare const Deno: any
@@ -16,6 +18,8 @@ const GEMINI_API_KEYS = [
   Deno.env.get('GEMINI_API_KEY_3'),
   Deno.env.get('GEMINI_API_KEY_4'),
 ].filter(Boolean) as string[]
+
+const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'] // Primary -> Fallback
 
 let currentKeyIndex = 0
 
@@ -29,46 +33,33 @@ function getNextGeminiApiKey(): string {
 }
 
 async function callGeminiAPI(prompt: string): Promise<string> {
-  const maxRetries = GEMINI_API_KEYS.length
   let lastError: Error | null = null
 
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      const apiKey = getNextGeminiApiKey()
-      
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{ text: prompt }]
-            }],
-            generationConfig: {
-              temperature: 0.8,
-              maxOutputTokens: 4096,
-            },
-          }),
-        }
-      )
-
-      if (!response.ok) {
-        const error = await response.text()
-        throw new Error(`Gemini API error: ${error}`)
+  // Try each model (1.5-flash first, then 2.0-flash-exp)
+  for (const modelName of MODELS) {
+    // For each model, try all API keys using round-robin
+    for (let keyAttempt = 0; keyAttempt < GEMINI_API_KEYS.length; keyAttempt++) {
+      try {
+        const apiKey = getNextGeminiApiKey()
+        console.log(`🔑 Trying ${modelName} with API key #${(currentKeyIndex) % GEMINI_API_KEYS.length + 1}`)
+        
+        const genAI = new GoogleGenerativeAI(apiKey)
+        const model = genAI.getGenerativeModel({ model: modelName })
+        
+        const result = await model.generateContent(prompt)
+        const response = await result.response
+        const text = response.text()
+        
+        console.log(`✅ Success with ${modelName}`)
+        return text
+      } catch (error) {
+        lastError = error as Error
+        console.error(`❌ ${modelName} attempt ${keyAttempt + 1} failed:`, (error as Error).message)
       }
-
-      const data = await response.json()
-      return data.candidates[0].content.parts[0].text
-    } catch (error) {
-      lastError = error as Error
-      console.error(`Attempt ${attempt + 1} failed:`, error)
     }
   }
 
-  throw lastError || new Error('All API keys exhausted')
+  throw lastError || new Error('All API keys and models exhausted')
 }
 
 serve(async (req: Request) => {

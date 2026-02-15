@@ -397,24 +397,62 @@ export async function getUserCoursesWithProgress(userId: string) {
   if (error) throw error
 
   // Fetch topic progress for this user to determine completion status
-  const { data: progressData } = await supabase
-    .from('topic_progress')
-    .select('topic_id, video_watched, quiz_passed, problems_completed')
-    .eq('user_id', userId)
+  // Handle gracefully if topic_progress table doesn't exist
+  let topicProgressMap = new Map<string, { video_watched: boolean; quiz_passed: boolean; problems_completed: number }>()
+  try {
+    const { data: progressData, error: progressError } = await supabase
+      .from('topic_progress')
+      .select('topic_id, video_watched, quiz_passed, problems_completed')
+      .eq('user_id', userId)
 
-  const completedTopicIds = new Set(
-    progressData?.filter((p: any) => p.video_watched).map((p: any) => p.topic_id) || []
-  )
+    if (!progressError && progressData) {
+      for (const p of progressData) {
+        topicProgressMap.set(p.topic_id, {
+          video_watched: p.video_watched || false,
+          quiz_passed: p.quiz_passed || false,
+          problems_completed: p.problems_completed || 0,
+        })
+      }
+    }
+  } catch (err) {
+    console.warn('topic_progress table not found - progress tracking disabled', err)
+  }
+
+  // Also fetch problem counts per topic so we can determine if all are solved
+  let topicProblemCounts = new Map<string, number>()
+  try {
+    const { data: problemData } = await supabase
+      .from('coding_problems')
+      .select('topic_id')
+    
+    if (problemData) {
+      for (const p of problemData) {
+        topicProblemCounts.set(p.topic_id, (topicProblemCounts.get(p.topic_id) || 0) + 1)
+      }
+    }
+  } catch (err) {
+    // Ignore
+  }
 
   // Merge completion status into topics
+  // A topic is "complete" when: video_watched + quiz_passed + all problems solved
   return data?.map((uc: any) => ({
     ...uc.courses,
     modules: uc.courses?.modules?.map((m: any) => ({
       ...m,
-      topics: m.topics?.map((t: any) => ({
-        ...t,
-        is_completed: completedTopicIds.has(t.id),
-      })),
+      topics: m.topics?.map((t: any) => {
+        const prog = topicProgressMap.get(t.id)
+        const totalProblems = topicProblemCounts.get(t.id) || 0
+        const isComplete = prog
+          ? prog.video_watched && prog.quiz_passed && (totalProblems === 0 || prog.problems_completed >= totalProblems)
+          : false
+        return {
+          ...t,
+          is_completed: isComplete,
+          progress: prog || { video_watched: false, quiz_passed: false, problems_completed: 0 },
+          total_problems: totalProblems,
+        }
+      }),
     })),
   })) || []
 }
@@ -424,13 +462,145 @@ export async function markVideoAsWatched(userId: string, topicId: string) {
   
   const { error } = await supabase
     .from('topic_progress')
-    .upsert([
+    .upsert(
       {
         user_id: userId,
         topic_id: topicId,
         video_watched: true,
       },
-    ])
+      {
+        onConflict: 'user_id,topic_id',
+        ignoreDuplicates: false,
+      }
+    )
   
   return { error: error ? error.message : null }
+}
+
+/**
+ * Get full topic progress for a user
+ */
+export async function getTopicProgress(userId: string, topicId: string) {
+  const supabase = createClient()
+  
+  const { data, error } = await supabase
+    .from('topic_progress')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('topic_id', topicId)
+    .single()
+  
+  if (error && error.code === 'PGRST116') {
+    // Not found → no progress yet
+    return { video_watched: false, quiz_passed: false, problems_completed: 0 }
+  }
+  
+  if (error) {
+    console.warn('Error fetching topic progress:', error)
+    return { video_watched: false, quiz_passed: false, problems_completed: 0 }
+  }
+  
+  return {
+    video_watched: data.video_watched || false,
+    quiz_passed: data.quiz_passed || false,
+    problems_completed: data.problems_completed || 0,
+  }
+}
+
+/**
+ * Mark quiz as passed in topic_progress
+ */
+export async function markQuizPassed(userId: string, topicId: string) {
+  const supabase = createClient()
+  
+  const { error } = await supabase
+    .from('topic_progress')
+    .upsert(
+      {
+        user_id: userId,
+        topic_id: topicId,
+        quiz_passed: true,
+      },
+      {
+        onConflict: 'user_id,topic_id',
+        ignoreDuplicates: false,
+      }
+    )
+  
+  return { error: error ? error.message : null }
+}
+
+/**
+ * Update problems_completed count in topic_progress.
+ * Also checks if ALL problems are now solved and marks topic as fully complete.
+ */
+export async function updateProblemsCompleted(userId: string, topicId: string) {
+  const supabase = createClient()
+  
+  // Count total problems for this topic
+  const { data: allProblems } = await supabase
+    .from('coding_problems')
+    .select('id')
+    .eq('topic_id', topicId)
+  
+  const totalProblems = allProblems?.length || 0
+  
+  // Count solved problems for this user in this topic
+  const problemIds = allProblems?.map(p => p.id) || []
+  let solvedCount = 0
+  
+  if (problemIds.length > 0) {
+    const { data: solutions } = await supabase
+      .from('problem_solutions')
+      .select('problem_id')
+      .eq('user_id', userId)
+      .eq('status', 'completed')
+      .in('problem_id', problemIds)
+    
+    solvedCount = solutions?.length || 0
+  }
+  
+  // Update topic_progress
+  const { error } = await supabase
+    .from('topic_progress')
+    .upsert(
+      {
+        user_id: userId,
+        topic_id: topicId,
+        problems_completed: solvedCount,
+      },
+      {
+        onConflict: 'user_id,topic_id',
+        ignoreDuplicates: false,
+      }
+    )
+  
+  return {
+    error: error ? error.message : null,
+    solvedCount,
+    totalProblems,
+    allSolved: solvedCount >= totalProblems && totalProblems > 0,
+  }
+}
+
+/**
+ * Check if a topic is fully complete (video watched + quiz passed + all problems solved)
+ */
+export async function isTopicFullyComplete(userId: string, topicId: string): Promise<boolean> {
+  const progress = await getTopicProgress(userId, topicId)
+  
+  if (!progress.video_watched || !progress.quiz_passed) return false
+  
+  const supabase = createClient()
+  const { data: allProblems } = await supabase
+    .from('coding_problems')
+    .select('id')
+    .eq('topic_id', topicId)
+  
+  const totalProblems = allProblems?.length || 0
+  
+  // If no problems exist and video+quiz done, topic is complete
+  if (totalProblems === 0) return true
+  
+  return progress.problems_completed >= totalProblems
 }

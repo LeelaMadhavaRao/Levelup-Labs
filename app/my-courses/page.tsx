@@ -151,6 +151,8 @@ export default function MyCoursesPage() {
                                     <div className="flex items-center gap-3">
                                       {topic.is_completed ? (
                                         <CheckCircle className="h-5 w-5 text-green-500" />
+                                      ) : topic.progress?.video_watched ? (
+                                        <Play className="h-5 w-5 text-primary" />
                                       ) : (
                                         <Play className="h-5 w-5 text-muted-foreground" />
                                       )}
@@ -166,9 +168,15 @@ export default function MyCoursesPage() {
                                     <Button
                                       size="sm"
                                       variant={topic.is_completed ? 'outline' : 'default'}
-                                      onClick={() => router.push(`/topic/${topic.id}/watch`)}
+                                      onClick={() => router.push(`/topic/${topic.id}`)}
                                     >
-                                      {topic.is_completed ? 'Review' : 'Start'}
+                                      {topic.is_completed
+                                        ? 'Review'
+                                        : topic.progress?.quiz_passed
+                                        ? 'Continue Problems'
+                                        : topic.progress?.video_watched
+                                        ? 'Continue Quiz'
+                                        : 'Start'}
                                     </Button>
                                   </div>
                                 ))

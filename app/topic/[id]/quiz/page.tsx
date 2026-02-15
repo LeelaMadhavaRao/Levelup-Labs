@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { getTopic, generateQuiz, submitQuizResponse } from '@/lib/quiz';
 import { getCurrentUser } from '@/lib/auth';
+import { markQuizPassed } from '@/lib/courses';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -22,7 +23,6 @@ export default function QuizPage() {
   const router = useRouter();
   const params = useParams();
   const topicId = params.id as string;
-  const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [topic, setTopic] = useState<any>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -58,11 +58,20 @@ export default function QuizPage() {
     
     try {
       const quizData = await generateQuiz(topicId, topicName, 5);
-      setQuestions(quizData.questions);
-      setSelectedAnswers(new Array(quizData.questions.length).fill(-1));
+      
+      if (quizData.error || !quizData.questions) {
+        console.error('Error generating quiz:', quizData.error);
+        toast.error(quizData.error || 'Failed to generate quiz');
+        setQuestions([]); // Set empty array to show error state
+      } else {
+        setQuestions(quizData.questions);
+        setSelectedAnswers(new Array(quizData.questions.length).fill(-1));
+      }
     } catch (error) {
       console.error('Error generating quiz:', error);
-      toast.error('Failed to generate quiz');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Failed to generate quiz: ${errorMessage}`);
+      setQuestions([]); // Set empty array to show error state
     } finally {
       setGenerating(false);
       setLoading(false);
@@ -108,6 +117,11 @@ export default function QuizPage() {
     // Submit quiz response
     if (user && topic) {
       await submitQuizResponse(user.id, topic.id, finalScore, selectedAnswers, questions);
+      
+      // If passed, update topic_progress.quiz_passed
+      if (finalScore >= 70) {
+        await markQuizPassed(user.id, topic.id);
+      }
     }
 
     if (finalScore >= 70) {
@@ -140,10 +154,32 @@ export default function QuizPage() {
       <div className="container py-8 max-w-3xl">
         <Card>
           <CardContent className="py-16 text-center space-y-4">
-            <h2 className="text-xl font-semibold">Unable to generate quiz</h2>
-            <Button onClick={() => router.push(`/topic/${topicId}/watch`)}>
-              Back to Video
-            </Button>
+            <XCircle className="h-16 w-16 mx-auto text-destructive" />
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Unable to Generate Quiz</h2>
+              <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                The quiz generation service is unavailable. This usually means:
+              </p>
+              <ul className="text-sm text-muted-foreground mt-3 space-y-1 max-w-md mx-auto text-left">
+                <li>• Edge Function not deployed</li>
+                <li>• Gemini API keys not configured in Supabase</li>
+                <li>• API rate limit exceeded</li>
+              </ul>
+            </div>
+            <div className="flex gap-2 justify-center mt-6">
+              <Button onClick={() => router.push(`/topic/${topicId}/watch`)}>
+                Back to Video
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setLoading(true);
+                  loadData();
+                }}
+              >
+                Try Again
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

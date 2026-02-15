@@ -99,8 +99,8 @@ export default function EditProfilePage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Avatar */}
-            <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+              <Avatar className="h-20 w-20 shrink-0">
                 <AvatarImage src={formData.avatar_url} />
                 <AvatarFallback>
                   {formData.full_name
@@ -110,7 +110,7 @@ export default function EditProfilePage() {
                     .toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1">
+              <div className="flex-1 w-full">
                 <Label htmlFor="avatar">Avatar URL</Label>
                 <div className="flex gap-2 mt-1">
                   <Input
@@ -119,7 +119,7 @@ export default function EditProfilePage() {
                     onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
                     placeholder="https://example.com/avatar.jpg"
                   />
-                  <Button type="button" variant="outline" size="icon">
+                  <Button type="button" variant="outline" size="icon" className="shrink-0">
                     <Upload className="h-4 w-4" />
                   </Button>
                 </div>

@@ -4,6 +4,16 @@ export function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+  // Diagnostic logging (only in development)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔧 Supabase Config:', {
+      url: supabaseUrl?.substring(0, 30) + '...',
+      keyLength: supabaseAnonKey?.length,
+      hasUrl: !!supabaseUrl,
+      hasKey: !!supabaseAnonKey,
+    })
+  }
+
   // Provide helpful error message if environment variables are not set
   if (!supabaseUrl || supabaseUrl === 'your_supabase_url_here') {
     throw new Error(
@@ -23,7 +33,13 @@ export function createClient() {
     )
   }
 
-  return createBrowserClient(supabaseUrl, supabaseAnonKey)
+  return createBrowserClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  })
 }
 
 export async function getSession() {

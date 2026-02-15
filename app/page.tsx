@@ -179,7 +179,7 @@ export default function HomePage() {
             { step: '4', title: 'Solve Problems', desc: 'Code solutions and earn points' },
           ].map((item, index) => (
             <div key={index} className="text-center space-y-3">
-              <div className="mx-auto w-12 h-12 rounded-full bg-neutral-900 border border-neutral-700 flex items-center justify-center text-cyan-300 font-bold text-xl">
+              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 border border-border flex items-center justify-center text-primary font-bold text-xl">
                 {item.step}
               </div>
               <h3 className="font-semibold">{item.title}</h3>
@@ -191,7 +191,7 @@ export default function HomePage() {
 
       {/* CTA Section */}
       <section className="container px-4 py-20">
-        <Card className="max-w-3xl mx-auto border border-neutral-800 bg-card/80">
+        <Card className="max-w-3xl mx-auto border border-border bg-card/80">
           {user ? (
             <>
               <CardHeader className="text-center space-y-3 pb-6">

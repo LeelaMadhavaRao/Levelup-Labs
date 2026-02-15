@@ -64,7 +64,32 @@ export async function signUpWithEmail(email: string, password: string, fullName:
   // Check if email confirmation is required
   const needsConfirmation = authData.user && !authData.session
   
-  // User profile will be created automatically by database trigger after email confirmation
+  // If user is created without confirmation (session exists), create profile immediately
+  if (authData.user && authData.session) {
+    try {
+      // Create user profile in public.users table
+      const { error: profileError } = await supabase
+        .from('users')
+        .insert([
+          {
+            id: authData.user.id,
+            email: authData.user.email,
+            full_name: fullName,
+            role: 'user',
+          },
+        ])
+        .select()
+      
+      // Ignore duplicate key errors (profile already exists)
+      if (profileError && profileError.code !== '23505') {
+        console.error('Error creating user profile:', profileError)
+        // Don't fail signup if profile creation fails - it will be created later via getUserProfile fallback
+      }
+    } catch (error) {
+      console.error('Error creating user profile:', error)
+    }
+  }
+  
   return { 
     user: authData.user, 
     error: null, 

@@ -13,7 +13,6 @@ export default function ProblemsListPage() {
   const router = useRouter();
   const params = useParams();
   const topicId = params.id as string;
-  const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [topic, setTopic] = useState<any>(null);
   const [problems, setProblems] = useState<any[]>([]);

@@ -44,10 +44,22 @@ export async function completeCourse(userId: string, courseId: string) {
   }
   
   try {
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session) {
+      return {
+        error: 'You must be logged in',
+        pointsAwarded: 0,
+      }
+    }
+
     const { data, error } = await supabase.functions.invoke('updatePoints', {
       body: {
         action: 'complete_course',
         courseId,
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
       },
     })
     

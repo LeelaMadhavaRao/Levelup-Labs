@@ -115,7 +115,7 @@ export default function ProfilePage() {
               </div>
             </div>
             
-            <Button onClick={() => router.push('/profile/edit')}>
+            <Button onClick={() => router.push('/profile/edit')} className="w-full md:w-auto">
               <Edit className="mr-2 h-4 w-4" />
               Edit Profile
             </Button>
@@ -124,7 +124,7 @@ export default function ProfilePage() {
       </Card>
 
       {/* Stats Grid */}
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Points</CardTitle>
@@ -172,7 +172,7 @@ export default function ProfilePage() {
           <CardDescription>Milestones you've reached in your coding journey</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {user.total_points >= 1000 && (
               <div className="flex items-center gap-3 p-4 rounded-lg border bg-muted/30">
                 <div className="h-12 w-12 rounded-full bg-yellow-500/10 flex items-center justify-center">
@@ -232,7 +232,7 @@ export default function ProfilePage() {
       </Card>
 
       {/* Quick Actions */}
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card className="cursor-pointer hover:border-primary transition-colors" onClick={() => router.push('/courses')}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

@@ -103,14 +103,18 @@ export async function submitProblemSolution(
   
   const { data, error } = await supabase
     .from('problem_solutions')
-    .upsert([
+    .upsert(
       {
         user_id: userId,
         problem_id: problemId,
         algorithm_explanation: algorithmExplanation,
         status: 'algorithm_submitted',
       },
-    ])
+      {
+        onConflict: 'user_id,problem_id',
+        ignoreDuplicates: false,
+      }
+    )
     .select()
   
   if (error) throw error
@@ -205,10 +209,24 @@ export async function submitAlgorithmExplanation(
   const supabase = createClient()
   
   try {
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session) {
+      return {
+        error: 'You must be logged in',
+        feedback: null,
+        isCorrect: false,
+        suggestions: null
+      }
+    }
+
     const { data, error } = await supabase.functions.invoke('verifyAlgorithm', {
       body: {
         problemId,
         algorithmExplanation: explanation,
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
       },
     })
 
@@ -248,11 +266,26 @@ export async function submitCode(
   const supabase = createClient()
   
   try {
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session) {
+      return {
+        error: 'You must be logged in',
+        pointsAwarded: 0,
+        allTestsPassed: false,
+        testResults: [],
+        feedback: null,
+      }
+    }
+
     const { data, error } = await supabase.functions.invoke('verifyCode', {
       body: {
         problemId,
         code,
         language,
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
       },
     })
 
@@ -294,11 +327,23 @@ export async function generateProblemsForTopic(
   const supabase = createClient()
   
   try {
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session) {
+      return {
+        problems: [],
+        error: 'You must be logged in to generate problems',
+      }
+    }
+
     const { data, error } = await supabase.functions.invoke('generateProblems', {
       body: {
         topicId,
         topicName,
         numProblems,
+      },
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
       },
     })
 

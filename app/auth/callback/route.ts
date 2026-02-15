@@ -24,9 +24,42 @@ export async function GET(request: Request) {
         },
       }
     )
-    await supabase.auth.exchangeCodeForSession(code)
+    
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+    
+    // If email confirmation, create user profile if it doesn't exist
+    if (!error && data?.user) {
+      const userId = data.user.id
+      
+      // Check if profile exists
+      const { data: existingProfile } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle()
+      
+      // Create profile if it doesn't exist
+      if (!existingProfile) {
+        const fullName = 
+          (data.user.user_metadata?.full_name as string) ||
+          (data.user.user_metadata?.fullName as string) ||
+          data.user.email?.split('@')[0] ||
+          'User'
+        
+        await supabase
+          .from('users')
+          .insert([
+            {
+              id: userId,
+              email: data.user.email,
+              full_name: fullName,
+              role: 'user',
+            },
+          ])
+      }
+    }
   }
 
-  // Redirect to dashboard after successful OAuth login
+  // Redirect to dashboard after successful OAuth login or email confirmation
   return NextResponse.redirect(new URL('/dashboard', requestUrl.origin))
 }

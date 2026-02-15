@@ -36,7 +36,7 @@ export function ModuleAccordion({ modules, courseId }: ModuleAccordionProps) {
 
   const handleTopicClick = (topicId: string, locked: boolean) => {
     if (locked) return;
-    router.push(`/topic/${topicId}/watch`);
+    router.push(`/topic/${topicId}`);
   };
 
   const calculateModuleProgress = (module: Module) => {

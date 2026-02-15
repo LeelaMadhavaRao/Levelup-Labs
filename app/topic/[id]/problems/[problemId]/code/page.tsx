@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { getProblemById, submitCode } from '@/lib/problems';
 import { getCurrentUser } from '@/lib/auth';
+import { updateProblemsCompleted } from '@/lib/courses';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -131,6 +132,14 @@ export default function CodeProblemPage() {
 
     if (allPassed) {
       // Points already awarded by the edge function in handleRunTests
+      // Update topic progress: count problems solved
+      if (user && problem?.topic_id) {
+        const progressResult = await updateProblemsCompleted(user.id, problem.topic_id);
+        if (progressResult.allSolved) {
+          toast.success('All problems solved! Topic completed! 🎉', { duration: 4000 });
+        }
+      }
+      
       setTimeout(() => {
         router.push(`/topic/${problem.topic_id}/problems`);
       }, 2000);

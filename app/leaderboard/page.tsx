@@ -51,11 +51,11 @@ export default function LeaderboardPage() {
   const getRankBadgeClass = (rank: number) => {
     switch (rank) {
       case 1:
-        return 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40';
+        return 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-300 border border-yellow-500/40';
       case 2:
-        return 'bg-slate-500/20 text-slate-200 border border-slate-400/40';
+        return 'bg-slate-500/20 text-slate-600 dark:text-slate-200 border border-slate-400/40';
       case 3:
-        return 'bg-amber-600/20 text-amber-200 border border-amber-500/40';
+        return 'bg-amber-600/20 text-amber-700 dark:text-amber-200 border border-amber-500/40';
       default:
         return 'bg-muted border border-border';
     }
@@ -123,26 +123,8 @@ export default function LeaderboardPage() {
       {/* Top 3 Podium */}
       {leaderboard.length >= 3 && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-          {/* 2nd Place */}
-          <Card className="border-gray-400/50 bg-gray-400/5">
-            <CardContent className="pt-6 text-center space-y-3">
-              <div className="flex justify-center">
-                <Medal className="h-12 w-12 text-gray-400" />
-              </div>
-              <Avatar className="h-16 w-16 mx-auto border-2 border-gray-400">
-                <AvatarImage src={leaderboard[1].avatar_url} alt={leaderboard[1].full_name} />
-                <AvatarFallback>{getInitials(leaderboard[1].full_name)}</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-semibold">{leaderboard[1].full_name}</p>
-                <p className="text-2xl font-bold">{leaderboard[1].total_points}</p>
-                <p className="text-sm text-muted-foreground">points</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 1st Place */}
-          <Card className="border-yellow-500/50 bg-yellow-500/5 sm:scale-105">
+          {/* 1st Place — shown first on mobile, center on desktop */}
+          <Card className="border-yellow-500/50 bg-yellow-500/5 sm:order-2 sm:scale-105">
             <CardContent className="pt-6 text-center space-y-3">
               <div className="flex justify-center">
                 <Trophy className="h-16 w-16 text-yellow-500" />
@@ -160,8 +142,26 @@ export default function LeaderboardPage() {
             </CardContent>
           </Card>
 
+          {/* 2nd Place */}
+          <Card className="border-gray-400/50 bg-gray-400/5 sm:order-1">
+            <CardContent className="pt-6 text-center space-y-3">
+              <div className="flex justify-center">
+                <Medal className="h-12 w-12 text-gray-400" />
+              </div>
+              <Avatar className="h-16 w-16 mx-auto border-2 border-gray-400">
+                <AvatarImage src={leaderboard[1].avatar_url} alt={leaderboard[1].full_name} />
+                <AvatarFallback>{getInitials(leaderboard[1].full_name)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-semibold">{leaderboard[1].full_name}</p>
+                <p className="text-2xl font-bold">{leaderboard[1].total_points}</p>
+                <p className="text-sm text-muted-foreground">points</p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* 3rd Place */}
-          <Card className="border-amber-700/50 bg-amber-700/5">
+          <Card className="border-amber-700/50 bg-amber-700/5 sm:order-3">
             <CardContent className="pt-6 text-center space-y-3">
               <div className="flex justify-center">
                 <Medal className="h-12 w-12 text-amber-700" />
@@ -194,39 +194,39 @@ export default function LeaderboardPage() {
               return (
                 <div
                   key={leader.id}
-                  className={`flex items-center justify-between p-4 rounded-lg transition-colors ${
+                  className={`flex items-center justify-between gap-3 p-3 sm:p-4 rounded-lg transition-colors ${
                     isCurrentUser
                       ? 'bg-primary/10 border border-primary/30'
                       : 'bg-muted/30 hover:bg-muted/50'
                   }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`flex items-center justify-center w-12 h-12 rounded-full font-bold text-lg ${getRankBadgeClass(rank)}`}>
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full font-bold text-sm sm:text-lg shrink-0 ${getRankBadgeClass(rank)}`}>
                       {getRankIcon(rank) || `#${rank}`}
                     </div>
                     
-                    <Avatar className="h-10 w-10">
+                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
                       <AvatarImage src={leader.avatar_url} alt={leader.full_name} />
                       <AvatarFallback>{getInitials(leader.full_name)}</AvatarFallback>
                     </Avatar>
                     
-                    <div>
-                      <div className="font-semibold flex items-center gap-2 mb-1">
-                        {leader.full_name}
+                    <div className="min-w-0">
+                      <div className="font-semibold flex items-center gap-2 mb-0.5 sm:mb-1">
+                        <span className="truncate">{leader.full_name}</span>
                         {isCurrentUser && (
-                          <Badge variant="secondary" className="text-xs">You</Badge>
+                          <Badge variant="secondary" className="text-xs shrink-0">You</Badge>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground truncate">
                         {leader.courses_completed} courses • {leader.problems_solved} problems
                       </p>
                     </div>
                   </div>
                   
-                  <div className="text-right">
-                    <div className="flex items-center gap-2">
-                      <Trophy className="h-5 w-5 text-yellow-500" />
-                      <span className="text-xl font-bold">{leader.total_points}</span>
+                  <div className="text-right shrink-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
+                      <span className="text-lg sm:text-xl font-bold">{leader.total_points}</span>
                     </div>
                     <p className="text-xs text-muted-foreground">points</p>
                   </div>
