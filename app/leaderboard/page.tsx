@@ -125,14 +125,15 @@ export default function LeaderboardPage() {
   const meInBoard = user ? leaderboard.find((u) => u.id === user.id) : null;
 
   return (
-    <div className="container py-8 max-w-6xl space-y-8">
+    <div className="container relative py-8 max-w-6xl space-y-8">
+      <div className="scanlines pointer-events-none absolute inset-0 z-0 opacity-6"></div>
       <div className="space-y-4">
         <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Trophy className="h-10 w-10 text-yellow-500" />
-            <h1 className="text-4xl font-bold tracking-tight">Hunter Rankings</h1>
+            <div className="flex items-center justify-center gap-3 mb-4 reveal-in">
+            <Trophy className="h-10 w-10 text-yellow-500 animate-pulse" />
+            <h1 className="text-4xl font-bold tracking-tight rankup-title">Hunter Ranking Leaderboard</h1>
           </div>
-          <p className="text-lg text-muted-foreground">Compete, climb hunter tiers, and hold your streak.</p>
+          <p className="text-lg text-muted-foreground reveal-in">Compete, climb hunter tiers, and hold your streak on Levelup-Labs.</p>
         </div>
 
         <div className="flex flex-col items-center gap-2">
@@ -225,18 +226,20 @@ export default function LeaderboardPage() {
 
       {leaderboard.length >= 3 && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-          <Card className="border-yellow-500/50 bg-yellow-500/5 sm:order-2 sm:scale-105">
+          <Card className="border-yellow-500/50 bg-yellow-500/5 sm:order-2 sm:scale-105 reveal-in rankup-frame">
             <CardContent className="pt-6 text-center space-y-3">
               <div className="flex justify-center">
-                <Trophy className="h-16 w-16 text-yellow-500" />
+                <Trophy className="h-16 w-16 text-yellow-500 animate-pulse" />
               </div>
-              <Avatar className="h-20 w-20 mx-auto border-4 border-yellow-500">
-                <AvatarImage src={leaderboard[0].avatar_url || generateHunterAvatarUrl(`${leaderboard[0].id}-${leaderboard[0].full_name}`)} alt={leaderboard[0].full_name} />
-                <AvatarFallback>{getInitials(leaderboard[0].full_name)}</AvatarFallback>
-              </Avatar>
+              <div className="rankup-orb inline-block rounded-full">
+                <Avatar className="h-20 w-20 mx-auto border-4 border-yellow-500">
+                  <AvatarImage src={leaderboard[0].avatar_url || generateHunterAvatarUrl(`${leaderboard[0].id}-${leaderboard[0].full_name}`)} alt={leaderboard[0].full_name} />
+                  <AvatarFallback>{getInitials(leaderboard[0].full_name)}</AvatarFallback>
+                </Avatar>
+              </div>
               <div>
                 <Badge className="mb-2 bg-yellow-500 text-black">Champion</Badge>
-                <p className="font-bold text-lg">{leaderboard[0].full_name}</p>
+                <p className="font-bold text-lg hunter-glow-text">{leaderboard[0].full_name}</p>
                 <p className="text-3xl font-bold">{leaderboard[0].total_points}</p>
                 <p className="text-sm text-muted-foreground">XP</p>
               </div>

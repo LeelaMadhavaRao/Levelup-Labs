@@ -1,7 +1,7 @@
-# 🚀 CodeQuest AI - Complete Setup Guide
+# 🚀 Levelup-Labs - Complete Setup Guide
 
 ## Overview
-CodeQuest AI is a gamified AI-powered coding learning platform. This guide walks you through setting up both the Supabase backend and Next.js frontend.
+Levelup-Labs is a gamified AI-powered coding learning platform. This guide walks you through setting up both the Supabase backend and Next.js frontend.
 
 ---
 
@@ -84,7 +84,7 @@ You should see these tables:
 
 ```bash
 # Extract the project files
-cd codequest-ai
+cd levelup-labs
 npm install
 # or
 pnpm install
@@ -109,7 +109,7 @@ NEXT_PUBLIC_GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
 ### Step 3: Project Structure
 
 ```
-codequest-ai/
+levelup-labs/
 ├── app/
 │   ├── auth/
 │   │   ├── login/

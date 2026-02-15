@@ -1,4 +1,4 @@
-# 📖 CodeQuest AI - Implementation Guide
+# 📖 Levelup-Labs - Implementation Guide
 
 This guide details what needs to be implemented in the Next.js application after database setup.
 

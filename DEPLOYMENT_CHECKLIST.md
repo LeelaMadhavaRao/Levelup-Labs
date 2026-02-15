@@ -1,4 +1,4 @@
-# 🚀 CodeQuest AI - Deployment Checklist
+# 🚀 Levelup-Labs - Deployment Checklist
 
 Use this checklist before deploying to production.
 

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signUpWithEmail } from '@/lib/auth';
+import { signUpWithEmail, loginWithGoogle } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,6 +21,7 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,13 +77,23 @@ export default function SignupPage() {
     });
   };
 
+  const handleGoogleSignup = async () => {
+    setGoogleLoading(true);
+    try {
+      await loginWithGoogle();
+    } catch (err) {
+      setError('Google authentication failed');
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md border-neutral-800 bg-card/80">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Awaken Hunter Account</CardTitle>
           <CardDescription className="text-center">
-            Join CodeQuest and enter the Solo Leveling system
+            Join Levelup-Labs and enter the Solo Leveling system
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSignup}>
@@ -160,7 +171,17 @@ export default function SignupPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Awakening account...' : 'Register Hunter'}
             </Button>
-            
+
+            <Button onClick={handleGoogleSignup} className="group/google flex w-full items-center justify-center gap-3 border border-cyan-300/30 bg-black/40 px-6 py-3 font-mono text-white transition-all duration-300 hover:border-cyan-300 hover:bg-cyan-300/10 hover:shadow-[0_0_15px_rgba(0,243,255,0.3)] disabled:opacity-50" disabled={googleLoading || loading}>
+              <svg className="h-5 w-5 group-hover/google:animate-pulse" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+                <path d="M21.35 11.1H12v2.8h5.35c-.23 1.37-1.19 2.53-2.53 3.25v2.7h4.08C20.68 19.03 22 15.43 22 12c0-.56-.04-1.11-.11-1.65z" fill="#4285F4"/>
+                <path d="M12 22c2.7 0 4.98-.9 6.64-2.45l-4.08-2.7c-.98.64-2.24 1.02-3.96 1.02-3.04 0-5.61-2.06-6.53-4.83H1.29v3.03C3.02 19.6 7.24 22 12 22z" fill="#34A853"/>
+                <path d="M5.47 13.04A6.99 6.99 0 0 1 5 12c0-.34.03-.67.08-1.04V7.92H1.29A10.99 10.99 0 0 0 0 12c0 1.86.45 3.62 1.29 5.08l4.18-4.04z" fill="#FBBC05"/>
+                <path d="M12 6.5c1.47 0 2.78.5 3.82 1.48l2.86-2.86C16.98 3.66 14.7 2.5 12 2.5 7.24 2.5 3.02 4.9 1.29 7.92l4.18 3.04C6.39 8.56 8.96 6.5 12 6.5z" fill="#EA4335"/>
+              </svg>
+              <span className="text-sm tracking-wider">{googleLoading ? 'CONNECTING...' : 'Continue with Google'}</span>
+            </Button>
+
             <div className="text-sm text-center text-muted-foreground">
               Already have an account?{' '}
               <Link href="/auth/login" className="text-primary hover:underline">

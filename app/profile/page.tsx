@@ -179,7 +179,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="relative flex-grow overflow-hidden bg-slate-900">
+                <div className="relative flex-grow overflow-hidden bg-slate-900 rankup-orb">
                   <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#140c1c] via-transparent to-transparent" />
                   {user.avatar_url || user.id ? (
                     <img
@@ -192,6 +192,9 @@ export default function ProfilePage() {
                   )}
                   <div className="absolute bottom-0 left-0 right-0 z-0 h-1/2 bg-gradient-to-t from-purple-500/20 to-transparent" />
                 </div>
+                {user.avatar_url && user.avatar_url.includes('dicebear') && (
+                  <div className="mt-2 text-xs text-slate-400">Auto-generated avatar</div>
+                )}
 
                 <div className="relative z-20 border-t border-white/10 bg-[#140c1c] p-6">
                   <h2 className="mb-1 text-3xl font-bold text-white">{user.full_name || 'Unknown Hunter'}</h2>
@@ -391,7 +394,7 @@ export default function ProfilePage() {
 
         <footer className="mt-12 border-t border-white/10 py-8 text-sm text-slate-500">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <div>© 2026 CodeQuest AI. All rights reserved.</div>
+            <div>© 2026 Levelup-Labs. All rights reserved.</div>
             <div className="flex gap-6">
               <span className="cursor-default hover:text-purple-300">Privacy Policy</span>
               <span className="cursor-default hover:text-purple-300">Terms of Service</span>
