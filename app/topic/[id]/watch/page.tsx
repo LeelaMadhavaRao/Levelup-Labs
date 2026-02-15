@@ -159,6 +159,7 @@ export default function WatchVideoPage() {
   return (
     <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-white`}>
       <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+      <div className="scan-line" />
       <div className="pointer-events-none fixed inset-0 z-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#a60df2 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
       <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-900/10 via-black/80 to-cyan-900/10" />
 
@@ -189,7 +190,7 @@ export default function WatchVideoPage() {
                     <span className="text-xs text-green-400 font-mono uppercase">Online</span>
                   </div>
                 </div>
-                <div className="h-10 w-10 rounded-full border border-purple-400 p-0.5 ml-2">
+                <div className="h-10 w-10 rounded-full border-2 border-purple-400 p-0.5 ml-2 breathing-purple">
                   {user?.avatar_url ? (
                     <img src={user.avatar_url} alt={user.full_name} className="h-full w-full rounded-full object-cover" />
                   ) : (
@@ -245,8 +246,9 @@ export default function WatchVideoPage() {
               </div>
             </div>
 
-            <div className="min-h-[11rem] bg-black/60 border border-white/10 rounded-lg p-6 flex flex-col relative overflow-hidden">
-              <h2 className={`${orbitron.className} text-2xl font-bold text-white mb-2 flex items-center gap-2`}>
+            <div className="min-h-[11rem] bg-black/60 border border-white/10 rounded-lg p-6 flex flex-col relative overflow-hidden clip-path-slant">
+              <div className="absolute inset-0 border border-purple-400/10 animate-pulse pointer-events-none rounded-lg" />
+              <h2 className={`${orbitron.className} text-2xl font-bold text-white mb-2 flex items-center gap-2 text-glow`}>
                 <span className="w-1 h-6 bg-cyan-300 rounded-sm" />
                 Mission Briefing
               </h2>
@@ -284,7 +286,8 @@ export default function WatchVideoPage() {
             </div>
 
             {showOverview && (
-              <div className="rounded-lg border border-white/10 bg-black/60 p-6">
+              <div className="rounded-lg border border-white/10 bg-black/60 p-6 relative overflow-hidden terminal-scroll max-h-[400px]">
+                <div className="absolute inset-0 border border-cyan-400/10 animate-pulse pointer-events-none rounded-lg" />
                 {enhancing ? (
                   <div className="flex items-center gap-3 justify-center py-8">
                     <Loader2 className="h-5 w-5 animate-spin text-purple-300" />
@@ -292,14 +295,14 @@ export default function WatchVideoPage() {
                   </div>
                 ) : enhancedOverview ? (
                   <div className="space-y-2">
-                    <h3 className={`${orbitron.className} text-lg font-semibold text-white`}>AI-Enhanced Intel</h3>
+                    <h3 className={`${orbitron.className} text-lg font-semibold text-white text-glow`}>AI-Enhanced Intel</h3>
                     <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap text-gray-200">
                       {enhancedOverview}
                     </div>
                   </div>
                 ) : topic?.overview ? (
                   <div className="space-y-2">
-                    <h3 className={`${orbitron.className} text-lg font-semibold text-white`}>Mission Intel</h3>
+                    <h3 className={`${orbitron.className} text-lg font-semibold text-white text-glow`}>Mission Intel</h3>
                     <p className="text-gray-300 whitespace-pre-wrap">{topic.overview}</p>
                   </div>
                 ) : (
@@ -309,11 +312,12 @@ export default function WatchVideoPage() {
             )}
           </section>
 
-          <aside className="col-span-12 lg:col-span-3 flex flex-col gap-6 h-full min-h-0 lg:overflow-y-auto lg:pr-1">
-            <div className="bg-black/60 border border-white/10 rounded-lg overflow-hidden">
+          <aside className="col-span-12 lg:col-span-3 flex flex-col gap-6 h-full min-h-0 terminal-scroll lg:overflow-y-auto lg:pr-1">
+            <div className="bg-black/60 border border-white/10 rounded-lg overflow-hidden relative">
+              <div className="absolute inset-0 border border-cyan-400/10 animate-pulse pointer-events-none rounded-lg" />
               <div className="p-4 border-b border-white/10 bg-white/5 flex justify-between items-center">
-                <h3 className="text-sm font-bold uppercase tracking-widest">Quest Progression</h3>
-                <span className="text-xs font-mono text-cyan-300">{progressPercent}% COMPLETE</span>
+                <h3 className={`${orbitron.className} text-sm font-bold uppercase tracking-widest text-glow`}>Quest Progression</h3>
+                <span className="text-xs font-mono text-cyan-300 text-glow">{progressPercent}% COMPLETE</span>
               </div>
               <div className="p-4 space-y-6 relative">
                 <div className="absolute left-[27px] top-8 bottom-8 w-0.5 bg-white/10" />
@@ -369,9 +373,10 @@ export default function WatchVideoPage() {
               </div>
             </div>
 
-            <div className="bg-black/60 border border-white/10 rounded-lg flex flex-col">
+            <div className="bg-black/60 border border-white/10 rounded-lg flex flex-col relative">
+              <div className="absolute inset-0 border border-purple-400/10 animate-pulse pointer-events-none rounded-lg" />
               <div className="p-4 border-b border-white/10 bg-white/5 flex justify-between items-center">
-                <h3 className="text-sm font-bold text-purple-300 uppercase tracking-widest flex items-center gap-2">
+                <h3 className={`${orbitron.className} text-sm font-bold text-purple-300 uppercase tracking-widest flex items-center gap-2 text-glow`}>
                   <Sparkles className="h-4 w-4" /> Mission Rewards
                 </h3>
               </div>

@@ -162,7 +162,7 @@ export default function LeaderboardPage() {
                 <div className="relative w-[220px] text-center">
                   <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 flex flex-col items-center z-20">
                     <span className="text-rank-blue font-bold text-lg mb-1">RANK 2</span>
-                    <div className="w-16 h-16 rounded-full border-2 border-rank-blue p-1 bg-background-dark overflow-hidden">
+                    <div className="w-16 h-16 rounded-full border-2 border-rank-blue p-1 bg-background-dark overflow-hidden breathing-blue">
                       <img src={leaderboard[1].avatar_url || generateHunterAvatarUrl(`${leaderboard[1].id}-${leaderboard[1].full_name}`)} alt={leaderboard[1].full_name} className="w-full h-full rounded-full object-cover" />
                     </div>
                   </div>
@@ -190,7 +190,7 @@ export default function LeaderboardPage() {
                 <div className="relative w-[220px] text-center">
                   <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 flex flex-col items-center z-20">
                     <span className="text-rank-gold font-bold text-lg mb-1">RANK 3</span>
-                    <div className="w-16 h-16 rounded-full border-2 border-rank-gold p-1 bg-background-dark overflow-hidden">
+                    <div className="w-16 h-16 rounded-full border-2 border-rank-gold p-1 bg-background-dark overflow-hidden breathing-gold">
                       <img src={leaderboard[2].avatar_url || generateHunterAvatarUrl(`${leaderboard[2].id}-${leaderboard[2].full_name}`)} alt={leaderboard[2].full_name} className="w-full h-full rounded-full object-cover" />
                     </div>
                   </div>
