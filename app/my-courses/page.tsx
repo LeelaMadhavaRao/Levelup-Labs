@@ -245,49 +245,43 @@ export default function MyCoursesPage() {
                         key={module.id}
                         className={`rounded-lg border p-1 ${moduleIndex === 0 ? 'border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.2)]' : 'border-white/10'}`}
                       >
-                        <div className="flex flex-col gap-6 rounded bg-[#09090b]/50 p-4 md:flex-row">
-                          <div className="flex w-16 flex-shrink-0 flex-col items-center justify-center md:border-r md:border-white/5">
-                            <div className={`flex h-10 w-10 items-center justify-center rounded font-mono font-bold ${moduleIndex === 0 ? 'border border-purple-500 bg-purple-500/20 text-purple-300' : 'border border-slate-700 bg-slate-800/50 text-slate-500'}`}>
+                        <div className="flex flex-col gap-4 rounded bg-[#09090b]/50 p-4">
+                          <div className="flex items-center gap-3">
+                            <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded font-mono font-bold ${moduleIndex === 0 ? 'border border-purple-500 bg-purple-500/20 text-purple-300' : 'border border-slate-700 bg-slate-800/50 text-slate-500'}`}>
                               {String(moduleIndex + 1).padStart(2, '0')}
                             </div>
-                            <div className={`my-2 h-full w-px ${moduleIndex === 0 ? 'bg-purple-500/30' : 'bg-white/5'}`} />
+
+                            <div className="min-w-0 flex-1">
+                              <h4 className="mb-1 text-lg font-bold text-white">Module: {module.name}</h4>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                <span className="rounded border border-blue-500/40 bg-blue-900/30 px-2 py-0.5 font-mono text-[10px] uppercase text-blue-300">Logic_Gate</span>
+                                <span className="rounded border border-purple-500/40 bg-purple-900/30 px-2 py-0.5 font-mono text-[10px] uppercase text-purple-300">Stable</span>
+                              </div>
+                            </div>
                           </div>
 
-                          <div className="flex-1 space-y-4">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <h4 className="mb-1 text-lg font-bold text-white">Module: {module.name}</h4>
-                                <div className="mt-2 flex gap-2">
-                                  <span className="rounded border border-blue-500/40 bg-blue-900/30 px-2 py-0.5 font-mono text-[10px] uppercase text-blue-300">Logic_Gate</span>
-                                  <span className="rounded border border-purple-500/40 bg-purple-900/30 px-2 py-0.5 font-mono text-[10px] uppercase text-purple-300">Stable</span>
-                                </div>
-                              </div>
-                              
-                            </div>
-
-                            <div className="space-y-2 border-l-2 border-white/5 pl-4">
-                              {module.topics?.length ? (
-                                module.topics.map((topic: any) => (
-                                  <div key={topic.id} className="group flex items-center gap-3 rounded border border-white/10 bg-[#09090b] px-3 py-2 hover:border-purple-500/40">
-                                    <span className={`h-2 w-2 rounded-full ${topic.is_completed ? 'bg-green-400' : 'bg-purple-400/60'} shadow-[0_0_5px_rgba(168,85,247,0.7)]`} />
-                                    <div className="min-w-0 flex-1">
-                                      <div className="truncate font-mono text-sm text-slate-300">Topic: {topic.name}</div>
-                                      {topic.description && <div className="truncate text-xs text-slate-500">{topic.description}</div>}
-                                    </div>
-                                    <Button
-                                      size="sm"
-                                      variant={topic.is_completed ? 'outline' : 'default'}
-                                      onClick={() => router.push(`/topic/${topic.id}`)}
-                                      className="font-mono text-xs"
-                                    >
-                                      {topic.is_completed ? 'Review' : topic.progress?.quiz_passed ? 'Boss Fight' : topic.progress?.video_watched ? 'Trial' : 'Start'}
-                                    </Button>
+                          <div className="space-y-2">
+                            {module.topics?.length ? (
+                              module.topics.map((topic: any) => (
+                                <div key={topic.id} className="group flex flex-col gap-2 rounded border border-white/10 bg-[#09090b] p-3 hover:border-purple-500/40 sm:flex-row sm:items-center">
+                                  <span className={`h-2 w-2 flex-shrink-0 rounded-full ${topic.is_completed ? 'bg-green-400' : 'bg-purple-400/60'} shadow-[0_0_5px_rgba(168,85,247,0.7)]`} />
+                                  <div className="min-w-0 flex-1">
+                                    <div className="break-words font-mono text-sm text-slate-300">Topic: {topic.name}</div>
+                                    {topic.description && <div className="line-clamp-1 text-xs text-slate-500">{topic.description}</div>}
                                   </div>
-                                ))
-                              ) : (
-                                <div className="font-mono text-xs text-slate-500">No topics available.</div>
-                              )}
-                            </div>
+                                  <Button
+                                    size="sm"
+                                    variant={topic.is_completed ? 'outline' : 'default'}
+                                    onClick={() => router.push(`/topic/${topic.id}`)}
+                                    className="w-full font-mono text-xs sm:w-auto"
+                                  >
+                                    {topic.is_completed ? 'Review' : topic.progress?.quiz_passed ? 'Boss Fight' : topic.progress?.video_watched ? 'Trial' : 'Start'}
+                                  </Button>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="font-mono text-xs text-slate-500">No topics available.</div>
+                            )}
                           </div>
                         </div>
                       </div>

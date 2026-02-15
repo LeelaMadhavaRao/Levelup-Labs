@@ -81,43 +81,24 @@ export default function AdminCoursesPage() {
 
   const fetchCourses = async () => {
     try {
-      const supabase = createClient();
-      
-      // Fetch courses with module and topic counts
-      const { data: coursesData, error } = await supabase
-        .from('courses')
-        .select(`
-          *,
-          modules (
-            id,
-            topics (
-              id
-            )
-          ),
-          user_courses (
-            user_id
-          )
-        `)
-        .order('created_at', { ascending: false });
+      const coursesData = await getAllCourses();
 
-      if (error) throw new Error(error.message || 'Failed to fetch courses');
-
-      // Calculate stats
-      const processedCourses = coursesData?.map(course => ({
+      // Map to consistent field names
+      const processedCourses = coursesData.map((course: any) => ({
         ...course,
-        moduleCount: course.modules?.length || 0,
-        topicCount: course.modules?.reduce((acc: number, module: any) => 
-          acc + (module.topics?.length || 0), 0) || 0,
-        enrollmentCount: course.user_courses?.length || 0,
-      })) || [];
+        moduleCount: course.module_count || 0,
+        topicCount: course.topic_count || 0,
+        enrollmentCount: course.student_count || 0,
+        problemCount: course.problem_count || 0,
+      }));
 
       setCourses(processedCourses);
       setFilteredCourses(processedCourses);
 
       // Calculate overall stats
-      const totalEnrollments = processedCourses.reduce((acc, c) => acc + c.enrollmentCount, 0);
-      const totalModules = processedCourses.reduce((acc, c) => acc + c.moduleCount, 0);
-      const totalTopics = processedCourses.reduce((acc, c) => acc + c.topicCount, 0);
+      const totalEnrollments = processedCourses.reduce((acc: number, c: any) => acc + c.enrollmentCount, 0);
+      const totalModules = processedCourses.reduce((acc: number, c: any) => acc + c.moduleCount, 0);
+      const totalTopics = processedCourses.reduce((acc: number, c: any) => acc + c.topicCount, 0);
 
       setStats({
         totalCourses: processedCourses.length,
@@ -153,13 +134,16 @@ export default function AdminCoursesPage() {
         .delete()
         .eq('id', courseId);
 
-      if (error) throw new Error(error.message || 'Failed to delete course');
+      if (error) {
+        console.error('Delete error:', error);
+        throw new Error(error.message || 'Failed to delete course');
+      }
 
       toast.success('Course deleted successfully');
       await fetchCourses();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting course:', error);
-      toast.error('Failed to delete course');
+      toast.error(error?.message || 'Failed to delete course');
     }
   };
 
@@ -203,9 +187,7 @@ export default function AdminCoursesPage() {
                 Create Course
               </Link>
             </Button>
-            <Button variant="outline" onClick={() => router.push('/admin/dashboard')} className="border-white/20 text-slate-200 hover:bg-white/10">
-              Back to Dashboard
-            </Button>
+
           </div>
         </div>
       </div>

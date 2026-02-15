@@ -379,50 +379,6 @@ export default function WatchVideoPage() {
                 </div>
               </div>
             </div>
-
-            <div className="bg-black/60 border border-white/10 rounded-lg flex flex-col relative">
-              <div className="absolute inset-0 border border-purple-400/10 animate-pulse pointer-events-none rounded-lg" />
-              <div className="p-4 border-b border-white/10 bg-white/5 flex justify-between items-center">
-                <h3 className={`${orbitron.className} text-sm font-bold text-purple-300 uppercase tracking-widest flex items-center gap-2 text-glow`}>
-                  <Sparkles className="h-4 w-4" /> Mission Rewards
-                </h3>
-              </div>
-              <div className="p-4 space-y-3">
-                <div className="flex items-center gap-3 p-3 rounded bg-white/5 border border-white/10">
-                  <div className="w-10 h-10 rounded border border-yellow-500/30 bg-yellow-900/20 flex items-center justify-center">
-                    <Zap className="h-5 w-5 text-yellow-400" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-white">{1500 + (topic.num_problems || 0) * 150} XP</div>
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider">Experience Points</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 rounded bg-white/5 border border-white/10">
-                  <div className="w-10 h-10 rounded border border-cyan-500/30 bg-cyan-900/20 flex items-center justify-center">
-                    <Star className="h-5 w-5 text-cyan-300" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-white">Senior Dev Badge</div>
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider">Profile Cosmetic</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 rounded bg-white/5 border border-white/10">
-                  <div className="w-10 h-10 rounded border border-purple-500/30 bg-purple-900/20 flex items-center justify-center">
-                    <Sparkles className="h-5 w-5 text-purple-300" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-white">Clean Code III</div>
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider">Skill Unlock</div>
-                  </div>
-                </div>
-              </div>
-              <div className="p-4 mt-auto border-t border-white/10">
-                <div className="text-xs text-center text-gray-500 font-mono mb-2">REWARD CLAIM AVAILABLE UPON COMPLETION</div>
-                <Button disabled className="w-full py-2 bg-white/5 border border-white/10 text-gray-500 text-xs font-bold uppercase tracking-widest">
-                  Claim Rewards
-                </Button>
-              </div>
-            </div>
           </aside>
         </main>
       </div>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCourse, createModule, createTopic } from '@/lib/courses';
 import { getCurrentUser } from '@/lib/auth';
+import { generateProblemsForTopic } from '@/lib/problems';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -168,6 +169,13 @@ export default function CreateCoursePage() {
         return;
       }
 
+      // Verify admin role
+      if (user.role !== 'admin') {
+        toast.error('Access denied: Admin privileges required.');
+        setLoading(false);
+        return;
+      }
+
       // Create course
       const { course: newCourse, error: courseError } = await createCourse({
         admin_id: user.id,
@@ -178,7 +186,8 @@ export default function CreateCoursePage() {
       });
 
       if (courseError || !newCourse) {
-        toast.error('Failed to create course');
+        console.error('Course creation error:', courseError);
+        toast.error('Failed to create course: ' + courseError);
         setLoading(false);
         return;
       }
@@ -201,7 +210,7 @@ export default function CreateCoursePage() {
         // Create topics
         for (let j = 0; j < module.topics.length; j++) {
           const topic = module.topics[j];
-          const { error: topicError } = await createTopic({
+          const { topic: newTopic, error: topicError } = await createTopic({
             module_id: newModule.id,
             name: topic.name,
             video_url: topic.video_url,
@@ -210,8 +219,30 @@ export default function CreateCoursePage() {
             order_index: j + 1,
           });
 
-          if (topicError) {
+          if (topicError || !newTopic) {
             toast.error(`Failed to create topic "${topic.name}"`);
+            continue;
+          }
+
+          // Auto-generate 2-3 coding problems for each topic
+          try {
+            const numProblems = Math.floor(Math.random() * 2) + 2; // Random 2 or 3
+            const { problems, error: genError } = await generateProblemsForTopic(
+              newTopic.id,
+              newTopic.name,
+              numProblems,
+              newTopic.overview || newTopic.description
+            );
+
+            if (genError || !problems || problems.length === 0) {
+              console.warn(`Could not generate problems for topic "${topic.name}":`, genError);
+              // Don't fail course creation if problem generation fails
+            } else {
+              console.log(`✅ Generated ${problems.length} problems for "${topic.name}"`);
+            }
+          } catch (genError) {
+            console.warn(`Problem generation failed for "${topic.name}":`, genError);
+            // Continue with course creation even if problem generation fails
           }
         }
       }

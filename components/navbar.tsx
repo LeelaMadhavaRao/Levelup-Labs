@@ -110,15 +110,14 @@ export default function Navbar() {
 
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
+  const isAdmin = user?.role === 'admin';
+
   const navLinks = user
-    ? user.role === 'admin'
+    ? isAdmin
       ? [
-          { href: '/dashboard', label: 'DASHBOARD' },
           { href: '/admin/dashboard', label: 'ADMIN' },
           { href: '/admin/create-course', label: 'CREATE' },
           { href: '/admin/courses', label: 'CONSOLE' },
-          { href: '/courses', label: 'DUNGEONS' },
-          { href: '/practice', label: 'PRACTICE' },
           { href: '/leaderboard', label: 'RANKINGS' },
         ]
       : [
@@ -179,14 +178,14 @@ export default function Navbar() {
         )}
 
         <div className="flex items-center gap-3 sm:gap-5">
-          {user && playerStats && (
+          {user && playerStats && !isAdmin && (
             <div className="hidden items-center space-x-2 rounded border border-white/5 bg-black/20 px-3 py-1.5 backdrop-blur-sm sm:flex" title="Daily Streak">
               <Flame className="h-4 w-4 animate-pulse text-orange-400" />
               <span className="font-mono font-bold text-orange-400">{playerStats.streak}</span>
             </div>
           )}
 
-          {user && (
+          {user && !isAdmin && (
             <div className="hidden sm:block">
               <div className="group relative">
                 <div className="absolute inset-0 rotate-45 rounded-sm bg-purple-500/20 transition-all group-hover:bg-purple-500/40" />
@@ -227,27 +226,35 @@ export default function Navbar() {
               <DropdownMenuContent align="end" className="mt-3 w-56 overflow-hidden border border-purple-500/30 bg-[#0b0f1a] text-white shadow-[0_0_30px_-5px_rgba(147,13,242,0.3)]">
                 <DropdownMenuLabel className="border-b border-purple-500/20 bg-[linear-gradient(135deg,rgba(147,13,242,0.12)_25%,transparent_25%,transparent_50%,rgba(147,13,242,0.12)_50%,rgba(147,13,242,0.12)_75%,transparent_75%,transparent)] bg-[length:10px_10px] px-4 py-3">
                   <div className="space-y-1">
-                    <p className="text-[10px] uppercase tracking-wider text-gray-400">Player Name</p>
+                    <p className="text-[10px] uppercase tracking-wider text-gray-400">{isAdmin ? 'Admin' : 'Player Name'}</p>
                     <p className="truncate text-sm font-bold text-white">{user.full_name}</p>
-                    <p className="text-[10px] uppercase tracking-wider text-purple-300">{hunterRank.label}</p>
-                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-800">
-                      <div className="h-full rounded-full bg-purple-500" style={{ width: `${xpPercentage}%` }} />
-                    </div>
-                    <div className="mt-1 flex justify-between font-mono text-[10px] text-gray-500">
-                      <span>XP: {xpInCurrentLevel}/{xpNeededForNextLevel}</span>
-                      <span>{xpPercentage}%</span>
-                    </div>
+                    {!isAdmin && (
+                      <>
+                        <p className="text-[10px] uppercase tracking-wider text-purple-300">{hunterRank.label}</p>
+                        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-800">
+                          <div className="h-full rounded-full bg-purple-500" style={{ width: `${xpPercentage}%` }} />
+                        </div>
+                        <div className="mt-1 flex justify-between font-mono text-[10px] text-gray-500">
+                          <span>XP: {xpInCurrentLevel}/{xpNeededForNextLevel}</span>
+                          <span>{xpPercentage}%</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => router.push('/profile')} className="group relative rounded-none px-4 py-3 text-gray-300 hover:bg-purple-500/10 hover:text-white">
-                  <span className="absolute left-0 top-0 h-full w-1 -translate-x-full bg-purple-500 transition-transform group-hover:translate-x-0" />
-                  <User className="mr-2 h-4 w-4" /> Hunter Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/leaderboard')} className="group relative rounded-none px-4 py-3 text-gray-300 hover:bg-purple-500/10 hover:text-white">
-                  <span className="absolute left-0 top-0 h-full w-1 -translate-x-full bg-purple-500 transition-transform group-hover:translate-x-0" />
-                  <Trophy className="mr-2 h-4 w-4" /> Hunter Ranking
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-white/5" />
+                {!isAdmin && (
+                  <>
+                    <DropdownMenuItem onClick={() => router.push('/profile')} className="group relative rounded-none px-4 py-3 text-gray-300 hover:bg-purple-500/10 hover:text-white">
+                      <span className="absolute left-0 top-0 h-full w-1 -translate-x-full bg-purple-500 transition-transform group-hover:translate-x-0" />
+                      <User className="mr-2 h-4 w-4" /> Hunter Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/leaderboard')} className="group relative rounded-none px-4 py-3 text-gray-300 hover:bg-purple-500/10 hover:text-white">
+                      <span className="absolute left-0 top-0 h-full w-1 -translate-x-full bg-purple-500 transition-transform group-hover:translate-x-0" />
+                      <Trophy className="mr-2 h-4 w-4" /> Hunter Ranking
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-white/5" />
+                  </>
+                )}
                 <DropdownMenuItem onClick={handleSignOut} className="group relative rounded-none px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 focus:text-red-300">
                   <span className="absolute left-0 top-0 h-full w-1 -translate-x-full bg-red-500 transition-transform group-hover:translate-x-0" />
                   <LogOut className="mr-2 h-4 w-4" /> System Logout

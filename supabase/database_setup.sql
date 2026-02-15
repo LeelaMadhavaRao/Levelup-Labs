@@ -310,6 +310,26 @@ ALTER TABLE seasons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE season_leaderboard_snapshots ENABLE ROW LEVEL SECURITY;
 
 -- ==============================================
+-- STEP 4.5: Create Helper Functions for RLS Policies
+-- ==============================================
+
+-- Create a SECURITY DEFINER function to check admin status
+-- This avoids any subquery permission issues in RLS policies
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM users 
+    WHERE id = auth.uid() 
+    AND role = 'admin'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION is_admin() TO authenticated;
+
+-- ==============================================
 -- STEP 5: Create RLS Policies
 -- ==============================================
 
@@ -348,11 +368,23 @@ CREATE POLICY "Admins can create courses" ON courses
         )
     );
 
-CREATE POLICY "Admins can update their own courses" ON courses
-    FOR UPDATE USING (admin_id = auth.uid());
+CREATE POLICY "Admins can update any course" ON courses
+    FOR UPDATE USING (
+        EXISTS (
+            SELECT 1 FROM users 
+            WHERE users.id = auth.uid() 
+            AND users.role = 'admin'
+        )
+    );
 
-CREATE POLICY "Admins can delete their own courses" ON courses
-    FOR DELETE USING (admin_id = auth.uid());
+CREATE POLICY "Admins can delete any course" ON courses
+    FOR DELETE USING (
+        EXISTS (
+            SELECT 1 FROM users 
+            WHERE users.id = auth.uid() 
+            AND users.role = 'admin'
+        )
+    );
 
 -- User Courses Registration Policies
 CREATE POLICY "Users can register for courses" ON user_courses
@@ -360,6 +392,15 @@ CREATE POLICY "Users can register for courses" ON user_courses
 
 CREATE POLICY "Users can view their registrations" ON user_courses
     FOR SELECT USING (user_id = auth.uid());
+
+CREATE POLICY "Admins can view all enrollments" ON user_courses
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM users 
+            WHERE users.id = auth.uid() 
+            AND users.role = 'admin'
+        )
+    );
 
 CREATE POLICY "Users can unregister from courses" ON user_courses
     FOR DELETE USING (user_id = auth.uid());
@@ -444,13 +485,17 @@ CREATE POLICY "Anyone can read problems" ON coding_problems
     FOR SELECT USING (true);
 
 CREATE POLICY "Admins can create problems" ON coding_problems
+    FOR INSERT WITH CHECK (is_admin());
+
+CREATE POLICY "Students can generate problems for enrolled courses" ON coding_problems
     FOR INSERT WITH CHECK (
         EXISTS (
             SELECT 1 FROM topics
             INNER JOIN modules ON modules.id = topics.module_id
             INNER JOIN courses ON courses.id = modules.course_id
+            INNER JOIN user_courses ON user_courses.course_id = courses.id
             WHERE topics.id = coding_problems.topic_id
-            AND courses.admin_id = auth.uid()
+            AND user_courses.user_id = auth.uid()
         )
     );
 
@@ -520,7 +565,8 @@ GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
 -- Authenticated users can only modify their own data via RLS policies
 GRANT SELECT, INSERT, UPDATE ON users TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON quiz_responses, problem_solutions, user_courses, topic_progress TO authenticated;
-GRANT SELECT ON courses, modules, topics, coding_problems, leaderboard, point_events, achievements, user_achievements, daily_streaks, quests, user_quest_progress, seasons, season_leaderboard_snapshots TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON courses, modules, topics, coding_problems TO authenticated;
+GRANT SELECT ON leaderboard, point_events, achievements, user_achievements, daily_streaks, quests, user_quest_progress, seasons, season_leaderboard_snapshots TO authenticated;
 -- Leaderboard modifications only via SECURITY DEFINER functions
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT SELECT ON TABLES TO anon;

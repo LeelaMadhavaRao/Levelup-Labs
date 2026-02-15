@@ -34,13 +34,32 @@ export async function getAllCourses() {
   
   const { data, error } = await supabase
     .from('courses')
-    .select('*, modules(count)')
+    .select(`
+      *,
+      modules (
+        id,
+        topics (
+          id,
+          coding_problems (id)
+        )
+      ),
+      user_courses (user_id)
+    `)
+    .order('created_at', { ascending: false })
   
-  if (error) return []
-  // Map module count from nested array format to flat field
+  if (error) {
+    console.error('Error fetching courses:', error)
+    return []
+  }
+  
+  // Calculate counts
   return (data || []).map((course: any) => ({
     ...course,
-    module_count: course.modules?.[0]?.count ?? 0,
+    module_count: course.modules?.length || 0,
+    topic_count: course.modules?.reduce((acc: number, m: any) => acc + (m.topics?.length || 0), 0) || 0,
+    problem_count: course.modules?.reduce((acc: number, m: any) => 
+      acc + (m.topics?.reduce((t: number, topic: any) => t + (topic.coding_problems?.length || 0), 0) || 0), 0) || 0,
+    student_count: course.user_courses?.length || 0,
   }))
 }
 
@@ -242,12 +261,31 @@ export async function getCoursesByAdmin(adminId: string) {
   
   const { data, error } = await supabase
     .from('courses')
-    .select('*, modules(*)')
+    .select(`
+      *,
+      modules (
+        id,
+        topics (
+          id,
+          coding_problems (id)
+        )
+      ),
+      user_courses (user_id)
+    `)
     .eq('admin_id', adminId)
     .order('created_at', { ascending: false })
   
   if (error) throw toError(error, 'Failed to load admin courses')
-  return data || []
+  
+  // Calculate counts
+  return (data || []).map((course: any) => ({
+    ...course,
+    module_count: course.modules?.length || 0,
+    topic_count: course.modules?.reduce((acc: number, m: any) => acc + (m.topics?.length || 0), 0) || 0,
+    problem_count: course.modules?.reduce((acc: number, m: any) => 
+      acc + (m.topics?.reduce((t: number, topic: any) => t + (topic.coding_problems?.length || 0), 0) || 0), 0) || 0,
+    student_count: course.user_courses?.length || 0,
+  }))
 }
 
 export async function deleteCourse(courseId: string) {

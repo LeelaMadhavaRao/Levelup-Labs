@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { getTopicProblems, getTopic } from '@/lib/problems';
+import { getTopicProblems, getTopic, generateProblemsForTopic } from '@/lib/problems';
 import { getCurrentUser } from '@/lib/auth';
 import { getStreakMultiplier } from '@/lib/gamification';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Code, Trophy, CheckCircle, Circle, Flame, Star, Target, Zap, Lock, Unlock } from 'lucide-react';
+import { Code, Trophy, CheckCircle, Circle, Flame, Star, Target, Zap, Lock, Unlock, Loader2 } from 'lucide-react';
 import { Orbitron, Rajdhani } from 'next/font/google';
+import { toast } from 'sonner';
 
 const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
 const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
@@ -23,6 +24,7 @@ export default function ProblemsListPage() {
   const [problems, setProblems] = useState<any[]>([]);
   const [streakMultiplier, setStreakMultiplier] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -52,6 +54,35 @@ export default function ProblemsListPage() {
       setProblems([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateProblems = async () => {
+    if (!topic || !user) return;
+    
+    setGenerating(true);
+    toast.info('Generating coding problems using AI... This may take 30-60 seconds.');
+
+    try {
+      const numProblems = 3; // Generate 3 problems
+      const { problems: newProblems, error } = await generateProblemsForTopic(
+        topic.id,
+        topic.name,
+        numProblems,
+        topic.overview || topic.description
+      );
+
+      if (error || !newProblems || newProblems.length === 0) {
+        throw new Error(error || 'No problems generated');
+      }
+
+      toast.success(`Successfully generated ${newProblems.length} coding problems!`);
+      setProblems(newProblems);
+    } catch (error) {
+      console.error('Failed to generate problems:', error);
+      toast.error('Failed to generate problems. Please try again.');
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -165,20 +196,50 @@ export default function ProblemsListPage() {
       {/* Problems List */}
       {problems.length === 0 ? (
         <Card className="card-interactive border-white/15 bg-black/60 text-slate-100 min-h-[400px] flex items-center justify-center">
-          <CardContent className="text-center space-y-4">
+          <CardContent className="text-center space-y-4 py-16">
             <div className="relative">
-               <Code className="h-16 w-16 text-slate-700 mx-auto" />
-               <Lock className="h-6 w-6 text-slate-500 absolute bottom-0 right-1/2 translate-x-12" />
+              {generating ? (
+                <Loader2 className="h-16 w-16 text-purple-500 mx-auto animate-spin" />
+              ) : (
+                <>
+                  <Code className="h-16 w-16 text-slate-700 mx-auto" />
+                  <Lock className="h-6 w-6 text-slate-500 absolute bottom-0 right-1/2 translate-x-12" />
+                </>
+              )}
             </div>
             <div>
-              <h3 className={`${orbitron.className} text-xl font-bold mb-2 tracking-wide`}>NO MISSIONS DETECTED</h3>
-                <p className="text-slate-400 max-w-md mx-auto">
-                No active coding challenges found for this sector. Check back later for new deployments.
+              <h3 className={`${orbitron.className} text-xl font-bold mb-2 tracking-wide`}>
+                {generating ? 'GENERATING MISSIONS' : 'NO MISSIONS DETECTED'}
+              </h3>
+              <p className="text-slate-400 max-w-md mx-auto">
+                {generating 
+                  ? 'AI is creating custom coding challenges for this topic. Please wait...' 
+                  : 'No active coding challenges found. Generate AI-powered problems to continue your training.'}
               </p>
             </div>
-            <Button onClick={() => router.push('/my-courses')} variant="outline" className="border-white/20 hover:bg-white/10 mt-4">
-              Return to Base
-            </Button>
+            {!generating ? (
+              <div className="flex gap-3 justify-center">
+                <Button 
+                  onClick={handleGenerateProblems}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  <Zap className="mr-2 h-4 w-4" />
+                  Generate Problems with AI
+                </Button>
+                <Button 
+                  onClick={() => router.push('/my-courses')} 
+                  variant="outline" 
+                  className="border-white/20 hover:bg-white/10"
+                >
+                  Return to Base
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 justify-center text-sm text-slate-400">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>This may take 30-60 seconds...</span>
+              </div>
+            )}
           </CardContent>
         </Card>
       ) : (
