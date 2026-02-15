@@ -44,9 +44,17 @@ export default function LeaderboardPage() {
       setLeaderboard(leaders);
 
       if (currentUser) {
+        const aroundMePromise =
+          typeof getLeaderboardAroundMe === 'function'
+            ? getLeaderboardAroundMe(currentUser.id, scope, 4, activeSeason?.season_id).catch(() => [])
+            : Promise.resolve([]);
+        const topMoversPromise =
+          typeof getTopMovers === 'function'
+            ? getTopMovers(5, 7).catch(() => [])
+            : Promise.resolve([]);
         const [windowRanks, topMovers] = await Promise.all([
-          getLeaderboardAroundMe(currentUser.id, scope, 4, activeSeason?.season_id).catch(() => []),
-          getTopMovers(5, 7).catch(() => []),
+          aroundMePromise,
+          topMoversPromise,
         ]);
         setAroundMe(windowRanks);
         setMovers(topMovers);
