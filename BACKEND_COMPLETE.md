@@ -149,9 +149,12 @@ Added fields to match PRD requirements:
 ### ❌ NO Points For:
 
 - Watching videos
-- Passing quizzes
 - Completing individual topics
 - Completing modules
+
+### ✅ Quiz Rewards
+
+- Passing quizzes awards points/XP via updatePoints (pass_quiz)
 
 ---
 

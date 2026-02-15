@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { getProblemById, submitAlgorithmExplanation, submitProblemSolution, getProblemSolution } from '@/lib/problems';
+import { getProblemById, submitAlgorithmExplanation, getProblemSolution } from '@/lib/problems';
 import { getCurrentUser } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,6 +31,22 @@ function formatProblemField(value: unknown): string {
   } catch {
     return String(value)
   }
+}
+
+function formatAiText(value: unknown): string {
+  if (value == null) return ''
+  if (typeof value === 'string') return value
+  if (Array.isArray(value)) {
+    return value.map((entry) => formatAiText(entry)).filter(Boolean).join('\n')
+  }
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value, null, 2)
+    } catch {
+      return String(value)
+    }
+  }
+  return String(value)
 }
 
 export default function ExplainProblemPage() {
@@ -73,8 +89,8 @@ export default function ExplainProblemPage() {
       const existingSolution = await getProblemSolution(currentUser.id, problemId);
       if (existingSolution && existingSolution.algorithm_explanation) {
         setExplanation(existingSolution.algorithm_explanation);
-        // If previously approved (status is algorithm_submitted or completed), mark as approved
-        if (existingSolution.status === 'algorithm_submitted' || existingSolution.status === 'completed') {
+        // If previously approved (status is algorithm_approved or completed), mark as approved
+        if (existingSolution.status === 'algorithm_approved' || existingSolution.status === 'completed') {
           setApprovedText(existingSolution.algorithm_explanation);
           const solved = existingSolution.status === 'completed';
           setIsSolved(solved);
@@ -121,19 +137,13 @@ export default function ExplainProblemPage() {
       // Set feedback from AI response
       setFeedback({
         isCorrect: result.isCorrect,
-        feedback: result.feedback,
-        suggestions: result.suggestions,
+        feedback: formatAiText(result.feedback),
+        suggestions: formatAiText(result.suggestions),
       });
         
       if (result.isCorrect) {
         toast.success('Great work! Your algorithm is correct!');
         setApprovedText(explanation);
-        // Save solution to DB with status 'algorithm_submitted'
-        try {
-          await submitProblemSolution(user.id, problemId, explanation);
-        } catch (e) {
-          console.error('Error saving solution:', e);
-        }
       } else {
         setApprovedText(null);
         toast.error('Not quite right. Check the feedback and try again!');
@@ -248,9 +258,11 @@ export default function ExplainProblemPage() {
                     <p className="font-semibold mb-2">
                       {feedback.isCorrect ? 'Excellent!' : 'Not quite right'}
                     </p>
-                    <p className="text-sm">{feedback.feedback}</p>
+                    <p className="text-sm whitespace-pre-wrap">{formatAiText(feedback.feedback)}</p>
                     {feedback.suggestions && (
-                      <p className="text-sm mt-2 text-muted-foreground">{feedback.suggestions}</p>
+                      <p className="text-sm mt-2 text-muted-foreground whitespace-pre-wrap">
+                        {formatAiText(feedback.suggestions)}
+                      </p>
                     )}
                   </AlertDescription>
                 </div>

@@ -23,6 +23,22 @@ const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'] // Primary -> Fallback
 
 let currentKeyIndex = 0
 
+function normalizeAiText(value: unknown): string {
+  if (value == null) return ''
+  if (typeof value === 'string') return value
+  if (Array.isArray(value)) {
+    return value.map((entry) => normalizeAiText(entry)).filter(Boolean).join('\n')
+  }
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value, null, 2)
+    } catch {
+      return String(value)
+    }
+  }
+  return String(value)
+}
+
 function getNextGeminiApiKey(): string {
   if (GEMINI_API_KEYS.length === 0) {
     throw new Error('No Gemini API keys configured')
@@ -41,7 +57,7 @@ async function callGeminiAPI(prompt: string): Promise<string> {
     for (let keyAttempt = 0; keyAttempt < GEMINI_API_KEYS.length; keyAttempt++) {
       try {
         const apiKey = getNextGeminiApiKey()
-        console.log(`🔑 Trying ${modelName} with API key #${(currentKeyIndex) % GEMINI_API_KEYS.length + 1}`)
+        
         
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({ model: modelName })
@@ -50,7 +66,6 @@ async function callGeminiAPI(prompt: string): Promise<string> {
         const response = await result.response
         const text = response.text()
         
-        console.log(`✅ Success with ${modelName}`)
         return text
       } catch (error) {
         lastError = error as Error
@@ -175,8 +190,8 @@ Be strict but fair. Minor wording issues are okay, but the core logic must be so
     return new Response(
       JSON.stringify({
         isCorrect: validation.isCorrect,
-        feedback: validation.feedback,
-        suggestions: validation.suggestions,
+        feedback: normalizeAiText(validation.feedback),
+        suggestions: normalizeAiText(validation.suggestions),
       }),
       { status: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
     )

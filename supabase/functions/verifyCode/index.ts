@@ -41,7 +41,6 @@ async function callGeminiAPI(prompt: string): Promise<string> {
     for (let keyAttempt = 0; keyAttempt < GEMINI_API_KEYS.length; keyAttempt++) {
       try {
         const apiKey = getNextGeminiApiKey()
-        console.log(`🔑 Trying ${modelName} with API key #${(currentKeyIndex) % GEMINI_API_KEYS.length + 1}`)
         
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({ model: modelName })
@@ -50,7 +49,6 @@ async function callGeminiAPI(prompt: string): Promise<string> {
         const response = await result.response
         const text = response.text()
         
-        console.log(`✅ Success with ${modelName}`)
         return text
       } catch (error) {
         lastError = error as Error
@@ -194,20 +192,7 @@ Be strict - even one failing test case means allTestsPassed should be false.`
         })
 
         if (rpcError) {
-          console.error('RPC add_points_to_user failed, using direct update:', rpcError.message)
-          // Fallback: directly increment points on users table
-          const { data: currentUser } = await supabaseClient
-            .from('users')
-            .select('total_points')
-            .eq('id', user.id)
-            .single()
-
-          if (currentUser) {
-            await supabaseClient
-              .from('users')
-              .update({ total_points: (currentUser.total_points || 0) + points })
-              .eq('id', user.id)
-          }
+          console.error('RPC add_points_to_user failed:', rpcError.message)
         }
       }
     }

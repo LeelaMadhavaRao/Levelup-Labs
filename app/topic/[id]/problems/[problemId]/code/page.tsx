@@ -59,7 +59,7 @@ export default function CodeProblemPage() {
     // Guard: check if algorithm explanation was approved before allowing code
     try {
       const solution = await getProblemSolution(currentUser.id, problemId);
-      if (!solution || (solution.status !== 'algorithm_submitted' && solution.status !== 'completed')) {
+      if (!solution || (solution.status !== 'algorithm_approved' && solution.status !== 'completed')) {
         toast.error('You must get your approach approved before writing code.');
         router.push(`/topic/${params.id}/problems/${problemId}/explain`);
         return;

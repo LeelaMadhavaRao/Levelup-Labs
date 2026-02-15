@@ -34,7 +34,10 @@ export default function LeaderboardPage() {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
 
-      const activeSeason = await getActiveSeason().catch(() => null);
+      const activeSeason =
+        typeof getActiveSeason === 'function'
+          ? await getActiveSeason().catch(() => null)
+          : null;
       setSeason(activeSeason);
 
       const leaders = await getLeaderboard(50, scope, activeSeason?.season_id);

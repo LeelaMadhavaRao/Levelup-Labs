@@ -346,7 +346,7 @@ export default function EditCoursePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-cyan-400 flex items-center justify-center">
+      <div className="container py-12 flex items-center justify-center">
         <div className="text-xl">Loading course...</div>
       </div>
     )
@@ -354,32 +354,30 @@ export default function EditCoursePage() {
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-black text-cyan-400 flex items-center justify-center">
+      <div className="container py-12 flex items-center justify-center">
         <div className="text-xl">Course not found</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-black text-cyan-400 p-8">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="container py-8 max-w-6xl space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold mb-2">Edit Course</h1>
-            <p className="text-gray-400">Update course details, modules, and topics</p>
+            <p className="text-muted-foreground">Update course details, modules, and topics</p>
           </div>
           <Button
             onClick={() => router.push('/admin/courses')}
             variant="outline"
-            className="border-cyan-500 text-cyan-400 hover:bg-cyan-950"
           >
             Back to Courses
           </Button>
         </div>
 
         {/* Course Details */}
-        <Card className="bg-gray-900 border-cyan-500 p-6">
+        <Card className="p-6">
           <h2 className="text-2xl font-bold mb-4">Course Details</h2>
           <div className="space-y-4">
             <div>
@@ -388,7 +386,6 @@ export default function EditCoursePage() {
                 id="name"
                 value={courseName}
                 onChange={(e) => setCourseName(e.target.value)}
-                className="bg-black border-cyan-500 text-cyan-400"
               />
             </div>
             <div>
@@ -397,7 +394,7 @@ export default function EditCoursePage() {
                 id="description"
                 value={courseDescription}
                 onChange={(e) => setCourseDescription(e.target.value)}
-                className="bg-black border-cyan-500 text-cyan-400 min-h-[100px]"
+                className="min-h-[100px]"
               />
             </div>
             <div>
@@ -407,7 +404,6 @@ export default function EditCoursePage() {
                 value={courseThumbnail}
                 onChange={(e) => setCourseThumbnail(e.target.value)}
                 placeholder="https://example.com/thumbnail.jpg"
-                className="bg-black border-cyan-500 text-cyan-400"
               />
             </div>
             <div>
@@ -417,14 +413,12 @@ export default function EditCoursePage() {
                 type="number"
                 value={coursePoints}
                 onChange={(e) => setCoursePoints(Number(e.target.value))}
-                className="bg-black border-cyan-500 text-cyan-400"
               />
             </div>
             <div className="flex gap-4">
               <Button
                 onClick={handleUpdateCourse}
                 disabled={saving}
-                className="bg-cyan-600 hover:bg-cyan-700"
               >
                 <Save className="w-4 h-4 mr-2" />
                 {saving ? 'Saving...' : 'Save Course'}
@@ -442,12 +436,11 @@ export default function EditCoursePage() {
         </Card>
 
         {/* Modules & Topics */}
-        <Card className="bg-gray-900 border-cyan-500 p-6">
+        <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold">Modules & Topics</h2>
             <Button
               onClick={() => setAddingModule(true)}
-              className="bg-cyan-600 hover:bg-cyan-700"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Module
@@ -456,7 +449,7 @@ export default function EditCoursePage() {
 
           {/* Add New Module Form */}
           {addingModule && (
-            <Card className="bg-gray-800 border-cyan-500 p-4 mb-4">
+            <Card className="p-4 mb-4">
               <h3 className="text-lg font-bold mb-3">New Module</h3>
               <div className="space-y-3">
                 <div>
@@ -465,7 +458,6 @@ export default function EditCoursePage() {
                     id="newModuleName"
                     value={newModuleName}
                     onChange={(e) => setNewModuleName(e.target.value)}
-                    className="bg-black border-cyan-500 text-cyan-400"
                   />
                 </div>
                 <div>
@@ -474,14 +466,12 @@ export default function EditCoursePage() {
                     id="newModuleDescription"
                     value={newModuleDescription}
                     onChange={(e) => setNewModuleDescription(e.target.value)}
-                    className="bg-black border-cyan-500 text-cyan-400"
                   />
                 </div>
                 <div className="flex gap-2">
                   <Button
                     onClick={handleAddModule}
                     disabled={saving}
-                    className="bg-cyan-600 hover:bg-cyan-700"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     Save Module
@@ -493,7 +483,6 @@ export default function EditCoursePage() {
                       setNewModuleDescription('')
                     }}
                     variant="outline"
-                    className="border-cyan-500 text-cyan-400"
                   >
                     <X className="w-4 h-4 mr-2" />
                     Cancel
@@ -511,7 +500,7 @@ export default function EditCoursePage() {
                 <AccordionItem
                   key={module.id}
                   value={module.id}
-                  className="bg-gray-800 border-cyan-500 rounded-lg px-4"
+                  className="border rounded-lg px-4"
                 >
                   <AccordionTrigger className="hover:no-underline">
                     <div className="flex items-center justify-between w-full pr-4">
@@ -555,7 +544,6 @@ export default function EditCoursePage() {
                     <Button
                       onClick={() => setAddingTopicToModule(module.id)}
                       size="sm"
-                      className="bg-cyan-600 hover:bg-cyan-700"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       Add Topic
@@ -563,7 +551,7 @@ export default function EditCoursePage() {
 
                     {/* Add New Topic Form */}
                     {addingTopicToModule === module.id && (
-                      <Card className="bg-gray-700 border-cyan-500 p-4">
+                      <Card className="p-4">
                         <h4 className="text-md font-bold mb-3">New Topic</h4>
                         <div className="space-y-3">
                           <div>
@@ -572,7 +560,6 @@ export default function EditCoursePage() {
                               id="newTopicName"
                               value={newTopicName}
                               onChange={(e) => setNewTopicName(e.target.value)}
-                              className="bg-black border-cyan-500 text-cyan-400"
                             />
                           </div>
                           <div>
@@ -581,7 +568,6 @@ export default function EditCoursePage() {
                               id="newTopicDescription"
                               value={newTopicDescription}
                               onChange={(e) => setNewTopicDescription(e.target.value)}
-                              className="bg-black border-cyan-500 text-cyan-400"
                             />
                           </div>
                           <div>
@@ -590,10 +576,9 @@ export default function EditCoursePage() {
                               id="newTopicVideoUrl"
                               value={newTopicVideoUrl}
                               onChange={(e) => setNewTopicVideoUrl(e.target.value)}
-                              className="bg-black border-cyan-500 text-cyan-400"
                             />
                           </div>
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                               <Label htmlFor="newTopicMcqs">Number of MCQs</Label>
                               <Input
@@ -601,7 +586,6 @@ export default function EditCoursePage() {
                                 type="number"
                                 value={newTopicMcqs}
                                 onChange={(e) => setNewTopicMcqs(Number(e.target.value))}
-                                className="bg-black border-cyan-500 text-cyan-400"
                               />
                             </div>
                             <div>
@@ -611,7 +595,6 @@ export default function EditCoursePage() {
                                 type="number"
                                 value={newTopicProblems}
                                 onChange={(e) => setNewTopicProblems(Number(e.target.value))}
-                                className="bg-black border-cyan-500 text-cyan-400"
                               />
                             </div>
                           </div>
@@ -619,7 +602,6 @@ export default function EditCoursePage() {
                             <Button
                               onClick={() => handleAddTopic(module.id)}
                               disabled={saving}
-                              className="bg-cyan-600 hover:bg-cyan-700"
                             >
                               <Save className="w-4 h-4 mr-2" />
                               Save Topic
@@ -632,7 +614,6 @@ export default function EditCoursePage() {
                                 setNewTopicVideoUrl('')
                               }}
                               variant="outline"
-                              className="border-cyan-500 text-cyan-400"
                             >
                               <X className="w-4 h-4 mr-2" />
                               Cancel
@@ -647,10 +628,7 @@ export default function EditCoursePage() {
                       {module.topics
                         .sort((a, b) => a.order_index - b.order_index)
                         .map((topic) => (
-                          <Card
-                            key={topic.id}
-                            className="bg-gray-700 border-cyan-500 p-4"
-                          >
+                          <Card key={topic.id} className="p-4">
                             {editingTopic === topic.id ? (
                               <TopicEditForm
                                 topic={topic}
@@ -694,16 +672,15 @@ export default function EditCoursePage() {
               ))}
           </Accordion>
         </Card>
-      </div>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="bg-gray-900 border-cyan-500">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-cyan-400">
+            <AlertDialogTitle>
               Delete {itemToDelete?.type}?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-400">
+            <AlertDialogDescription>
               Are you sure you want to delete "{itemToDelete?.name}"? This action cannot be
               undone.
               {itemToDelete?.type === 'course' &&
@@ -713,7 +690,7 @@ export default function EditCoursePage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-cyan-500 text-cyan-400">
+              <AlertDialogCancel>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
@@ -745,7 +722,7 @@ function ModuleEditForm({
   const [description, setDescription] = useState(module.description || '')
 
   return (
-    <Card className="bg-gray-700 border-cyan-500 p-4">
+    <Card className="p-4">
       <h4 className="text-md font-bold mb-3">Edit Module</h4>
       <div className="space-y-3">
         <div>
@@ -754,7 +731,6 @@ function ModuleEditForm({
             id={`moduleName-${module.id}`}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="bg-black border-cyan-500 text-cyan-400"
           />
         </div>
         <div>
@@ -763,14 +739,12 @@ function ModuleEditForm({
             id={`moduleDescription-${module.id}`}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="bg-black border-cyan-500 text-cyan-400"
           />
         </div>
         <div className="flex gap-2">
           <Button
             onClick={() => onSave(module.id, name, description)}
             disabled={saving}
-            className="bg-cyan-600 hover:bg-cyan-700"
           >
             <Save className="w-4 h-4 mr-2" />
             Save
@@ -778,7 +752,6 @@ function ModuleEditForm({
           <Button
             onClick={onCancel}
             variant="outline"
-            className="border-cyan-500 text-cyan-400"
           >
             <X className="w-4 h-4 mr-2" />
             Cancel
@@ -822,7 +795,6 @@ function TopicEditForm({
           id={`topicName-${topic.id}`}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="bg-black border-cyan-500 text-cyan-400"
         />
       </div>
       <div>
@@ -831,7 +803,6 @@ function TopicEditForm({
           id={`topicDescription-${topic.id}`}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="bg-black border-cyan-500 text-cyan-400"
         />
       </div>
       <div>
@@ -840,10 +811,9 @@ function TopicEditForm({
           id={`topicVideoUrl-${topic.id}`}
           value={videoUrl}
           onChange={(e) => setVideoUrl(e.target.value)}
-          className="bg-black border-cyan-500 text-cyan-400"
         />
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <Label htmlFor={`topicMcqs-${topic.id}`}>Number of MCQs</Label>
           <Input
@@ -851,7 +821,6 @@ function TopicEditForm({
             type="number"
             value={mcqs}
             onChange={(e) => setMcqs(Number(e.target.value))}
-            className="bg-black border-cyan-500 text-cyan-400"
           />
         </div>
         <div>
@@ -861,7 +830,6 @@ function TopicEditForm({
             type="number"
             value={problems}
             onChange={(e) => setProblems(Number(e.target.value))}
-            className="bg-black border-cyan-500 text-cyan-400"
           />
         </div>
       </div>
@@ -869,7 +837,6 @@ function TopicEditForm({
         <Button
           onClick={() => onSave(topic.id, name, description, videoUrl, mcqs, problems)}
           disabled={saving}
-          className="bg-cyan-600 hover:bg-cyan-700"
         >
           <Save className="w-4 h-4 mr-2" />
           Save
@@ -877,7 +844,6 @@ function TopicEditForm({
         <Button
           onClick={onCancel}
           variant="outline"
-          className="border-cyan-500 text-cyan-400"
         >
           <X className="w-4 h-4 mr-2" />
           Cancel

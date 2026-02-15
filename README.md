@@ -170,7 +170,7 @@ levelup-labs/
 | Hard Problem | 300 pts |
 | Course Completion | 500 pts (default) |
 
-**Note:** Quizzes must be passed (80%+) but don't award points directly.
+**Note:** Quizzes must be passed (70%+) and now award points/XP via the quiz pass reward.
 
 ---
 

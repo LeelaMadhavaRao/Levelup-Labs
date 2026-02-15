@@ -41,7 +41,6 @@ async function callGeminiAPI(prompt: string): Promise<string> {
     for (let keyAttempt = 0; keyAttempt < GEMINI_API_KEYS.length; keyAttempt++) {
       try {
         const apiKey = getNextGeminiApiKey()
-        console.log(`🔑 Trying ${modelName} with API key #${(currentKeyIndex) % GEMINI_API_KEYS.length + 1}`)
         
         const genAI = new GoogleGenerativeAI(apiKey)
         const model = genAI.getGenerativeModel({ model: modelName })
@@ -50,7 +49,6 @@ async function callGeminiAPI(prompt: string): Promise<string> {
         const response = await result.response
         const text = response.text()
         
-        console.log(`✅ Success with ${modelName}`)
         return text
       } catch (error) {
         lastError = error as Error
@@ -75,65 +73,31 @@ serve(async (req: Request) => {
   }
 
   try {
-    console.log('🔵 Incoming request to generateQuiz')
-    
     const { topicId, topicName, numQuestions, topicOverview } = await req.json()
-    
-    console.log('📦 Request body:', { topicId, topicName, numQuestions, hasOverview: !!topicOverview })
 
     if (!topicId || !topicName || !numQuestions) {
-      console.log('❌ Missing required fields')
       return new Response(
         JSON.stringify({ error: 'Missing required fields' }),
         { status: 400, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
       )
     }
 
-    // Log all headers for debugging
-    console.log('📋 Request headers:')
-    req.headers.forEach((value, key) => {
-      if (key.toLowerCase().includes('auth') || key.toLowerCase().includes('apikey')) {
-        console.log(`  ${key}: ${value.substring(0, 20)}...`)
-      } else {
-        console.log(`  ${key}: ${value}`)
-      }
-    })
-
     // Validate user is authenticated
     const authHeader = req.headers.get('Authorization') || req.headers.get('authorization')
-    console.log('🔑 Auth header check:', {
-      hasAuthHeader: !!authHeader,
-      headerPreview: authHeader ? authHeader.substring(0, 30) + '...' : 'null',
-      startsWithBearer: authHeader?.startsWith('Bearer '),
-    })
-    
     if (!authHeader) {
-      console.log('❌ Missing authorization header')
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
         { status: 401, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
       )
     }
-
-    console.log('🔧 Creating Supabase client with auth header')
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: authHeader } } }
     )
 
-    console.log('👤 Verifying user...')
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
-    
-    console.log('👤 User verification result:', {
-      hasUser: !!user,
-      userId: user?.id,
-      userEmail: user?.email,
-      authError: authError?.message,
-    })
-    
     if (!user) {
-      console.log('❌ User verification failed - Unauthorized')
       return new Response(
         JSON.stringify({ 
           error: 'Unauthorized', 
@@ -142,8 +106,6 @@ serve(async (req: Request) => {
         { status: 401, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
       )
     }
-
-    console.log('✅ User authenticated, generating quiz...')
 
     // Generate quiz using Gemini
     const overviewContext = topicOverview 
@@ -162,7 +124,6 @@ Return ONLY a valid JSON array with no additional text, in this exact format:
 The correctAnswer should be the index (0-3) of the correct option. Make questions progressively challenging.`
 
     const response = await callGeminiAPI(prompt)
-    console.log('🤖 Gemini response received, parsing...')
     
     const jsonMatch = response.match(/\[[\s\S]*\]/)
     const jsonStr = jsonMatch ? jsonMatch[0] : response
@@ -173,8 +134,6 @@ The correctAnswer should be the index (0-3) of the correct option. Make question
       ...q,
       id: `q${idx + 1}`,
     }))
-
-    console.log(`✅ Successfully generated ${questionsWithIds.length} quiz questions`)
 
     return new Response(
       JSON.stringify({ questions: questionsWithIds }),

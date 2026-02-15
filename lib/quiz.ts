@@ -26,13 +26,6 @@ export async function generateQuiz(topicId: string, topicName: string, numQuesti
     // Refresh session to ensure it's current
     const { data: { session }, error: sessionError } = await supabase.auth.refreshSession()
     
-    console.log('🔍 Session check (after refresh):', { 
-      hasSession: !!session, 
-      hasToken: !!session?.access_token,
-      tokenPreview: session?.access_token?.substring(0, 20) + '...',
-      sessionError 
-    })
-    
     if (!session) {
       console.error('❌ No session found - user may not be logged in')
       return {
@@ -48,8 +41,6 @@ export async function generateQuiz(topicId: string, topicName: string, numQuesti
         error: 'Authentication token missing. Please log out and log back in.',
       }
     }
-
-    console.log('✅ Invoking generateQuiz via direct fetch')
 
     // Use direct fetch to have full control over headers
     const functionUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generateQuiz`
@@ -69,8 +60,6 @@ export async function generateQuiz(topicId: string, topicName: string, numQuesti
       }),
     })
 
-    console.log('📡 Response status:', response.status, response.statusText)
-
     if (!response.ok) {
       const errorText = await response.text()
       console.error('❌ Function error:', errorText)
@@ -81,8 +70,6 @@ export async function generateQuiz(topicId: string, topicName: string, numQuesti
     }
 
     const data = await response.json()
-    console.log('📡 Function response:', { hasData: !!data, hasQuestions: !!data?.questions })
-
     if (!data || !data.questions) {
       return {
         questions: null,

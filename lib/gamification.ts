@@ -34,6 +34,16 @@ export interface GamificationOverview {
   next_achievement: NextAchievement | null
 }
 
+export interface UserAchievement {
+  id: string
+  achievement_id: string
+  code: string
+  name: string
+  description: string | null
+  icon: string | null
+  unlocked_at: string
+}
+
 function toErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error) return error.message
   if (error && typeof error === 'object') {
@@ -203,6 +213,29 @@ export async function getRecentPointEvents(userId: string, limit: number = 10) {
   }
 
   return data || []
+}
+
+export async function getUserAchievements(userId: string): Promise<UserAchievement[]> {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('user_achievements')
+    .select('id, achievement_id, unlocked_at, achievements (code, name, description, icon)')
+    .eq('user_id', userId)
+    .order('unlocked_at', { ascending: false })
+
+  if (error) {
+    throw new Error(toErrorMessage(error, 'Failed to load achievements'))
+  }
+
+  return (data || []).map((row: any) => ({
+    id: row.id,
+    achievement_id: row.achievement_id,
+    code: row.achievements?.code ?? '',
+    name: row.achievements?.name ?? 'Achievement',
+    description: row.achievements?.description ?? null,
+    icon: row.achievements?.icon ?? null,
+    unlocked_at: row.unlocked_at,
+  }))
 }
 
 export async function getStreakMultiplier(userId: string): Promise<number> {
