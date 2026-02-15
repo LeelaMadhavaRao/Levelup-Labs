@@ -6,7 +6,7 @@ import { Orbitron, Rajdhani } from 'next/font/google';
 import { getCurrentUser } from '@/lib/auth';
 import { getAllProblems } from '@/lib/problems';
 import { getStreakMultiplier } from '@/lib/gamification';
-import { getHunterRankByPoints } from '@/lib/hunter-rank';
+import { getHunterRankByXp } from '@/lib/hunter-rank';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -68,7 +68,7 @@ export default function PracticePage() {
     setLoading(false);
   };
 
-  const getPoints = (difficulty: string) => {
+  const getXpReward = (difficulty: string) => {
     switch (difficulty) {
       case 'easy':
         return 100;
@@ -102,7 +102,7 @@ export default function PracticePage() {
     unsolved: problems.filter((problem) => getProblemStatus(problem) === 'unsolved').length,
   }), [problems]);
 
-  const hunterRank = getHunterRankByPoints(Number(user?.total_points || 0));
+  const hunterRank = getHunterRankByXp(Number(user?.xp ?? user?.total_points ?? 0));
 
   if (loading) {
     return (
@@ -279,7 +279,7 @@ export default function PracticePage() {
                     <div className="mb-3 flex items-center justify-between">
                       <h4 className="font-mono text-xs uppercase tracking-widest text-slate-400">Trial Actions</h4>
                       <Badge className="border border-purple-500/50 bg-purple-500/20 text-purple-300">
-                        +{Math.round(getPoints(selectedProblem.difficulty) * streakMultiplier)} XP
+                        +{Math.round(getXpReward(selectedProblem.difficulty) * streakMultiplier)} XP
                       </Badge>
                     </div>
                     <div className="flex flex-wrap gap-3">
@@ -335,7 +335,7 @@ export default function PracticePage() {
                 <div className="space-y-1 font-mono text-[11px]">
                   <div className="flex justify-between"><span className="text-slate-500">Hunter</span><span>{user?.full_name || 'Unknown'}</span></div>
                   <div className="flex justify-between"><span className="text-slate-500">Current Rank</span><span>{hunterRank.label}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Total XP</span><span>{Number(user?.total_points || 0)}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500">Total XP</span><span>{Number(user?.xp ?? user?.total_points ?? 0)}</span></div>
                   <div className="flex justify-between"><span className="text-slate-500">Streak Boost</span><span>x{streakMultiplier.toFixed(2)}</span></div>
                 </div>
               </div>

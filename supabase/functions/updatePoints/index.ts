@@ -1,5 +1,5 @@
-// Edge Function: Update User Points
-// Purpose: Award points for problem solving and course completion
+// Edge Function: Update User XP
+// Purpose: Award XP for problem solving and course completion
 // Called by: verifyCode function and course completion logic
 
 // @ts-ignore - Deno imports
@@ -64,14 +64,27 @@ serve(async (req: Request) => {
       xp: number,
       metadata: Record<string, unknown>,
     ) => {
-      const { data, error } = await supabaseClient.rpc('award_points_event', {
+      let { data, error } = await supabaseClient.rpc('award_xp_event', {
         p_user_id: user.id,
         p_event_type: eventType,
         p_event_key: eventKey,
-        p_points: points,
+        p_xp_points: points,
         p_xp: xp,
         p_metadata: metadata,
       })
+
+      if (error) {
+        const legacy = await supabaseClient.rpc('award_points_event', {
+          p_user_id: user.id,
+          p_event_type: eventType,
+          p_event_key: eventKey,
+          p_points: points,
+          p_xp: xp,
+          p_metadata: metadata,
+        })
+        data = legacy.data
+        error = legacy.error
+      }
 
       if (error) {
         throw new Error(`Failed to award points: ${error.message}`)
@@ -79,15 +92,15 @@ serve(async (req: Request) => {
 
       if (Array.isArray(data) && data.length > 0) {
         return {
-          pointsAwarded: data[0]?.points_awarded || 0,
-          xpAwarded: data[0]?.xp_awarded || 0,
+          xpAwarded: data[0]?.xp_awarded || data[0]?.points_awarded || 0,
+          pointsAwarded: data[0]?.points_awarded || data[0]?.xp_awarded || 0,
           applied: !!data[0]?.applied,
         }
       }
 
       return {
-        pointsAwarded: 0,
         xpAwarded: 0,
+        pointsAwarded: 0,
         applied: false,
       }
     }
@@ -103,7 +116,7 @@ serve(async (req: Request) => {
       // Get course details
       const { data: course, error: courseError } = await supabaseClient
         .from('courses')
-        .select('completion_reward_points')
+        .select('completion_reward_xp:completion_reward_points')
         .eq('id', courseId)
         .single()
 
@@ -126,15 +139,15 @@ serve(async (req: Request) => {
         return new Response(
           JSON.stringify({ 
             message: 'Course already completed',
-            pointsAwarded: 0,
             xpAwarded: 0,
+            pointsAwarded: 0,
           }),
           { status: 200, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS } }
         )
       }
 
       // Mark course as completed and award points
-      const rewardPoints = course.completion_reward_points || 0
+      const rewardPoints = course.completion_reward_xp || 0
       
       const { error: updateError } = await supabaseClient
         .from('user_courses')
@@ -166,8 +179,8 @@ serve(async (req: Request) => {
       return new Response(
         JSON.stringify({
           message: 'Course completed successfully',
-          pointsAwarded: rewardResult.pointsAwarded,
           xpAwarded: rewardResult.xpAwarded,
+          pointsAwarded: rewardResult.pointsAwarded,
           applied: rewardResult.applied,
         }),
         { status: 200, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS } }
@@ -182,21 +195,12 @@ serve(async (req: Request) => {
         )
       }
 
-      const basePoints = 40
-      const rewardResult = await awardEvent(
-        'pass_quiz',
-        `pass_quiz:${user.id}:${topicId}`,
-        basePoints,
-        basePoints,
-        { topic_id: topicId, source: 'updatePoints' },
-      )
-
       return new Response(
         JSON.stringify({
-          message: rewardResult.applied ? 'Quiz reward granted' : 'Quiz reward already claimed',
-          pointsAwarded: rewardResult.pointsAwarded,
-          xpAwarded: rewardResult.xpAwarded,
-          applied: rewardResult.applied,
+          message: 'Quiz rewards disabled',
+          xpAwarded: 0,
+          pointsAwarded: 0,
+          applied: false,
         }),
         { status: 200, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS } }
       )
@@ -207,8 +211,8 @@ serve(async (req: Request) => {
       { status: 400, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS } }
     )
   } catch (error) {
-    console.error('Error updating points:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Failed to update points'
+    console.error('Error updating XP:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to update XP'
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS } }

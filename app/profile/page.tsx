@@ -5,13 +5,12 @@ import { useRouter } from 'next/navigation';
 import { Orbitron, Rajdhani } from 'next/font/google';
 import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
 import { isGeneratedHunterAvatarUrl } from '@/lib/avatar';
-import { getHunterRankByPoints } from '@/lib/hunter-rank';
+import { getHunterRankByXp } from '@/lib/hunter-rank';
+import { subscribeToUserGamification } from '@/lib/realtime';
 import {
   getGamificationOverview,
-  getQuestProgress,
   getRecentPointEvents,
   getUserAchievements,
-  type QuestProgress,
   type GamificationOverview,
   type UserAchievement,
 } from '@/lib/gamification';
@@ -44,6 +43,7 @@ type ProfileUser = {
   title: string | null;
   level: number | null;
   xp: number | null;
+  total_xp?: number | null;
   total_points: number | null;
   problems_solved: number | null;
   courses_completed: number | null;
@@ -52,7 +52,7 @@ type ProfileUser = {
   created_at: string | null;
 };
 
-type PointEvent = {
+type XpEvent = {
   id: string;
   event_type: string;
   created_at: string;
@@ -65,9 +65,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<ProfileUser | null>(null);
   const [overview, setOverview] = useState<GamificationOverview | null>(null);
   const [achievements, setAchievements] = useState<UserAchievement[]>([]);
-  const [dailyQuests, setDailyQuests] = useState<QuestProgress[]>([]);
-  const [weeklyQuests, setWeeklyQuests] = useState<QuestProgress[]>([]);
-  const [pointEvents, setPointEvents] = useState<PointEvent[]>([]);
+  const [xpEvents, setXpEvents] = useState<XpEvent[]>([]);
   const [avatarSrc, setAvatarSrc] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
@@ -83,24 +81,18 @@ export default function ProfilePage() {
       setUser(currentUser);
       setAvatarSrc(currentUser.avatar_url || generateHunterAvatarUrl(`${currentUser.id}-${currentUser.full_name || currentUser.email || 'hunter'}`));
 
-      const [overviewRes, dailyRes, weeklyRes, pointsRes, achievementsRes] = await Promise.all([
+      const [overviewRes, xpEventsRes, achievementsRes] = await Promise.all([
         getGamificationOverview(currentUser.id),
-        getQuestProgress(currentUser.id, 'daily'),
-        getQuestProgress(currentUser.id, 'weekly'),
         getRecentPointEvents(currentUser.id, 8),
         getUserAchievements(currentUser.id),
       ]);
 
       setOverview(overviewRes);
-      setDailyQuests(dailyRes);
-      setWeeklyQuests(weeklyRes);
-      setPointEvents(pointsRes as PointEvent[]);
+      setXpEvents(xpEventsRes as XpEvent[]);
       setAchievements(achievementsRes);
     } catch {
       setOverview(null);
-      setDailyQuests([]);
-      setWeeklyQuests([]);
-      setPointEvents([]);
+      setXpEvents([]);
       setAchievements([]);
     } finally {
       setLoading(false);
@@ -110,6 +102,14 @@ export default function ProfilePage() {
   useEffect(() => {
     void loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const unsubscribe = subscribeToUserGamification(user.id, () => {
+      void loadData();
+    });
+    return unsubscribe;
+  }, [user?.id, loadData]);
 
   const getInitials = (name: string) => {
     return name
@@ -156,8 +156,8 @@ export default function ProfilePage() {
 
   const rankLabel = overview?.rank ? `#${overview.rank}` : user.rank ? `#${user.rank}` : '#405';
   const streak = overview?.current_streak ?? 0;
-  const totalPoints = Number(overview?.total_points ?? user.total_points ?? 0);
-  const hunterRank = getHunterRankByPoints(totalPoints);
+  const totalXp = Number(overview?.xp ?? overview?.total_xp ?? user.xp ?? user.total_xp ?? user.total_points ?? 0);
+  const hunterRank = getHunterRankByXp(totalXp);
   const problemsSolved = Number(user.problems_solved ?? 0);
   const coursesCompleted = Number(user.courses_completed ?? 0);
   const githubUsername = user.github_username ? String(user.github_username) : null;
@@ -165,14 +165,13 @@ export default function ProfilePage() {
   const easySolved = Math.round(problemsSolved * 0.34);
   const mediumSolved = Math.round(problemsSolved * 0.48);
   const hardSolved = Math.max(0, problemsSolved - easySolved - mediumSolved);
-  const xp = Number(overview?.xp || overview?.total_points || user.xp || user.total_points || 0);
+  const xp = totalXp;
   const level = Math.max(1, Math.floor(xp / 1000) + 1);
   const xpInLevel = xp % 1000;
   const xpTarget = 1000;
   const xpPercent = Math.min(100, Math.round((xpInLevel / xpTarget) * 100));
-  const recentActivityAt = pointEvents[0]?.created_at ?? null;
+  const recentActivityAt = xpEvents[0]?.created_at ?? null;
   const memberSince = formatJoinedDate(user.created_at);
-  const totalAchievements = achievements.length;
 
   const primaryBadges = achievements.slice(0, 5);
   const rankByBadgeIndex = (idx: number): 'S' | 'A' | 'B' => {
@@ -184,7 +183,7 @@ export default function ProfilePage() {
     if (badgeFilter === 'all') return true;
     return rankByBadgeIndex(idx) === badgeFilter;
   });
-  const recentFeats = pointEvents.slice(0, 3);
+  const recentFeats = xpEvents.slice(0, 3);
 
   return (
     <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-200`}>
@@ -403,13 +402,9 @@ export default function ProfilePage() {
 
             <div className="rounded-lg border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
               <div className="mb-1 font-semibold text-white">Hunter Score</div>
-              <div className="text-xs text-slate-400">Total Points: <span className="text-purple-300">{totalPoints.toLocaleString()}</span></div>
               <div className="text-xs text-slate-400">XP: <span className="text-purple-300">{xp.toLocaleString()}</span></div>
               <div className="text-xs text-slate-400">Current Rank: <span className="text-purple-300">{hunterRank.label}</span></div>
-              <div className="text-xs text-slate-400">Daily Quests: <span className="text-cyan-300">{dailyQuests.filter((q) => q.completed).length}/{dailyQuests.length}</span></div>
-              <div className="text-xs text-slate-400">Weekly Quests: <span className="text-cyan-300">{weeklyQuests.filter((q) => q.completed).length}/{weeklyQuests.length}</span></div>
               <div className="text-xs text-slate-400">Courses Completed: <span className="text-cyan-300">{coursesCompleted.toLocaleString()}</span></div>
-              <div className="text-xs text-slate-400">Achievements: <span className="text-cyan-300">{totalAchievements.toLocaleString()}</span></div>
               <div className="text-xs text-slate-400">Member Since: <span className="text-slate-300">{memberSince}</span></div>
               <div className="text-xs text-slate-400">Last Activity: <span className="text-slate-300">{recentActivityAt ? formatShortDate(recentActivityAt) : 'No activity yet'}</span></div>
               <div className="text-xs text-slate-400">GitHub: <span className="text-slate-300">{githubUsername ? `@${githubUsername}` : 'Not set'}</span></div>

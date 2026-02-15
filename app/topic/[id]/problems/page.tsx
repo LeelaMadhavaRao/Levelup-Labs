@@ -68,7 +68,7 @@ export default function ProblemsListPage() {
     }
   };
 
-  const getPointsByDifficulty = (difficulty: string) => {
+  const getXpByDifficulty = (difficulty: string) => {
     switch (difficulty) {
       case 'easy':
         return 100;
@@ -91,13 +91,17 @@ export default function ProblemsListPage() {
 
   if (loading) {
     return (
-      <div className="container py-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-64 bg-muted rounded" />
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 bg-muted rounded" />
-            ))}
+      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-100`}>
+        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+        <div className="relative z-20 container py-8 max-w-6xl">
+          <div className="animate-pulse space-y-4">
+            <div className="h-10 w-80 rounded bg-white/10" />
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-32 rounded bg-white/10" />
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -120,7 +124,7 @@ export default function ProblemsListPage() {
   }
 
   const completedCount = problems.filter((p) => getProblemStatus(p) === 'completed').length;
-  const totalPoints = problems.reduce((acc, p) => acc + getPointsByDifficulty(p.difficulty), 0);
+  const totalXp = problems.reduce((acc, p) => acc + getXpByDifficulty(p.difficulty), 0);
 
   return (
     <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-100`}>
@@ -149,7 +153,7 @@ export default function ProblemsListPage() {
             </div>
             <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3">
               <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">XP Pool</p>
-              <p className="text-2xl font-bold text-purple-300 font-mono leading-none">{totalPoints}</p>
+              <p className="text-2xl font-bold text-purple-300 font-mono leading-none">{totalXp}</p>
             </div>
             <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3 bg-gradient-to-b from-amber-950/30 to-black/60 border-amber-500/30">
               <p className="text-[10px] uppercase tracking-wider text-amber-400 mb-1">Multiplier</p>
@@ -186,8 +190,8 @@ export default function ProblemsListPage() {
           {problems.map((problem) => {
             const status = getProblemStatus(problem);
             const isCompleted = status === 'completed';
-            const basePoints = getPointsByDifficulty(problem.difficulty);
-            const effectivePoints = Math.round(basePoints * streakMultiplier);
+            const baseXp = getXpByDifficulty(problem.difficulty);
+            const effectiveXp = Math.round(baseXp * streakMultiplier);
             
             // Difficulty styling
             let diffColor = 'text-slate-400';
@@ -215,7 +219,7 @@ export default function ProblemsListPage() {
                     </Badge>
                     <div className="flex items-center gap-1 text-xs font-mono text-slate-500">
                       <Zap className="h-3 w-3 text-yellow-500/70" />
-                      <span>{effectivePoints} XP</span>
+                      <span>{effectiveXp} XP</span>
                     </div>
                   </div>
                   

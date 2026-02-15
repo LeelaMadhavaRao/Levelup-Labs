@@ -304,7 +304,7 @@ export default function CreateCoursePage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="points">Completion Reward Points</Label>
+              <Label htmlFor="points">Completion Reward XP</Label>
               <Input
                 id="points"
                 type="number"

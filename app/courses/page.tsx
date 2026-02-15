@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Orbitron, Rajdhani } from 'next/font/google';
 import { getAllCourses, registerForCourse, unregisterFromCourse, getUserCourses } from '@/lib/courses';
 import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
-import { getHunterRankByPoints } from '@/lib/hunter-rank';
+import { getHunterRankByXp } from '@/lib/hunter-rank';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -33,11 +33,11 @@ export default function CoursesPage() {
   const [avatarSrc, setAvatarSrc] = useState<string>('');
 
   const hunterRank = useMemo(() => {
-    return getHunterRankByPoints(Number(user?.total_points || 0)).label;
+    return getHunterRankByXp(Number(user?.xp ?? user?.total_xp ?? user?.total_points ?? 0)).label;
   }, [user]);
 
   const rankConfig = (course: any) => {
-    const reward = Number(course.completion_reward_points || 0);
+    const reward = Number(course.completion_reward_xp ?? course.completion_reward_points ?? 0);
     if (reward >= 700) {
       return { label: 'S-RANK GATE', tint: 'text-amber-300', border: 'border-amber-400/70', glow: 'shadow-[0_0_18px_rgba(251,191,36,0.35)]', chip: 'bg-amber-400 text-black', tag: 'RED GATE' };
     }
@@ -120,7 +120,9 @@ export default function CoursesPage() {
     })
     .sort((a, b) => {
       if (sortMode === 'name') return a.name.localeCompare(b.name);
-      if (sortMode === 'reward') return (b.completion_reward_points || 0) - (a.completion_reward_points || 0);
+      if (sortMode === 'reward') {
+        return Number(b.completion_reward_xp ?? b.completion_reward_points ?? 0) - Number(a.completion_reward_xp ?? a.completion_reward_points ?? 0);
+      }
       const rankOrder = ['S', 'A', 'B', 'C', 'E'];
       const aRank = rankConfig(a).label[0];
       const bRank = rankConfig(b).label[0];
@@ -274,7 +276,7 @@ export default function CoursesPage() {
                       <div className="flex items-start justify-between gap-2">
                         <h3 className={`${orbitron.className} text-lg font-bold text-white`}>{course.name}</h3>
                         <Badge className={`border ${rank.border} bg-white/5 text-[10px] font-mono ${rank.tint}`}>
-                          LVL {Math.max(1, Math.floor((course.completion_reward_points || 100) / 10))}+
+                          LVL {Math.max(1, Math.floor((Number(course.completion_reward_xp ?? course.completion_reward_points ?? 100)) / 10))}+
                         </Badge>
                       </div>
                       <p className="text-xs text-gray-300 line-clamp-2">{course.description}</p>
@@ -282,7 +284,7 @@ export default function CoursesPage() {
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div className="rounded border border-white/10 bg-white/5 p-2">
                             <div className="text-[9px] uppercase text-gray-500 font-bold">Reward</div>
-                            <div className={`${rank.tint} font-bold`}>+{course.completion_reward_points || 0} XP</div>
+                            <div className={`${rank.tint} font-bold`}>+{Number(course.completion_reward_xp ?? course.completion_reward_points ?? 0)} XP</div>
                           </div>
                           <div className="rounded border border-white/10 bg-white/5 p-2">
                             <div className="text-[9px] uppercase text-gray-500 font-bold">Duration</div>

@@ -140,10 +140,14 @@ export default function WatchVideoPage() {
 
   if (loading) {
     return (
-      <div className="container py-8">
+      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-white`}>
+        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+        <div className="relative z-20 container py-8 max-w-6xl">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 w-64 bg-muted rounded" />
-          <div className="aspect-video bg-muted rounded" />
+          <div className="h-10 w-80 rounded bg-white/10" />
+          <div className="aspect-video rounded bg-white/10" />
+        </div>
         </div>
       </div>
     );
@@ -151,9 +155,15 @@ export default function WatchVideoPage() {
 
   if (!topic) {
     return (
-      <div className="container py-8 text-center">
-        <h2 className="text-xl font-semibold mb-2">Topic not found</h2>
-        <Button onClick={() => router.push('/my-courses')}>Back to My Courses</Button>
+      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-white`}>
+        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+        <div className="relative z-20 container py-8 max-w-3xl text-center">
+          <div className="rounded-lg border border-white/10 bg-black/60 p-10">
+            <h2 className="text-xl font-semibold mb-2">Topic not found</h2>
+            <Button onClick={() => router.push('/my-courses')} className="bg-purple-700 hover:bg-purple-600 border border-purple-400/40 text-white">Back to My Courses</Button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -394,7 +404,7 @@ export default function WatchVideoPage() {
                   </div>
                   <div>
                     <div className="text-sm font-bold text-white">{1500 + (topic.num_problems || 0) * 150} XP</div>
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider">Experience Points</div>
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wider">XP</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-3 rounded bg-white/5 border border-white/10">

@@ -228,8 +228,8 @@ export default function EditProfilePage() {
                 <p className={`${orbitron.className} text-lg text-white`}>{Number(user?.xp ?? 0).toLocaleString()}</p>
               </div>
               <div className="rounded border border-indigo-500/20 bg-slate-900/80 px-2 py-3">
-                <p className="text-[10px] uppercase tracking-wide text-slate-400">Points</p>
-                <p className={`${orbitron.className} text-lg text-white`}>{Number(user?.total_points ?? 0).toLocaleString()}</p>
+                <p className="text-[10px] uppercase tracking-wide text-slate-400">XP (Synced)</p>
+                <p className={`${orbitron.className} text-lg text-white`}>{Number(user?.xp ?? user?.total_points ?? 0).toLocaleString()}</p>
               </div>
             </div>
           </CardContent>

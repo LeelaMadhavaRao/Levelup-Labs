@@ -5,13 +5,12 @@ import { useRouter, useParams } from 'next/navigation';
 import { getTopic, generateQuiz, submitQuizResponse } from '@/lib/quiz';
 import { getCurrentUser } from '@/lib/auth';
 import { markQuizPassed } from '@/lib/courses';
-import { claimQuizPassReward } from '@/lib/gamification';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Loader2, Star, Trophy, XCircle } from 'lucide-react';
+import { CheckCircle, Loader2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Orbitron, Rajdhani } from 'next/font/google';
 
@@ -37,7 +36,6 @@ export default function QuizPage() {
   const [generating, setGenerating] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
-  const [rewardSummary, setRewardSummary] = useState<{ points: number; xp: number; applied: boolean } | null>(null);
 
   useEffect(() => {
     loadData();
@@ -122,8 +120,6 @@ export default function QuizPage() {
     const finalScore = (correctCount / questions.length) * 100;
     setScore(finalScore);
     setSubmitted(true);
-    let earnedPoints = 0;
-    let earnedXp = 0;
 
     // Submit quiz response
     if (user && topic) {
@@ -132,31 +128,11 @@ export default function QuizPage() {
       // If passed, update topic_progress.quiz_passed
       if (finalScore >= 70) {
         await markQuizPassed(user.id, topic.id);
-        try {
-          const reward = await claimQuizPassReward(topic.id);
-          earnedPoints = reward.pointsAwarded;
-          earnedXp = reward.xpAwarded;
-          setRewardSummary({
-            points: reward.pointsAwarded,
-            xp: reward.xpAwarded,
-            applied: reward.applied,
-          });
-        } catch {
-          setRewardSummary({
-            points: 0,
-            xp: 0,
-            applied: false,
-          });
-        }
       }
     }
 
     if (finalScore >= 70) {
-      if (earnedPoints > 0 || earnedXp > 0) {
-        toast.success(`Quiz cleared! +${earnedPoints} points and +${earnedXp} XP`);
-      } else {
-        toast.success('Congratulations! You passed the quiz!');
-      }
+      toast.success('Congratulations! You passed the quiz!');
     } else {
       toast.error('You need at least 70% to pass. Try again!');
     }
@@ -166,24 +142,31 @@ export default function QuizPage() {
 
   if (loading || generating) {
     return (
-      <div className={`${rajdhani.className} container py-8 max-w-3xl`}>
-        <Card className="border-white/15 bg-black/60 text-slate-100">
+      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
+        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+        <div className="relative z-20 container py-8 max-w-3xl">
+        <Card className="border-purple-500/30 bg-black/70 text-slate-100 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
           <CardContent className="py-16 text-center space-y-4">
-            <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
+            <Loader2 className="h-12 w-12 animate-spin mx-auto text-purple-300" />
             <h2 className={`${orbitron.className} text-xl font-semibold`}>
               {generating ? 'Generating quiz questions with AI...' : 'Loading...'}
             </h2>
             <p className="text-slate-400">This may take a few moments</p>
           </CardContent>
         </Card>
+        </div>
       </div>
     );
   }
 
   if (!topic || questions.length === 0) {
     return (
-      <div className={`${rajdhani.className} container py-8 max-w-3xl`}>
-        <Card className="border-white/15 bg-black/60 text-slate-100">
+      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
+        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+        <div className="relative z-20 container py-8 max-w-3xl">
+        <Card className="border-purple-500/30 bg-black/70 text-slate-100 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
           <CardContent className="py-16 text-center space-y-4">
             <XCircle className="h-16 w-16 mx-auto text-destructive" />
             <div>
@@ -213,6 +196,7 @@ export default function QuizPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     );
   }
@@ -221,8 +205,11 @@ export default function QuizPage() {
     const passed = score >= 70;
 
     return (
-      <div className={`${rajdhani.className} container py-8 max-w-3xl`}>
-        <Card className="border-white/15 bg-black/60 text-slate-100">
+      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
+        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+        <div className="relative z-20 container py-8 max-w-3xl">
+        <Card className="border-purple-500/30 bg-black/70 text-slate-100 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
           <CardHeader className="text-center pb-8">
             {passed ? (
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
@@ -233,7 +220,7 @@ export default function QuizPage() {
               {passed ? 'Congratulations!' : 'Keep Learning'}
             </CardTitle>
             <CardDescription className="text-xl pt-2">
-              Your score: <span className="font-bold text-foreground">{score.toFixed(0)}%</span>
+              Your score: <span className="font-bold text-white">{score.toFixed(0)}%</span>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -253,22 +240,11 @@ export default function QuizPage() {
                   <p className="text-center text-slate-400">
                     Great job! You're ready to move on to the coding challenges.
                   </p>
-                  <div className="flex flex-wrap items-center justify-center gap-2">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-500">
-                      <Trophy className="h-3 w-3" />+{rewardSummary?.points || 0} XP
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                      <Star className="h-3 w-3" />+{rewardSummary?.xp || 0} XP
-                    </span>
-                    {rewardSummary && !rewardSummary.applied && (
-                      <span className="text-xs text-muted-foreground">Reward already claimed previously.</span>
-                    )}
-                  </div>
                   <div className="flex gap-3 justify-center">
-                    <Button onClick={() => router.push(`/topic/${topic.id}/problems`)}>
+                    <Button onClick={() => router.push(`/topic/${topic.id}/problems`)} className="bg-purple-700 hover:bg-purple-600 text-white border border-purple-400/40">
                       Start Problems
                     </Button>
-                    <Button variant="outline" onClick={() => router.push('/my-courses')}>
+                    <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => router.push('/my-courses')}>
                       My Gates
                     </Button>
                   </div>
@@ -279,10 +255,10 @@ export default function QuizPage() {
                     You need at least 70% to pass. Review the material and try again!
                   </p>
                   <div className="flex gap-3 justify-center">
-                    <Button onClick={() => router.push(`/topic/${topic.id}/watch`)}>
+                    <Button onClick={() => router.push(`/topic/${topic.id}/watch`)} className="bg-purple-700 hover:bg-purple-600 text-white border border-purple-400/40">
                       Watch Video Again
                     </Button>
-                    <Button variant="outline" onClick={() => window.location.reload()}>
+                    <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => window.location.reload()}>
                       Retry Quiz
                     </Button>
                   </div>
@@ -291,6 +267,7 @@ export default function QuizPage() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     );
   }
@@ -303,8 +280,12 @@ export default function QuizPage() {
       <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
 
       <div className="relative z-20 container py-8 max-w-3xl space-y-6">
+      <div className="rounded-xl border border-purple-500/30 bg-black/70 p-4 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
+        <p className={`${orbitron.className} text-xs tracking-[0.25em] text-purple-300/90`}>TRIAL CHAMBER</p>
+        <h1 className={`${orbitron.className} mt-1 text-xl font-bold text-white`}>{topic.name}</h1>
+      </div>
       {/* Progress */}
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-xl border border-white/10 bg-black/60 p-4">
         <div className="flex justify-between text-sm">
           <span className="text-slate-400">Question {currentQuestion + 1} of {questions.length}</span>
           <span className="font-medium">{progress.toFixed(0)}% Complete</span>
@@ -313,7 +294,7 @@ export default function QuizPage() {
       </div>
 
       {/* Question */}
-      <Card className="border-white/15 bg-black/60 text-slate-100">
+      <Card className="border-purple-500/20 bg-black/70 text-slate-100">
         <CardHeader>
           <CardTitle className={`${orbitron.className} text-xl`}>{currentQ.question}</CardTitle>
         </CardHeader>
@@ -328,8 +309,8 @@ export default function QuizPage() {
                   key={index}
                   className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-colors ${
                     selectedAnswers[currentQuestion] === index
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/50'
+                      ? 'border-purple-500/60 bg-purple-500/10'
+                      : 'border-white/10 hover:border-purple-500/40'
                   }`}
                 >
                   <RadioGroupItem value={index.toString()} id={`option-${index}`} />
@@ -350,16 +331,17 @@ export default function QuizPage() {
               variant="outline"
               onClick={handlePrevious}
               disabled={currentQuestion === 0}
+              className="border-white/20 text-white hover:bg-white/10"
             >
               Previous
             </Button>
 
             {currentQuestion === questions.length - 1 ? (
-              <Button onClick={handleSubmit}>
+              <Button onClick={handleSubmit} className="bg-purple-700 hover:bg-purple-600 text-white border border-purple-400/40">
                 Submit Quiz
               </Button>
             ) : (
-              <Button onClick={handleNext}>
+              <Button onClick={handleNext} className="bg-purple-700 hover:bg-purple-600 text-white border border-purple-400/40">
                 Next
               </Button>
             )}
@@ -368,7 +350,7 @@ export default function QuizPage() {
       </Card>
 
       {/* Question Navigator */}
-      <Card className="border-white/15 bg-black/60 text-slate-100">
+      <Card className="border-white/10 bg-black/60 text-slate-100">
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-2">
             {questions.map((_, index) => (
@@ -376,7 +358,7 @@ export default function QuizPage() {
                 key={index}
                 variant={currentQuestion === index ? 'default' : 'outline'}
                 size="sm"
-                className="w-10 h-10"
+                className="w-10 h-10 border-white/20"
                 onClick={() => setCurrentQuestion(index)}
               >
                 {selectedAnswers[index] !== -1 ? (

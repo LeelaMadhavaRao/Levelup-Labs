@@ -175,7 +175,7 @@ export default function AdminDashboard() {
                     <div className="mb-2 flex items-center justify-between gap-3">
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-white">#{index + 1} {course.name}</p>
-                        <p className="text-[11px] text-slate-500">{course.problem_count || 0} challenges • {course.completion_reward_points || 0} XP reward</p>
+                        <p className="text-[11px] text-slate-500">{course.problem_count || 0} challenges • {Number(course.completion_reward_xp ?? course.completion_reward_points ?? 0)} XP reward</p>
                       </div>
                       <span className="rounded border border-purple-500/40 bg-purple-500/15 px-2 py-1 text-[11px] font-semibold text-purple-300">{course.student_count || 0} Hunters</span>
                     </div>
@@ -278,8 +278,8 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-400">Reward Points</span>
-                    <span className="font-semibold">{course.completion_reward_points}</span>
+                    <span className="text-slate-400">Reward XP</span>
+                    <span className="font-semibold">{Number(course.completion_reward_xp ?? course.completion_reward_points ?? 0)}</span>
                   </div>
                   
                   <div className="flex gap-2">

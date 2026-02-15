@@ -189,11 +189,20 @@ Be strict - even one failing test case means allTestsPassed should be false.`
 
       if (!alreadyAwarded) {
         // Try RPC first (handles users + leaderboard + ranks)
-        const { error: rpcError } = await supabaseAdmin.rpc('add_points_to_user', {
+        let { error: rpcError } = await supabaseAdmin.rpc('add_xp_to_user', {
           p_user_id: user.id,
-          p_points: points,
+          p_xp: points,
           p_problem_id: problemId,
         })
+
+        if (rpcError) {
+          const legacyRpc = await supabaseAdmin.rpc('add_points_to_user', {
+            p_user_id: user.id,
+            p_points: points,
+            p_problem_id: problemId,
+          })
+          rpcError = legacyRpc.error
+        }
 
         if (rpcError) {
           console.error('RPC add_points_to_user failed, using direct fallback:', rpcError.message)
@@ -203,11 +212,11 @@ Be strict - even one failing test case means allTestsPassed should be false.`
             // Update user points directly
             const { data: currentUser } = await supabaseAdmin
               .from('users')
-              .select('total_points, xp, level')
+              .select('total_xp:total_points, xp, level')
               .eq('id', user.id)
               .single()
 
-            const newTotalPoints = (currentUser?.total_points || 0) + points
+            const newTotalPoints = (currentUser?.total_xp || 0) + points
             const newXp = (currentUser?.xp || 0) + points
             const newLevel = Math.max(1, Math.floor(newXp / 1000) + 1)
 

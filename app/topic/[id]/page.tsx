@@ -160,11 +160,15 @@ export default function TopicLandingPage() {
 
   if (loading) {
     return (
-      <div className="container py-8 max-w-3xl">
+      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-100`}>
+        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+        <div className="relative z-20 container py-8 max-w-6xl">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 w-64 bg-muted rounded" />
-          <div className="h-48 bg-muted rounded" />
-          <div className="h-48 bg-muted rounded" />
+          <div className="h-10 w-80 rounded bg-white/10" />
+          <div className="h-48 rounded bg-white/10" />
+          <div className="h-48 rounded bg-white/10" />
+        </div>
         </div>
       </div>
     );
@@ -200,7 +204,7 @@ export default function TopicLandingPage() {
       icon: FileQuestion,
       title: 'Take Quiz',
       description: 'Test your understanding with AI-generated questions',
-      reward: `Pass reward: ~${Math.round(40 * streakMultiplier)} pts + 40 XP`,
+      reward: 'Pass reward: unlock coding problems',
       action: () => router.push(`/topic/${topicId}/quiz`),
       actionLabel: progress.quiz_passed ? 'Retake Quiz' : 'Start Quiz',
     },

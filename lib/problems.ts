@@ -172,13 +172,17 @@ export async function updateSolutionWithCode(
   return data
 }
 
-export async function getPointsForProblem(difficulty: 'easy' | 'medium' | 'hard') {
-  const points: Record<string, number> = {
+export async function getXpForProblem(difficulty: 'easy' | 'medium' | 'hard') {
+  const xpByDifficulty: Record<string, number> = {
     easy: 100,
     medium: 200,
     hard: 300,
   }
-  return points[difficulty] || 0
+  return xpByDifficulty[difficulty] || 0
+}
+
+export async function getPointsForProblem(difficulty: 'easy' | 'medium' | 'hard') {
+  return getXpForProblem(difficulty)
 }
 
 export async function getSolvedProblems(userId: string) {
@@ -281,6 +285,7 @@ export async function submitCode(
     if (!session) {
       return {
         error: 'You must be logged in',
+        xpAwarded: 0,
         pointsAwarded: 0,
         allTestsPassed: false,
         testResults: [],
@@ -302,6 +307,7 @@ export async function submitCode(
     if (error) {
       return { 
         error: error.message, 
+        xpAwarded: 0,
         pointsAwarded: 0,
         allTestsPassed: false,
         testResults: [],
@@ -314,12 +320,14 @@ export async function submitCode(
       allTestsPassed: data.allTestsPassed,
       testResults: data.testResults,
       feedback: data.feedback,
-      pointsAwarded: data.pointsAwarded,
+      xpAwarded: Number(data.xpAwarded ?? data.pointsAwarded ?? 0),
+      pointsAwarded: Number(data.pointsAwarded ?? data.xpAwarded ?? 0),
     }
   } catch (error) {
     console.error('Error verifying code:', error)
     return { 
       error: 'Failed to verify code', 
+      xpAwarded: 0,
       pointsAwarded: 0,
       allTestsPassed: false,
       testResults: [],

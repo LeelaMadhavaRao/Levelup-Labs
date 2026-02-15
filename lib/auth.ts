@@ -257,6 +257,7 @@ export async function getUserProfile(userId: string) {
       full_name: fullName,
       avatar_url: defaultAvatar,
       role: 'user',
+      total_xp: 0,
       total_points: 0,
       xp: 0,
       level: 1,

@@ -8,6 +8,7 @@ import {
   getTopMovers,
 } from '@/lib/leaderboard';
 import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
+import { subscribeToLeaderboard } from '@/lib/realtime';
 import { Orbitron, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import { ArrowRight, ArrowUp, Code2, Crosshair, Search, Trophy } from 'lucide-react';
 
@@ -25,6 +26,13 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     loadData();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToLeaderboard(() => {
+      void loadData();
+    });
+    return unsubscribe;
   }, []);
 
   const loadData = async () => {
@@ -160,7 +168,7 @@ export default function LeaderboardPage() {
         <div className={`${heightClass} bg-gradient-to-b from-gray-800/85 to-background-dark rounded-t-xl backdrop-blur-sm flex flex-col justify-end pb-4 items-center shadow-lg relative overflow-hidden border-t-2 ${borderClass}`}>
           <div className={`absolute inset-0 ${highlightClass}`}></div>
           <h3 className={`${orbitron.className} text-white font-bold text-lg z-10 text-glow text-center px-2`}>{hunter.full_name}</h3>
-          <p className={`${jetBrainsMono.className} ${rankTextClass} text-sm z-10 font-bold`}>{hunter.total_points.toLocaleString()} XP</p>
+          <p className={`${jetBrainsMono.className} ${rankTextClass} text-sm z-10 font-bold`}>{Number(hunter.total_xp ?? hunter.total_points ?? 0).toLocaleString()} XP</p>
           <p className="text-gray-500 text-xs mt-1 z-10 uppercase tracking-wide">{hunter.title || 'Elite Hunter'}</p>
         </div>
       </div>
@@ -191,7 +199,7 @@ export default function LeaderboardPage() {
           <div className="flex items-center gap-3">
             <div className="hidden text-right leading-none sm:block">
               <span className={`${jetBrainsMono.className} text-xs font-bold text-primary`}>
-                LVL {Math.max(1, Math.floor((meInBoard?.total_points || 0) / 1000) + 1)}
+                LVL {Math.max(1, Math.floor((Number(meInBoard?.total_xp ?? meInBoard?.total_points ?? 0)) / 1000) + 1)}
               </span>
               <div className="text-sm font-bold text-white">{displayName}</div>
             </div>
@@ -252,7 +260,7 @@ export default function LeaderboardPage() {
                     <div className="relative flex h-60 flex-col items-center justify-end overflow-hidden rounded-t-xl border-t-4 border-primary bg-gradient-to-b from-gray-800/90 to-background-dark pb-6 shadow-2xl backdrop-blur-md">
                       <div className="absolute inset-0 bg-primary/10 animate-pulse" />
                       <h3 className={`${orbitron.className} z-10 px-2 text-center text-xl font-bold text-white text-glow`}>{podium[0].full_name}</h3>
-                      <p className={`${jetBrainsMono.className} z-10 text-base font-bold text-primary`}>{podium[0].total_points.toLocaleString()} XP</p>
+                      <p className={`${jetBrainsMono.className} z-10 text-base font-bold text-primary`}>{Number(podium[0].total_xp ?? podium[0].total_points ?? 0).toLocaleString()} XP</p>
                       <p className="z-10 mt-1 text-xs uppercase tracking-widest text-gray-400">{podium[0].title || 'Shadow Monarch'}</p>
                     </div>
                   </>
@@ -326,7 +334,7 @@ export default function LeaderboardPage() {
                     </div>
                     <div className={`${jetBrainsMono.className} hidden text-xs text-gray-400 sm:col-span-3 sm:block`}>{entry.title || 'Unclassified'}</div>
                     <div className={`${jetBrainsMono.className} col-span-4 text-right font-bold text-primary sm:col-span-3`}>
-                      {entry.total_points.toLocaleString()}
+                      {Number(entry.total_xp ?? entry.total_points ?? 0).toLocaleString()}
                     </div>
                   </div>
                 );
@@ -363,10 +371,10 @@ export default function LeaderboardPage() {
                     </div>
                     <div className="flex flex-col min-w-0">
                       <span className="truncate text-sm font-bold text-gray-300">{aboveEntry.full_name}</span>
-                      <span className={`${jetBrainsMono.className} text-xs text-gray-500`}>XP: {aboveEntry.total_points.toLocaleString()}</span>
+                      <span className={`${jetBrainsMono.className} text-xs text-gray-500`}>XP: {Number(aboveEntry.total_xp ?? aboveEntry.total_points ?? 0).toLocaleString()}</span>
                     </div>
                     <div className={`${jetBrainsMono.className} ml-auto text-xs text-red-400`}>
-                      +{Math.max(0, aboveEntry.total_points - meEntry.total_points).toLocaleString()} XP
+                      +{Math.max(0, Number(aboveEntry.total_xp ?? aboveEntry.total_points ?? 0) - Number(meEntry.total_xp ?? meEntry.total_points ?? 0)).toLocaleString()} XP
                     </div>
                   </div>
                 )}
@@ -383,7 +391,7 @@ export default function LeaderboardPage() {
                   <div className="flex min-w-0 flex-col">
                     <span className="truncate text-sm font-bold text-white">You</span>
                     <span className={`${jetBrainsMono.className} text-xs font-bold text-primary`}>
-                      XP: {meEntry.total_points.toLocaleString()}
+                      XP: {Number(meEntry.total_xp ?? meEntry.total_points ?? 0).toLocaleString()}
                     </span>
                   </div>
                   <div className="ml-auto">
@@ -398,10 +406,10 @@ export default function LeaderboardPage() {
                     </div>
                     <div className="flex min-w-0 flex-col">
                       <span className="truncate text-sm font-bold text-gray-300">{belowEntry.full_name}</span>
-                      <span className={`${jetBrainsMono.className} text-xs text-gray-500`}>XP: {belowEntry.total_points.toLocaleString()}</span>
+                      <span className={`${jetBrainsMono.className} text-xs text-gray-500`}>XP: {Number(belowEntry.total_xp ?? belowEntry.total_points ?? 0).toLocaleString()}</span>
                     </div>
                     <div className={`${jetBrainsMono.className} ml-auto text-xs text-green-400`}>
-                      -{Math.max(0, meEntry.total_points - belowEntry.total_points).toLocaleString()} XP
+                      -{Math.max(0, Number(meEntry.total_xp ?? meEntry.total_points ?? 0) - Number(belowEntry.total_xp ?? belowEntry.total_points ?? 0)).toLocaleString()} XP
                     </div>
                   </div>
                 )}
