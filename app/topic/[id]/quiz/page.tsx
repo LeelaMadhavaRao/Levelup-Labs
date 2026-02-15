@@ -13,6 +13,10 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, Loader2, Star, Trophy, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { Orbitron, Rajdhani } from 'next/font/google';
+
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
+const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 interface Question {
   question: string;
@@ -68,6 +72,9 @@ export default function QuizPage() {
       } else {
         setQuestions(quizData.questions);
         setSelectedAnswers(new Array(quizData.questions.length).fill(-1));
+        if ((quizData as any).warning) {
+          toast.message((quizData as any).warning);
+        }
       }
     } catch (error) {
       console.error('Error generating quiz:', error);
@@ -159,14 +166,14 @@ export default function QuizPage() {
 
   if (loading || generating) {
     return (
-      <div className="container py-8 max-w-3xl">
-        <Card>
+      <div className={`${rajdhani.className} container py-8 max-w-3xl`}>
+        <Card className="border-white/15 bg-black/60 text-slate-100">
           <CardContent className="py-16 text-center space-y-4">
             <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
-            <h2 className="text-xl font-semibold">
+            <h2 className={`${orbitron.className} text-xl font-semibold`}>
               {generating ? 'Generating quiz questions with AI...' : 'Loading...'}
             </h2>
-            <p className="text-muted-foreground">This may take a few moments</p>
+            <p className="text-slate-400">This may take a few moments</p>
           </CardContent>
         </Card>
       </div>
@@ -175,16 +182,16 @@ export default function QuizPage() {
 
   if (!topic || questions.length === 0) {
     return (
-      <div className="container py-8 max-w-3xl">
-        <Card>
+      <div className={`${rajdhani.className} container py-8 max-w-3xl`}>
+        <Card className="border-white/15 bg-black/60 text-slate-100">
           <CardContent className="py-16 text-center space-y-4">
             <XCircle className="h-16 w-16 mx-auto text-destructive" />
             <div>
               <h2 className="text-xl font-semibold mb-2">Unable to Generate Quiz</h2>
-              <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              <p className="text-sm text-slate-400 max-w-md mx-auto">
                 The quiz generation service is unavailable. This usually means:
               </p>
-              <ul className="text-sm text-muted-foreground mt-3 space-y-1 max-w-md mx-auto text-left">
+              <ul className="text-sm text-slate-400 mt-3 space-y-1 max-w-md mx-auto text-left">
                 <li>• Edge Function not deployed</li>
                 <li>• Gemini API keys not configured in Supabase</li>
                 <li>• API rate limit exceeded</li>
@@ -214,15 +221,15 @@ export default function QuizPage() {
     const passed = score >= 70;
 
     return (
-      <div className="container py-8 max-w-3xl">
-        <Card>
+      <div className={`${rajdhani.className} container py-8 max-w-3xl`}>
+        <Card className="border-white/15 bg-black/60 text-slate-100">
           <CardHeader className="text-center pb-8">
             {passed ? (
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
             ) : (
               <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
             )}
-            <CardTitle className="text-3xl">
+            <CardTitle className={`${orbitron.className} text-3xl`}>
               {passed ? 'Congratulations!' : 'Keep Learning'}
             </CardTitle>
             <CardDescription className="text-xl pt-2">
@@ -243,7 +250,7 @@ export default function QuizPage() {
             <div className="space-y-4 pt-4">
               {passed ? (
                 <>
-                  <p className="text-center text-muted-foreground">
+                  <p className="text-center text-slate-400">
                     Great job! You're ready to move on to the coding challenges.
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-2">
@@ -268,7 +275,7 @@ export default function QuizPage() {
                 </>
               ) : (
                 <>
-                  <p className="text-center text-muted-foreground">
+                  <p className="text-center text-slate-400">
                     You need at least 70% to pass. Review the material and try again!
                   </p>
                   <div className="flex gap-3 justify-center">
@@ -291,20 +298,24 @@ export default function QuizPage() {
   const currentQ = questions[currentQuestion];
 
   return (
-    <div className="container py-8 max-w-3xl space-y-6">
+    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
+      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+
+      <div className="relative z-20 container py-8 max-w-3xl space-y-6">
       {/* Progress */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Question {currentQuestion + 1} of {questions.length}</span>
+          <span className="text-slate-400">Question {currentQuestion + 1} of {questions.length}</span>
           <span className="font-medium">{progress.toFixed(0)}% Complete</span>
         </div>
         <Progress value={progress} />
       </div>
 
       {/* Question */}
-      <Card>
+      <Card className="border-white/15 bg-black/60 text-slate-100">
         <CardHeader>
-          <CardTitle className="text-xl">{currentQ.question}</CardTitle>
+          <CardTitle className={`${orbitron.className} text-xl`}>{currentQ.question}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <RadioGroup
@@ -357,7 +368,7 @@ export default function QuizPage() {
       </Card>
 
       {/* Question Navigator */}
-      <Card>
+      <Card className="border-white/15 bg-black/60 text-slate-100">
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-2">
             {questions.map((_, index) => (
@@ -378,6 +389,7 @@ export default function QuizPage() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

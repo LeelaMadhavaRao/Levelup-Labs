@@ -21,6 +21,10 @@ import {
   Trophy,
   Star,
 } from 'lucide-react';
+import { Orbitron, Rajdhani } from 'next/font/google';
+
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
+const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 type TopicStep = 'video' | 'quiz' | 'problems' | 'completed';
 
@@ -168,8 +172,8 @@ export default function TopicLandingPage() {
 
   if (!topic) {
     return (
-      <div className="container py-8 max-w-3xl">
-        <Card className="card-interactive">
+      <div className={`${rajdhani.className} container py-8 max-w-3xl`}>
+        <Card className="card-interactive border-white/15 bg-black/60 text-slate-100">
           <CardContent className="py-16 text-center">
             <h2 className="text-xl font-semibold mb-2">Topic not found</h2>
             <Button onClick={() => router.push('/my-courses')}>Back to My Courses</Button>
@@ -215,25 +219,47 @@ export default function TopicLandingPage() {
   ];
 
   return (
-    <div className="container py-8 max-w-3xl space-y-6">
-      {/* Topic Header */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold tracking-tight">{topic.name}</h1>
-          {currentStep === 'completed' && (
-            <Badge className="bg-green-500/20 text-green-500 border border-green-500/40">
-              <CheckCircle className="mr-1 h-3 w-3" />
-              Completed
-            </Badge>
-          )}
+    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-100`}>
+      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+
+      <div className="relative z-20 container max-w-6xl space-y-6 py-8">
+      <div className="rounded-2xl border border-purple-500/30 bg-black/50 p-6 shadow-[0_0_30px_rgba(124,58,237,0.2)]">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-2">
+            <p className={`${orbitron.className} text-xs tracking-[0.25em] text-purple-300/90`}>MISSION NODE</p>
+            <div className="flex items-center gap-3">
+              <h1 className={`${orbitron.className} text-3xl font-black tracking-tight md:text-4xl`}>{topic.name}</h1>
+              {currentStep === 'completed' && (
+                <Badge className="border border-green-500/40 bg-green-500/20 text-green-400">
+                  <CheckCircle className="mr-1 h-3 w-3" />
+                  Completed
+                </Badge>
+              )}
+            </div>
+            {topic.description && <p className="max-w-3xl text-slate-400">{topic.description}</p>}
+          </div>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3">
+              <p className="text-xs uppercase tracking-wider text-slate-400">Progress</p>
+              <p className="text-2xl font-bold text-cyan-300">{progressPercent}%</p>
+            </div>
+            <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3">
+              <p className="text-xs uppercase tracking-wider text-slate-400">Solved</p>
+              <p className="text-2xl font-bold text-purple-300">{progress.problems_completed}/{totalProblems}</p>
+            </div>
+            <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3">
+              <p className="text-xs uppercase tracking-wider text-slate-400">Streak</p>
+              <p className="text-2xl font-bold text-amber-300">x{streakMultiplier.toFixed(2)}</p>
+            </div>
+          </div>
         </div>
-        {topic.description && (
-          <p className="text-muted-foreground">{topic.description}</p>
-        )}
       </div>
 
-      {/* Overall Progress */}
-      <Card className="card-interactive">
+      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="space-y-6 lg:col-span-2">
+
+      <Card className="card-interactive border-white/15 bg-black/60 text-slate-100">
         <CardContent className="pt-6">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
@@ -249,7 +275,7 @@ export default function TopicLandingPage() {
               </Badge>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Topic Progress</span>
+              <span className="text-slate-400">Topic Progress</span>
               <span className="font-semibold">{progressPercent}%</span>
             </div>
             <Progress value={progressPercent} className="h-2" />
@@ -257,7 +283,6 @@ export default function TopicLandingPage() {
         </CardContent>
       </Card>
 
-      {/* Steps */}
       <div className="space-y-3">
         {steps.map((step) => {
           const status = getStepStatus(step.id);
@@ -270,10 +295,10 @@ export default function TopicLandingPage() {
               key={step.id}
               className={`card-interactive reveal-in transition-all ${
                 isCurrent
-                  ? 'border-primary ring-1 ring-primary/20'
+                  ? 'border-purple-500/60 ring-1 ring-purple-500/30 bg-purple-500/10'
                   : isDone
-                  ? 'border-green-500/30 bg-green-500/5'
-                  : 'opacity-60'
+                  ? 'border-green-500/30 bg-green-500/10'
+                  : 'opacity-75 border-white/10 bg-black/50'
               }`}
             >
               <CardContent className="pt-6">
@@ -292,15 +317,15 @@ export default function TopicLandingPage() {
                     ) : (
                       <Icon
                         className={`h-6 w-6 ${
-                          isCurrent ? 'text-primary' : 'text-muted-foreground'
+                          isCurrent ? 'text-purple-300' : 'text-slate-400'
                         }`}
                       />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold">{step.title}</h3>
-                    <p className="text-sm text-muted-foreground">{step.description}</p>
-                    <p className="text-xs text-primary/90 mt-1">{step.reward}</p>
+                    <p className="text-sm text-slate-400">{step.description}</p>
+                    <p className="text-xs text-purple-300 mt-1">{step.reward}</p>
                   </div>
                   <Button
                     size="sm"
@@ -319,14 +344,72 @@ export default function TopicLandingPage() {
         })}
       </div>
 
-      {/* Completed State */}
+      {currentStep !== 'completed' && (
+        <div className="flex justify-center">
+          <Button size="lg" onClick={handleContinue} className="min-w-[220px] bg-purple-700 hover:bg-purple-600 text-white">
+            <ArrowRight className="mr-2 h-5 w-5" />
+            {currentStep === 'video'
+              ? 'Watch Video'
+              : currentStep === 'quiz'
+              ? 'Take Quiz'
+              : 'Solve Problems'}
+          </Button>
+        </div>
+      )}
+      </div>
+
+      <div className="space-y-4">
+        <Card className="border-white/15 bg-black/60 text-slate-100">
+          <CardHeader>
+            <CardTitle className="text-lg">Mission Intel</CardTitle>
+            <CardDescription className="text-slate-400">Current operational target</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div className="rounded-lg border border-white/10 bg-black/50 p-3">
+              <p className="text-slate-400">Active Step</p>
+              <p className="font-semibold text-slate-100 capitalize">{currentStep}</p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-black/50 p-3">
+              <p className="text-slate-400">Quiz Status</p>
+              <p className="font-semibold text-slate-100">{progress.quiz_passed ? 'Passed' : 'Pending'}</p>
+            </div>
+            <div className="rounded-lg border border-white/10 bg-black/50 p-3">
+              <p className="text-slate-400">Video Status</p>
+              <p className="font-semibold text-slate-100">{progress.video_watched ? 'Watched' : 'Not Watched'}</p>
+            </div>
+          </CardContent>
+        </Card>
+        {levelSnapshot && (
+          <Card className="border-white/15 bg-black/60 text-slate-100">
+            <CardHeader>
+              <CardTitle className="text-lg">Hunter Profile</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-black/50 p-3">
+                <span className="text-slate-400">Level</span>
+                <span className="font-semibold">{levelSnapshot.level}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-black/50 p-3">
+                <span className="text-slate-400">Title</span>
+                <span className="font-semibold">{levelSnapshot.title}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-black/50 p-3">
+                <span className="text-slate-400">Streak Bonus</span>
+                <span className="font-semibold text-amber-300">x{streakMultiplier.toFixed(2)}</span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+      </div>
+
       {currentStep === 'completed' && (
-        <Card className="border-green-500/40 bg-green-500/5">
+        <Card className="border-green-500/40 bg-green-500/10 text-slate-100">
           <CardContent className="pt-6 text-center space-y-4">
             <Trophy className="h-16 w-16 text-yellow-500 mx-auto" />
             <div>
               <h2 className="text-2xl font-bold">Topic Completed!</h2>
-              <p className="text-muted-foreground mt-1">
+              <p className="text-slate-400 mt-1">
                 You've mastered this topic. Great work!
               </p>
             </div>
@@ -341,20 +424,7 @@ export default function TopicLandingPage() {
           </CardContent>
         </Card>
       )}
-
-      {/* Continue Button */}
-      {currentStep !== 'completed' && (
-        <div className="flex justify-center">
-          <Button size="lg" onClick={handleContinue} className="min-w-[200px]">
-            <ArrowRight className="mr-2 h-5 w-5" />
-            {currentStep === 'video'
-              ? 'Watch Video'
-              : currentStep === 'quiz'
-              ? 'Take Quiz'
-              : 'Solve Problems'}
-          </Button>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

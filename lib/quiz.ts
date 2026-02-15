@@ -7,6 +7,81 @@ export interface QuizQuestion {
   correctAnswer: number
 }
 
+function buildFallbackQuiz(topicName: string, numQuestions: number, topicOverview?: string): QuizQuestion[] {
+  const safeTopic = topicName?.trim() || 'this topic'
+  const overviewSnippet = (topicOverview || '').slice(0, 220)
+
+  const bank: QuizQuestion[] = [
+    {
+      id: 'fallback-1',
+      question: `What is the primary goal when solving problems in ${safeTopic}?`,
+      options: [
+        'Understand constraints and choose the right approach before coding',
+        'Write code immediately without reviewing input/output',
+        'Skip edge cases and optimize later',
+        'Memorize one solution for every problem',
+      ],
+      correctAnswer: 0,
+    },
+    {
+      id: 'fallback-2',
+      question: 'Which step is best before submitting a coding solution?',
+      options: [
+        'Run through examples and edge cases',
+        'Only check formatting',
+        'Assume tests will pass if code compiles',
+        'Remove all comments and submit',
+      ],
+      correctAnswer: 0,
+    },
+    {
+      id: 'fallback-3',
+      question: 'Why are constraints important in algorithmic problems?',
+      options: [
+        'They help determine feasible time and space complexity',
+        'They are only used for grading style',
+        'They can be ignored for small inputs',
+        'They only matter in production systems',
+      ],
+      correctAnswer: 0,
+    },
+    {
+      id: 'fallback-4',
+      question: `Based on the topic context, what should you prioritize? ${overviewSnippet ? `(Hint: ${overviewSnippet}...)` : ''}`,
+      options: [
+        'Core concepts, correctness, and clear reasoning',
+        'Maximum code length',
+        'Using every language feature possible',
+        'Skipping explanation and tests',
+      ],
+      correctAnswer: 0,
+    },
+    {
+      id: 'fallback-5',
+      question: 'What is a strong debugging strategy when tests fail?',
+      options: [
+        'Inspect one failing case at a time and trace state changes',
+        'Randomly rewrite large parts of the solution',
+        'Ignore failures from corner cases',
+        'Only test with one simple input',
+      ],
+      correctAnswer: 0,
+    },
+  ]
+
+  return bank.slice(0, Math.max(1, numQuestions))
+}
+
+function isQuotaOrRateLimitError(status: number, message: string) {
+  const text = message.toLowerCase()
+  return (
+    status === 429 ||
+    text.includes('quota exceeded') ||
+    text.includes('too many requests') ||
+    text.includes('rate limit')
+  )
+}
+
 function toError(error: unknown, fallback: string): Error {
   if (error instanceof Error) return error
   if (error && typeof error === 'object') {
@@ -62,6 +137,16 @@ export async function generateQuiz(topicId: string, topicName: string, numQuesti
 
     if (!response.ok) {
       const errorText = await response.text()
+
+      if (isQuotaOrRateLimitError(response.status, errorText)) {
+        console.warn('⚠️ Quiz AI quota/rate limit reached. Using fallback quiz questions.')
+        return {
+          questions: buildFallbackQuiz(topicName, numQuestions, topicOverview),
+          error: null,
+          warning: 'AI quota reached. Loaded fallback quiz questions.',
+        }
+      }
+
       console.error('❌ Function error:', errorText)
       return {
         questions: null,
@@ -84,6 +169,15 @@ export async function generateQuiz(topicId: string, topicName: string, numQuesti
   } catch (error) {
     console.error('Error generating quiz:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+
+    if (isQuotaOrRateLimitError(429, errorMessage)) {
+      return {
+        questions: buildFallbackQuiz(topicName, numQuestions, topicOverview),
+        error: null,
+        warning: 'AI quota reached. Loaded fallback quiz questions.',
+      }
+    }
+
     return {
       questions: null,
       error: `Failed to generate quiz: ${errorMessage}`,

@@ -9,8 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { Plus, Trash2, Save, Layers, Shield, BookOpenCheck } from 'lucide-react';
 import { toast } from 'sonner';
+import { Orbitron, Rajdhani } from 'next/font/google';
+
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
+const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 interface Topic {
   id: string;
@@ -45,6 +49,8 @@ export default function CreateCoursePage() {
       topics: [],
     },
   ]);
+
+  const totalTopics = modules.reduce((sum, module) => sum + module.topics.length, 0);
 
   const addModule = () => {
     setModules([
@@ -220,20 +226,45 @@ export default function CreateCoursePage() {
   };
 
   return (
-    <div className="container py-8 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Create New Course</h1>
-        <p className="text-muted-foreground mt-2">
-          Build a comprehensive course with modules and topics
-        </p>
+    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-100`}>
+      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+
+      <div className="relative z-20 container py-8 max-w-6xl space-y-8">
+      <div className="rounded-2xl border border-purple-500/30 bg-black/50 p-6 shadow-[0_0_30px_rgba(124,58,237,0.2)]">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h1 className={`${orbitron.className} text-3xl font-black tracking-tight md:text-4xl`}>COURSE FORGE TERMINAL</h1>
+            <p className="mt-2 text-slate-400">
+              Assemble modules, deploy topics, and publish a battle-ready learning gate.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3">
+              <p className="text-xs uppercase tracking-wider text-slate-400">Modules</p>
+              <p className="text-2xl font-bold text-purple-300">{modules.length}</p>
+            </div>
+            <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3">
+              <p className="text-xs uppercase tracking-wider text-slate-400">Topics</p>
+              <p className="text-2xl font-bold text-cyan-300">{totalTopics}</p>
+            </div>
+            <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3">
+              <p className="text-xs uppercase tracking-wider text-slate-400">Reward</p>
+              <p className="text-2xl font-bold text-emerald-300">{course.completion_reward_points}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Course Details */}
-        <Card>
+        <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="border-white/15 bg-black/60 text-slate-100 lg:col-span-2">
           <CardHeader>
-            <CardTitle>Course Details</CardTitle>
-            <CardDescription>Basic information about your course</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpenCheck className="h-5 w-5 text-purple-300" />
+              Gate Identity
+            </CardTitle>
+            <CardDescription className="text-slate-400">Define title, narrative, and reward telemetry for this course</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -243,6 +274,7 @@ export default function CreateCoursePage() {
                 value={course.name}
                 onChange={(e) => setCourse({ ...course, name: e.target.value })}
                 placeholder="e.g., JavaScript Fundamentals"
+                className="bg-black/60 border-white/15 text-slate-100"
                 required
               />
             </div>
@@ -255,6 +287,7 @@ export default function CreateCoursePage() {
                 onChange={(e) => setCourse({ ...course, description: e.target.value })}
                 placeholder="Describe what students will learn..."
                 rows={4}
+                className="bg-black/60 border-white/15 text-slate-100"
                 required
               />
             </div>
@@ -266,6 +299,7 @@ export default function CreateCoursePage() {
                 value={course.thumbnail_url}
                 onChange={(e) => setCourse({ ...course, thumbnail_url: e.target.value })}
                 placeholder="https://example.com/image.jpg"
+                className="bg-black/60 border-white/15 text-slate-100"
               />
             </div>
 
@@ -278,32 +312,58 @@ export default function CreateCoursePage() {
                 onChange={(e) =>
                   setCourse({ ...course, completion_reward_points: parseInt(e.target.value) })
                 }
+                className="bg-black/60 border-white/15 text-slate-100"
                 min={0}
               />
             </div>
           </CardContent>
         </Card>
 
-        {/* Modules */}
+        <Card className="border-white/15 bg-black/60 text-slate-100">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-cyan-300" />
+              Deployment Brief
+            </CardTitle>
+            <CardDescription className="text-slate-400">Checklist before publishing</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-slate-300">
+            <div className="rounded-lg border border-white/15 bg-black/50 p-3">
+              Ensure each module has a unique purpose and progression path.
+            </div>
+            <div className="rounded-lg border border-white/15 bg-black/50 p-3">
+              Include at least one topic with a valid YouTube URL for each module.
+            </div>
+            <div className="rounded-lg border border-white/15 bg-black/50 p-3">
+              Write overviews so AI can generate stronger quizzes and coding missions.
+            </div>
+          </CardContent>
+        </Card>
+        </div>
+
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Course Modules</h2>
-            <Button type="button" onClick={addModule} variant="outline">
+            <h2 className={`${orbitron.className} text-2xl font-bold flex items-center gap-2`}>
+              <Layers className="h-5 w-5 text-purple-300" />
+              Module Architecture
+            </h2>
+            <Button type="button" onClick={addModule} variant="outline" className="border-white/20 text-slate-200">
               <Plus className="mr-2 h-4 w-4" />
               Add Module
             </Button>
           </div>
 
           {modules.map((module, moduleIndex) => (
-            <Card key={module.id}>
+            <Card key={module.id} className="border-white/15 bg-black/60 text-slate-100 shadow-[0_0_20px_rgba(30,41,59,0.35)]">
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Module {moduleIndex + 1}</CardTitle>
+                  <CardTitle className="text-lg">Module {moduleIndex + 1}: {module.name || 'Unnamed Module'}</CardTitle>
                   {modules.length > 1 && (
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
+                      className="text-slate-300 hover:text-white"
                       onClick={() => removeModule(module.id)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -318,6 +378,7 @@ export default function CreateCoursePage() {
                     value={module.name}
                     onChange={(e) => updateModule(module.id, 'name', e.target.value)}
                     placeholder="e.g., Introduction to Variables"
+                    className="bg-black/60 border-white/15 text-slate-100"
                     required
                   />
                 </div>
@@ -329,11 +390,12 @@ export default function CreateCoursePage() {
                     onChange={(e) => updateModule(module.id, 'description', e.target.value)}
                     placeholder="What will students learn in this module?"
                     rows={2}
+                    className="bg-black/60 border-white/15 text-slate-100"
                   />
                 </div>
 
                 {/* Topics */}
-                <div className="space-y-3 pt-4 border-t">
+                <div className="space-y-3 pt-4 border-t border-white/10">
                   <div className="flex items-center justify-between">
                     <Label className="text-base">Topics</Label>
                     <Button
@@ -341,6 +403,7 @@ export default function CreateCoursePage() {
                       onClick={() => addTopic(module.id)}
                       variant="outline"
                       size="sm"
+                      className="border-white/20 text-slate-200"
                     >
                       <Plus className="mr-2 h-3 w-3" />
                       Add Topic
@@ -348,13 +411,14 @@ export default function CreateCoursePage() {
                   </div>
 
                   {module.topics.map((topic, topicIndex) => (
-                    <div key={topic.id} className="space-y-3 p-4 border rounded-lg bg-muted/30">
+                    <div key={topic.id} className="space-y-3 rounded-lg border border-white/15 bg-black/50 p-4">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium">Topic {topicIndex + 1}</span>
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
+                          className="text-slate-300 hover:text-white"
                           onClick={() => removeTopic(module.id, topic.id)}
                         >
                           <Trash2 className="h-3 w-3" />
@@ -367,6 +431,7 @@ export default function CreateCoursePage() {
                           updateTopic(module.id, topic.id, 'name', e.target.value)
                         }
                         placeholder="Topic name *"
+                        className="bg-black/60 border-white/15 text-slate-100"
                         required
                       />
 
@@ -376,6 +441,7 @@ export default function CreateCoursePage() {
                           updateTopic(module.id, topic.id, 'video_url', e.target.value)
                         }
                         placeholder="YouTube URL *"
+                        className="bg-black/60 border-white/15 text-slate-100"
                         required
                       />
 
@@ -386,6 +452,7 @@ export default function CreateCoursePage() {
                         }
                         placeholder="Topic description"
                         rows={2}
+                        className="bg-black/60 border-white/15 text-slate-100"
                       />
 
                       <Textarea
@@ -395,12 +462,13 @@ export default function CreateCoursePage() {
                         }
                         placeholder="Topic overview — provide a detailed summary of what this topic covers. This will be enhanced by AI and used to generate better quizzes and problems."
                         rows={3}
+                        className="bg-black/60 border-white/15 text-slate-100"
                       />
                     </div>
                   ))}
 
                   {module.topics.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">
+                    <p className="text-sm text-slate-400 text-center py-4">
                       No topics yet. Add your first topic above.
                     </p>
                   )}
@@ -417,15 +485,17 @@ export default function CreateCoursePage() {
             variant="outline"
             onClick={() => router.push('/admin/dashboard')}
             disabled={loading}
+            className="border-white/20 text-slate-200"
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={loading}>
+          <Button type="submit" disabled={loading} className="bg-purple-700 hover:bg-purple-600 text-white">
             <Save className="mr-2 h-4 w-4" />
             {loading ? 'Creating...' : 'Create Course'}
           </Button>
         </div>
       </form>
+      </div>
     </div>
   );
 }

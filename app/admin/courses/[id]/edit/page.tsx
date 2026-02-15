@@ -37,6 +37,10 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { Pencil, Trash2, Plus, Save, X } from 'lucide-react'
+import { Orbitron, Rajdhani } from 'next/font/google'
+
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] })
+const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] })
 
 interface Topic {
   id: string
@@ -361,23 +365,28 @@ export default function EditCoursePage() {
   }
 
   return (
-    <div className="container py-8 max-w-6xl space-y-8">
+    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
+      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+
+      <div className="relative z-20 container py-8 max-w-6xl space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Edit Course</h1>
-            <p className="text-muted-foreground">Update course details, modules, and topics</p>
+            <h1 className={`${orbitron.className} text-4xl font-bold mb-2`}>Edit Course</h1>
+            <p className="text-slate-400">Update course details, modules, and topics</p>
           </div>
           <Button
             onClick={() => router.push('/admin/courses')}
             variant="outline"
+            className="border-white/20 text-slate-200"
           >
             Back to Courses
           </Button>
         </div>
 
         {/* Course Details */}
-        <Card className="p-6">
+        <Card className="p-6 border-white/15 bg-black/60 text-slate-100">
           <h2 className="text-2xl font-bold mb-4">Course Details</h2>
           <div className="space-y-4">
             <div>
@@ -386,6 +395,7 @@ export default function EditCoursePage() {
                 id="name"
                 value={courseName}
                 onChange={(e) => setCourseName(e.target.value)}
+                className="bg-black/60 border-white/15 text-slate-100"
               />
             </div>
             <div>
@@ -394,7 +404,7 @@ export default function EditCoursePage() {
                 id="description"
                 value={courseDescription}
                 onChange={(e) => setCourseDescription(e.target.value)}
-                className="min-h-[100px]"
+                className="min-h-[100px] bg-black/60 border-white/15 text-slate-100"
               />
             </div>
             <div>
@@ -404,6 +414,7 @@ export default function EditCoursePage() {
                 value={courseThumbnail}
                 onChange={(e) => setCourseThumbnail(e.target.value)}
                 placeholder="https://example.com/thumbnail.jpg"
+                className="bg-black/60 border-white/15 text-slate-100"
               />
             </div>
             <div>
@@ -413,12 +424,14 @@ export default function EditCoursePage() {
                 type="number"
                 value={coursePoints}
                 onChange={(e) => setCoursePoints(Number(e.target.value))}
+                className="bg-black/60 border-white/15 text-slate-100"
               />
             </div>
             <div className="flex gap-4">
               <Button
                 onClick={handleUpdateCourse}
                 disabled={saving}
+                className="bg-purple-700 hover:bg-purple-600 text-white"
               >
                 <Save className="w-4 h-4 mr-2" />
                 {saving ? 'Saving...' : 'Save Course'}
@@ -436,11 +449,12 @@ export default function EditCoursePage() {
         </Card>
 
         {/* Modules & Topics */}
-        <Card className="p-6">
+        <Card className="p-6 border-white/15 bg-black/60 text-slate-100">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-2xl font-bold">Modules & Topics</h2>
             <Button
               onClick={() => setAddingModule(true)}
+              className="bg-purple-700 hover:bg-purple-600 text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Module
@@ -449,7 +463,7 @@ export default function EditCoursePage() {
 
           {/* Add New Module Form */}
           {addingModule && (
-            <Card className="p-4 mb-4">
+            <Card className="p-4 mb-4 border-white/15 bg-black/60 text-slate-100">
               <h3 className="text-lg font-bold mb-3">New Module</h3>
               <div className="space-y-3">
                 <div>
@@ -458,6 +472,7 @@ export default function EditCoursePage() {
                     id="newModuleName"
                     value={newModuleName}
                     onChange={(e) => setNewModuleName(e.target.value)}
+                    className="bg-black/60 border-white/15 text-slate-100"
                   />
                 </div>
                 <div>
@@ -466,12 +481,14 @@ export default function EditCoursePage() {
                     id="newModuleDescription"
                     value={newModuleDescription}
                     onChange={(e) => setNewModuleDescription(e.target.value)}
+                    className="bg-black/60 border-white/15 text-slate-100"
                   />
                 </div>
                 <div className="flex gap-2">
                   <Button
                     onClick={handleAddModule}
                     disabled={saving}
+                    className="bg-purple-700 hover:bg-purple-600 text-white"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     Save Module
@@ -483,6 +500,7 @@ export default function EditCoursePage() {
                       setNewModuleDescription('')
                     }}
                     variant="outline"
+                    className="border-white/20 text-slate-200"
                   >
                     <X className="w-4 h-4 mr-2" />
                     Cancel
@@ -500,7 +518,7 @@ export default function EditCoursePage() {
                 <AccordionItem
                   key={module.id}
                   value={module.id}
-                  className="border rounded-lg px-4"
+                  className="border border-white/15 rounded-lg px-4 bg-black/50"
                 >
                   <AccordionTrigger className="hover:no-underline">
                     <div className="flex items-center justify-between w-full pr-4">
@@ -509,6 +527,7 @@ export default function EditCoursePage() {
                         <Button
                           size="sm"
                           variant="ghost"
+                          className="text-slate-300 hover:text-white"
                           onClick={(e) => {
                             e.stopPropagation()
                             setEditingModule(module.id)
@@ -519,6 +538,7 @@ export default function EditCoursePage() {
                         <Button
                           size="sm"
                           variant="ghost"
+                          className="text-slate-300 hover:text-white"
                           onClick={(e) => {
                             e.stopPropagation()
                             confirmDelete('module', module.id, module.name)
@@ -544,6 +564,7 @@ export default function EditCoursePage() {
                     <Button
                       onClick={() => setAddingTopicToModule(module.id)}
                       size="sm"
+                      className="bg-purple-700 hover:bg-purple-600 text-white"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       Add Topic
@@ -551,7 +572,7 @@ export default function EditCoursePage() {
 
                     {/* Add New Topic Form */}
                     {addingTopicToModule === module.id && (
-                      <Card className="p-4">
+                      <Card className="p-4 border-white/15 bg-black/60 text-slate-100">
                         <h4 className="text-md font-bold mb-3">New Topic</h4>
                         <div className="space-y-3">
                           <div>
@@ -560,6 +581,7 @@ export default function EditCoursePage() {
                               id="newTopicName"
                               value={newTopicName}
                               onChange={(e) => setNewTopicName(e.target.value)}
+                              className="bg-black/60 border-white/15 text-slate-100"
                             />
                           </div>
                           <div>
@@ -568,6 +590,7 @@ export default function EditCoursePage() {
                               id="newTopicDescription"
                               value={newTopicDescription}
                               onChange={(e) => setNewTopicDescription(e.target.value)}
+                              className="bg-black/60 border-white/15 text-slate-100"
                             />
                           </div>
                           <div>
@@ -576,6 +599,7 @@ export default function EditCoursePage() {
                               id="newTopicVideoUrl"
                               value={newTopicVideoUrl}
                               onChange={(e) => setNewTopicVideoUrl(e.target.value)}
+                              className="bg-black/60 border-white/15 text-slate-100"
                             />
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -586,6 +610,7 @@ export default function EditCoursePage() {
                                 type="number"
                                 value={newTopicMcqs}
                                 onChange={(e) => setNewTopicMcqs(Number(e.target.value))}
+                                className="bg-black/60 border-white/15 text-slate-100"
                               />
                             </div>
                             <div>
@@ -595,6 +620,7 @@ export default function EditCoursePage() {
                                 type="number"
                                 value={newTopicProblems}
                                 onChange={(e) => setNewTopicProblems(Number(e.target.value))}
+                                className="bg-black/60 border-white/15 text-slate-100"
                               />
                             </div>
                           </div>
@@ -602,6 +628,7 @@ export default function EditCoursePage() {
                             <Button
                               onClick={() => handleAddTopic(module.id)}
                               disabled={saving}
+                              className="bg-purple-700 hover:bg-purple-600 text-white"
                             >
                               <Save className="w-4 h-4 mr-2" />
                               Save Topic
@@ -614,6 +641,7 @@ export default function EditCoursePage() {
                                 setNewTopicVideoUrl('')
                               }}
                               variant="outline"
+                              className="border-white/20 text-slate-200"
                             >
                               <X className="w-4 h-4 mr-2" />
                               Cancel
@@ -628,7 +656,7 @@ export default function EditCoursePage() {
                       {module.topics
                         .sort((a, b) => a.order_index - b.order_index)
                         .map((topic) => (
-                          <Card key={topic.id} className="p-4">
+                          <Card key={topic.id} className="p-4 border-white/15 bg-black/60 text-slate-100">
                             {editingTopic === topic.id ? (
                               <TopicEditForm
                                 topic={topic}
@@ -640,7 +668,7 @@ export default function EditCoursePage() {
                               <div className="flex items-center justify-between">
                                 <div>
                                   <h4 className="font-semibold">{topic.name}</h4>
-                                  <p className="text-sm text-gray-400">
+                                  <p className="text-sm text-slate-400">
                                     {topic.num_mcqs} MCQs • {topic.num_problems} Problems
                                   </p>
                                 </div>
@@ -648,6 +676,7 @@ export default function EditCoursePage() {
                                   <Button
                                     size="sm"
                                     variant="ghost"
+                                    className="text-slate-300 hover:text-white"
                                     onClick={() => setEditingTopic(topic.id)}
                                   >
                                     <Pencil className="w-4 h-4" />
@@ -655,6 +684,7 @@ export default function EditCoursePage() {
                                   <Button
                                     size="sm"
                                     variant="ghost"
+                                    className="text-slate-300 hover:text-white"
                                     onClick={() =>
                                       confirmDelete('topic', topic.id, topic.name)
                                     }
@@ -672,6 +702,7 @@ export default function EditCoursePage() {
               ))}
           </Accordion>
         </Card>
+      </div>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -722,7 +753,7 @@ function ModuleEditForm({
   const [description, setDescription] = useState(module.description || '')
 
   return (
-    <Card className="p-4">
+    <Card className="p-4 border-white/15 bg-black/60 text-slate-100">
       <h4 className="text-md font-bold mb-3">Edit Module</h4>
       <div className="space-y-3">
         <div>
@@ -731,6 +762,7 @@ function ModuleEditForm({
             id={`moduleName-${module.id}`}
             value={name}
             onChange={(e) => setName(e.target.value)}
+            className="bg-black/60 border-white/15 text-slate-100"
           />
         </div>
         <div>
@@ -739,12 +771,14 @@ function ModuleEditForm({
             id={`moduleDescription-${module.id}`}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            className="bg-black/60 border-white/15 text-slate-100"
           />
         </div>
         <div className="flex gap-2">
           <Button
             onClick={() => onSave(module.id, name, description)}
             disabled={saving}
+            className="bg-purple-700 hover:bg-purple-600 text-white"
           >
             <Save className="w-4 h-4 mr-2" />
             Save
@@ -752,6 +786,7 @@ function ModuleEditForm({
           <Button
             onClick={onCancel}
             variant="outline"
+            className="border-white/20 text-slate-200"
           >
             <X className="w-4 h-4 mr-2" />
             Cancel
@@ -795,6 +830,7 @@ function TopicEditForm({
           id={`topicName-${topic.id}`}
           value={name}
           onChange={(e) => setName(e.target.value)}
+          className="bg-black/60 border-white/15 text-slate-100"
         />
       </div>
       <div>
@@ -803,6 +839,7 @@ function TopicEditForm({
           id={`topicDescription-${topic.id}`}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          className="bg-black/60 border-white/15 text-slate-100"
         />
       </div>
       <div>
@@ -811,6 +848,7 @@ function TopicEditForm({
           id={`topicVideoUrl-${topic.id}`}
           value={videoUrl}
           onChange={(e) => setVideoUrl(e.target.value)}
+          className="bg-black/60 border-white/15 text-slate-100"
         />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -821,6 +859,7 @@ function TopicEditForm({
             type="number"
             value={mcqs}
             onChange={(e) => setMcqs(Number(e.target.value))}
+            className="bg-black/60 border-white/15 text-slate-100"
           />
         </div>
         <div>
@@ -830,6 +869,7 @@ function TopicEditForm({
             type="number"
             value={problems}
             onChange={(e) => setProblems(Number(e.target.value))}
+            className="bg-black/60 border-white/15 text-slate-100"
           />
         </div>
       </div>
@@ -837,6 +877,7 @@ function TopicEditForm({
         <Button
           onClick={() => onSave(topic.id, name, description, videoUrl, mcqs, problems)}
           disabled={saving}
+          className="bg-purple-700 hover:bg-purple-600 text-white"
         >
           <Save className="w-4 h-4 mr-2" />
           Save
@@ -844,6 +885,7 @@ function TopicEditForm({
         <Button
           onClick={onCancel}
           variant="outline"
+          className="border-white/20 text-slate-200"
         >
           <X className="w-4 h-4 mr-2" />
           Cancel

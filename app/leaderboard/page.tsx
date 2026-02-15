@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, type SyntheticEvent } from 'react';
 import {
   getActiveSeason,
   getLeaderboard,
@@ -10,6 +10,7 @@ import {
 } from '@/lib/leaderboard';
 import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
 import { Orbitron, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
+import { ArrowRight } from 'lucide-react';
 
 const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
@@ -93,19 +94,15 @@ export default function LeaderboardPage() {
   const podium = leaderboard.slice(0, 3);
   const boardRows = leaderboard.length > 3 ? leaderboard.slice(3) : leaderboard;
 
-  const filteredRows = useMemo(
-    () =>
-      boardRows.filter((entry) => {
-        if (!search.trim()) return true;
-        const q = search.toLowerCase();
-        return (
-          entry.full_name?.toLowerCase().includes(q) ||
-          String(entry.rank).includes(q) ||
-          entry.title?.toLowerCase().includes(q)
-        );
-      }),
-    [boardRows, search]
-  );
+  const filteredRows = boardRows.filter((entry) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      entry.full_name?.toLowerCase().includes(q) ||
+      String(entry.rank).includes(q) ||
+      entry.title?.toLowerCase().includes(q)
+    );
+  });
 
   const scopeLabel = scope === 'all_time' ? 'Global' : scope === 'weekly' ? 'Friends' : 'Guild';
 
@@ -125,6 +122,25 @@ export default function LeaderboardPage() {
     if (rank <= 100) return 'B-Rank';
     return 'C-Rank';
   };
+
+  const getDisplayName = (profile: any) => {
+    if (!profile) return 'Hunter';
+    return profile.full_name || profile.email?.split('@')[0] || 'Hunter';
+  };
+
+  const getAvatarSource = (id: string, name: string, avatarUrl?: string) => {
+    return avatarUrl || generateHunterAvatarUrl(`${id}-${name}`);
+  };
+
+  const handleAvatarError = (event: SyntheticEvent<HTMLImageElement>, id: string, name: string) => {
+    const fallback = generateHunterAvatarUrl(`${id}-${name}`);
+    if (event.currentTarget.src !== fallback) {
+      event.currentTarget.src = fallback;
+    }
+  };
+
+  const displayName = getDisplayName(user);
+  const profileAvatar = getAvatarSource(user?.id || 'guest', displayName, user?.avatar_url);
 
   const renderPodiumCard = (
     hunter: any,
@@ -146,9 +162,10 @@ export default function LeaderboardPage() {
           <span className={`${rankTextClass} text-lg font-bold mb-1`}>{rankLabel}</span>
           <div className={`w-20 h-20 rounded-full border-2 p-1 bg-background-dark relative ${glowClass} ${frameClass}`}>
             <img
-              src={hunter.avatar_url || generateHunterAvatarUrl(`${hunter.id}-${hunter.full_name}`)}
+              src={getAvatarSource(hunter.id, hunter.full_name || 'hunter', hunter.avatar_url)}
               alt={hunter.full_name}
               className="w-full h-full rounded-full object-cover"
+              onError={(event) => handleAvatarError(event, hunter.id, hunter.full_name || 'hunter')}
             />
             <div className={`absolute -bottom-2 -right-2 px-2 py-0.5 rounded-full text-xs font-bold ${titleBadgeClass}`}>
               {titleBadge}
@@ -176,6 +193,34 @@ export default function LeaderboardPage() {
         }}
       />
       <div className="scanlines pointer-events-none absolute inset-0 z-0 opacity-10" />
+
+      <header className="relative z-10 w-full border-b border-white/5 bg-background-dark/80 backdrop-blur-md">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4">
+          <div className="flex items-center space-x-3">
+            <span className="material-icons-round text-primary text-3xl">token</span>
+            <span className={`${orbitron.className} text-lg font-bold uppercase tracking-wider text-white`}>
+              CodeQuest <span className="text-primary">AI</span>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="hidden text-right leading-none sm:block">
+              <span className={`${jetBrainsMono.className} text-xs font-bold text-primary`}>
+                LVL {meInBoard?.rank ? Math.max(1, 50 - meInBoard.rank) : 1}
+              </span>
+              <div className="text-sm font-bold text-white">{displayName}</div>
+            </div>
+            <div className="h-10 w-10 overflow-hidden rounded-full border-2 border-primary bg-gray-800">
+              <img
+                src={profileAvatar}
+                alt={`${displayName} avatar`}
+                className="h-full w-full object-cover"
+                onError={(event) => handleAvatarError(event, user?.id || 'guest', displayName)}
+              />
+            </div>
+          </div>
+        </div>
+      </header>
 
       <main className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 p-4 lg:flex-row">
         <div className="flex min-h-0 flex-1 flex-col">
@@ -214,9 +259,10 @@ export default function LeaderboardPage() {
                       </span>
                       <div className="relative h-24 w-24 rounded-full border-4 border-primary bg-background-dark p-1 breathing-purple">
                         <img
-                          src={podium[0].avatar_url || generateHunterAvatarUrl(`${podium[0].id}-${podium[0].full_name}`)}
+                          src={getAvatarSource(podium[0].id, podium[0].full_name || 'hunter', podium[0].avatar_url)}
                           alt={podium[0].full_name}
                           className="h-full w-full rounded-full object-cover"
+                          onError={(event) => handleAvatarError(event, podium[0].id, podium[0].full_name || 'hunter')}
                         />
                         <div className="absolute -bottom-2 -right-2 rounded-full border border-black bg-primary px-2 py-0.5 text-xs font-bold text-white">
                           Monarch
@@ -304,9 +350,10 @@ export default function LeaderboardPage() {
                     <div className="col-span-6 flex items-center gap-3 sm:col-span-5">
                       <div className="relative hidden h-8 w-8 overflow-hidden rounded bg-gray-700 sm:block">
                         <img
-                          src={entry.avatar_url || generateHunterAvatarUrl(`${entry.id}-${entry.full_name}`)}
+                          src={getAvatarSource(entry.id, entry.full_name || 'hunter', entry.avatar_url)}
                           alt={entry.full_name}
                           className="h-full w-full object-cover opacity-80 group-hover:opacity-100"
+                          onError={(event) => handleAvatarError(event, entry.id, entry.full_name || 'hunter')}
                         />
                       </div>
                       <div className="flex min-w-0 flex-col">
@@ -367,9 +414,10 @@ export default function LeaderboardPage() {
                 <div className="relative z-10 -mx-3 flex items-center gap-4 rounded-lg border border-primary/30 bg-primary/10 p-3 shadow-[0_0_15px_rgba(166,13,242,0.45)]">
                   <div className="h-14 w-14 rounded-full border-2 border-primary bg-gray-800 p-0.5">
                     <img
-                      src={meEntry.avatar_url || generateHunterAvatarUrl(`${meEntry.id}-${meEntry.full_name}`)}
+                      src={getAvatarSource(meEntry.id, meEntry.full_name || 'hunter', meEntry.avatar_url)}
                       alt={meEntry.full_name}
                       className="h-full w-full rounded-full object-cover"
+                      onError={(event) => handleAvatarError(event, meEntry.id, meEntry.full_name || 'hunter')}
                     />
                   </div>
                   <div className="flex min-w-0 flex-col">
@@ -438,9 +486,12 @@ export default function LeaderboardPage() {
               </div>
             </div>
 
-            <button className="group mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 font-bold text-white shadow-[0_0_15px_rgba(166,13,242,0.45)] transition-colors hover:bg-primary-dark">
+            <button
+              type="button"
+              className="group mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-purple-400/40 bg-[#7b1dd8] py-3 font-bold text-white shadow-[0_0_15px_rgba(166,13,242,0.45)] transition-colors hover:bg-[#9228f4] focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+            >
               <span>ENTER DUNGEON</span>
-              <span className="material-icons-round text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </button>
 
             {movers.length > 0 && (
