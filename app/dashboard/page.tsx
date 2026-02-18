@@ -269,7 +269,7 @@ export default function DashboardPage() {
                   <span className="text-xs font-bold text-[#A855F7] tracking-widest uppercase">{totalXp.toLocaleString()} / 100,000 XP</span>
                 </div>
                 <div className="h-3 w-full bg-white/5 rounded-sm overflow-hidden relative border border-white/10">
-                  <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#7C3AED] via-[#A855F7] to-blue-500 shadow-[0_0_15px_#7C3AED]" style={{ width: `${Math.min(100, (totalXp / 100000) * 100)}%` }}></div>
+                  <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#7C3AED] via-[#A855F7] to-blue-500" style={{ width: `${Math.min(100, (totalXp / 100000) * 100)}%` }}></div>
                 </div>
               </div>
             </div>
@@ -355,7 +355,7 @@ export default function DashboardPage() {
                 <p className="text-[#A855F7] uppercase tracking-[0.4em] text-xs font-black mb-6">Consecutive Days</p>
                 <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6">"Great consistency. Keep your momentum going."</p>
                 <div className="w-full bg-white/5 h-3 p-0.5 border border-white/10">
-                  <div className="bg-gradient-to-r from-[#7C3AED] to-[#A855F7] h-full w-full shadow-[0_0_15px_#A855F7]"></div>
+                  <div className="bg-gradient-to-r from-[#7C3AED] to-[#A855F7] h-full w-full"></div>
                 </div>
               </div>
 

@@ -123,7 +123,7 @@ export default function PracticePage() {
       <aside className="hidden w-80 flex-col border-r border-purple-500/20 bg-[#050507]/95 shadow-[5px_0_30px_rgba(0,0,0,0.5)] lg:flex">
         <div className="relative flex h-16 items-center bg-[#050507] px-6 after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:bg-gradient-to-r after:from-transparent after:via-purple-600 after:to-transparent">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-purple-700 text-white shadow-[0_0_10px_rgba(168,85,247,0.5)]">
+            <div className="flex h-8 w-8 items-center justify-center rounded bg-purple-700 text-white">
               <Cpu className="h-5 w-5" />
             </div>
             <div>
@@ -195,8 +195,7 @@ export default function PracticePage() {
       </aside>
 
       <main className="relative flex flex-1 flex-col overflow-hidden bg-[#09090b]">
-        <div className="pointer-events-none absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#7C3AED 1px, transparent 1px), linear-gradient(90deg, #7C3AED 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#09090B_120%)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#7C3AED 1px, transparent 1px), linear-gradient(90deg, #7C3AED 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
 
         <header className="relative z-10 flex h-16 items-center justify-between border-b border-purple-500/20 bg-[#121215]/90 px-6 md:px-8 backdrop-blur-md">
           <div className="flex items-center gap-4">
@@ -209,7 +208,7 @@ export default function PracticePage() {
             </div>
             <span className="h-4 w-px bg-white/10" />
             <span className="flex items-center gap-2 text-xs uppercase tracking-widest text-purple-400">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.8)]" />
+              <span className="h-2 w-2 animate-pulse rounded-full bg-purple-400" />
               Platform Online
             </span>
           </div>
@@ -254,7 +253,7 @@ export default function PracticePage() {
               ) : (
                 <div className="space-y-4">
                   <div className="relative overflow-hidden rounded-lg border border-white/5 bg-[#121215] p-6 shadow-lg">
-                    <div className="absolute left-0 top-0 h-full w-1 bg-purple-500 shadow-[0_0_10px_#A855F7]" />
+                    <div className="absolute left-0 top-0 h-full w-1 bg-purple-500" />
                     <div className="mb-6 flex items-center gap-2 border-b border-white/5 pb-2">
                       <Code2 className="h-4 w-4 text-purple-400" />
                       <h3 className="text-sm font-bold uppercase tracking-widest text-white">Problem Details</h3>

@@ -258,11 +258,10 @@ export default function CreateCoursePage() {
 
   return (
     <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-100`}>
-      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
       <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
 
       <div className="relative z-20 container py-8 max-w-6xl space-y-8">
-      <div className="rounded-2xl border border-purple-500/30 bg-black/50 p-6 shadow-[0_0_30px_rgba(124,58,237,0.2)]">
+      <div className="rounded-2xl border border-purple-500/30 bg-black/50 p-6 shadow-md">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className={`${orbitron.className} text-3xl font-black tracking-tight md:text-4xl`}>COURSE FORGE TERMINAL</h1>

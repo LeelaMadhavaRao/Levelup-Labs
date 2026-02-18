@@ -146,8 +146,7 @@ export default function CoursesPage() {
 
   return (
     <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-white`}>
-      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-5" />
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#a60df2 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+      <div className="pointer-events-none fixed inset-0 z-0 opacity-[0.06]" style={{ backgroundImage: 'radial-gradient(#a60df2 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
         <div className="particle h-32 w-32 left-[10%] top-[80%]" style={{ animationDelay: '0s' }} />
         <div className="particle h-20 w-20 left-[80%] top-[20%]" style={{ animationDelay: '2s', background: 'radial-gradient(circle, rgba(41,98,255,0.6) 0%, rgba(0,0,0,0) 70%)' }} />

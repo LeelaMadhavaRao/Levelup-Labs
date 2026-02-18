@@ -65,9 +65,8 @@ export default function LoginPage() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#050508] text-slate-100 selection:bg-cyan-300 selection:text-black">
       <div className="pointer-events-none fixed inset-0 z-0 nebula-bg animate-pulse" style={{ animationDuration: '4s' }} />
-      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-20" />
       <div
-        className="pointer-events-none fixed inset-0 z-0 opacity-20"
+        className="pointer-events-none fixed inset-0 z-0 opacity-[0.06]"
         style={{ backgroundImage: 'radial-gradient(rgba(0, 243, 255, 0.2) 1px, transparent 1px)', backgroundSize: '50px 50px' }}
       />
 
@@ -111,7 +110,7 @@ export default function LoginPage() {
         </section>
 
         <section className="w-full max-w-[520px]">
-          <div className="holo-card group relative overflow-hidden rounded-xl bg-black/60 p-8 shadow-[0_0_20px_rgba(166,13,242,0.4)] backdrop-blur-xl">
+          <div className="holo-card group relative overflow-hidden rounded-xl bg-black/60 p-8 shadow-[0_0_20px_rgba(166,13,242,0.15)] backdrop-blur-xl">
             <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-transparent via-cyan-300 to-transparent opacity-50 animate-pulse" />
 
             <div className="relative mb-8 text-center">

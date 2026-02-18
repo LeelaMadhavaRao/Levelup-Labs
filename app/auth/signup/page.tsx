@@ -88,9 +88,8 @@ export default function SignupPage() {
     <div className="relative min-h-screen overflow-hidden bg-[#050508] text-slate-100 selection:bg-purple-500 selection:text-white">
       {/* Background Ambience */}
       <div className="pointer-events-none fixed inset-0 z-0 nebula-bg animate-pulse" style={{ animationDuration: '4s' }} />
-      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-20" />
       <div
-        className="pointer-events-none fixed inset-0 z-0 opacity-20"
+        className="pointer-events-none fixed inset-0 z-0 opacity-[0.05]"
         style={{ backgroundImage: 'radial-gradient(rgba(168, 85, 247, 0.2) 1px, transparent 1px)', backgroundSize: '50px 50px' }}
       />
       
@@ -146,12 +145,12 @@ export default function SignupPage() {
 
         {/* Right Form Panel */}
         <section className="w-full max-w-[500px]">
-          <div className="holo-card group relative overflow-hidden rounded-xl bg-black/60 p-8 shadow-[0_0_30px_rgba(168,85,247,0.25)] backdrop-blur-xl border border-white/10">
+          <div className="holo-card group relative overflow-hidden rounded-xl bg-black/60 p-8 shadow-[0_0_20px_rgba(168,85,247,0.12)] backdrop-blur-xl border border-white/10">
             <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-80" />
 
             <div className="relative mb-8 text-center">
               <h2 className="mb-2 text-2xl font-bold uppercase tracking-[0.2em] text-white font-orbitron">New User Profile</h2>
-              <div className="mx-auto h-0.5 w-16 bg-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.6)]" />
+              <div className="mx-auto h-0.5 w-16 bg-purple-500 shadow-sm" />
             </div>
 
             <form className="space-y-5" onSubmit={handleSignup}>
@@ -241,7 +240,7 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={loading || googleLoading}
-                className="group relative w-full overflow-hidden rounded bg-purple-600 p-3 font-mono text-sm font-bold uppercase tracking-widest text-white transition-all hover:bg-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.5)] disabled:opacity-50"
+                className="group relative w-full overflow-hidden rounded bg-purple-600 p-3 font-mono text-sm font-bold uppercase tracking-widest text-white transition-all hover:bg-purple-500 hover:shadow-[0_0_15px_rgba(168,85,247,0.25)] disabled:opacity-50"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   {loading ? 'Setting up...' : 'Create Account'}

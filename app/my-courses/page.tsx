@@ -101,7 +101,7 @@ export default function MyCoursesPage() {
       <aside className="hidden w-80 flex-col border-r border-purple-500/20 bg-[#050507]/95 shadow-[5px_0_30px_rgba(0,0,0,0.5)] lg:flex">
         <div className="relative flex h-16 items-center bg-[#050507] px-6 after:absolute after:bottom-0 after:left-0 after:h-px after:w-full after:bg-gradient-to-r after:from-transparent after:via-purple-600 after:to-transparent">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded bg-purple-700 text-white shadow-[0_0_10px_rgba(168,85,247,0.5)]">
+            <div className="flex h-8 w-8 items-center justify-center rounded bg-purple-700 text-white">
               <Cpu className="h-5 w-5" />
             </div>
             <div>
@@ -172,8 +172,7 @@ export default function MyCoursesPage() {
       </aside>
 
       <main className="relative flex flex-1 flex-col overflow-hidden bg-[#09090b]">
-        <div className="pointer-events-none absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#7C3AED 1px, transparent 1px), linear-gradient(90deg, #7C3AED 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#09090B_120%)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#7C3AED 1px, transparent 1px), linear-gradient(90deg, #7C3AED 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
 
         <header className="relative z-10 flex h-16 items-center justify-between border-b border-purple-500/20 bg-[#121215]/90 px-6 md:px-8 backdrop-blur-md">
           <div className="flex items-center gap-4">
@@ -186,7 +185,7 @@ export default function MyCoursesPage() {
             </div>
             <span className="h-4 w-px bg-white/10" />
             <span className="flex items-center gap-2 text-xs uppercase tracking-widest text-purple-400">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.8)]" />
+              <span className="h-2 w-2 animate-pulse rounded-full bg-purple-400" />
               Platform Online
             </span>
           </div>
@@ -212,7 +211,7 @@ export default function MyCoursesPage() {
                 </div>
 
                 <div className="relative overflow-hidden rounded-lg border border-white/5 bg-[#121215] p-6 shadow-lg">
-                  <div className="absolute left-0 top-0 h-full w-1 bg-purple-500 shadow-[0_0_10px_#A855F7]" />
+                  <div className="absolute left-0 top-0 h-full w-1 bg-purple-500" />
                   <div className="mb-6 flex items-center gap-2 border-b border-white/5 pb-2">
                     <SearchCode className="h-4 w-4 text-purple-400" />
                     <h3 className="text-sm font-bold uppercase tracking-widest text-white">Course Parameters</h3>
@@ -243,7 +242,7 @@ export default function MyCoursesPage() {
                     selectedCourse.modules.map((module: any, moduleIndex: number) => (
                       <div
                         key={module.id}
-                        className={`rounded-lg border p-1 ${moduleIndex === 0 ? 'border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.2)]' : 'border-white/10'}`}
+                        className={`rounded-lg border p-1 ${moduleIndex === 0 ? 'border-purple-500/30' : 'border-white/10'}`}
                       >
                         <div className="flex flex-col gap-4 rounded bg-[#09090b]/50 p-4">
                           <div className="flex items-center gap-3">
@@ -264,7 +263,7 @@ export default function MyCoursesPage() {
                             {module.topics?.length ? (
                               module.topics.map((topic: any) => (
                                 <div key={topic.id} className="group flex flex-col gap-2 rounded border border-white/10 bg-[#09090b] p-3 hover:border-purple-500/40 sm:flex-row sm:items-center">
-                                  <span className={`h-2 w-2 flex-shrink-0 rounded-full ${topic.is_completed ? 'bg-green-400' : 'bg-purple-400/60'} shadow-[0_0_5px_rgba(168,85,247,0.7)]`} />
+                                  <span className={`h-2 w-2 flex-shrink-0 rounded-full ${topic.is_completed ? 'bg-green-400' : 'bg-purple-400/60'}`} />
                                   <div className="min-w-0 flex-1">
                                     <div className="break-words font-mono text-sm text-slate-300">Topic: {topic.name}</div>
                                     {topic.description && <div className="line-clamp-1 text-xs text-slate-500">{topic.description}</div>}
@@ -296,12 +295,11 @@ export default function MyCoursesPage() {
                 <div className="rounded-lg border border-white/5 bg-[#121215] p-4 shadow-lg">
                   <h4 className="mb-4 font-mono text-xs uppercase tracking-widest text-slate-400">Topology_Map</h4>
                   <div className="relative aspect-square overflow-hidden rounded border border-white/5 bg-[#09090b]">
-                    <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#7C3AED 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                     <div className="relative flex h-full items-center justify-center">
                       <div className="relative h-32 w-32">
-                        <div className="absolute inset-0 animate-[spin_10s_linear_infinite] rounded-full border-2 border-purple-500 opacity-60 shadow-[0_0_15px_#A855F7]" />
-                        <div className="absolute inset-4 animate-[spin_7s_linear_infinite_reverse] rounded-full border border-purple-500/50 shadow-[0_0_10px_#7C3AED]" />
-                        <div className="absolute inset-[30%] flex items-center justify-center rounded-full border border-purple-500 bg-purple-500/20 shadow-[0_0_20px_rgba(168,85,247,0.7)]">
+                        <div className="absolute inset-0 animate-[spin_10s_linear_infinite] rounded-full border-2 border-purple-500 opacity-40" />
+                        <div className="absolute inset-4 animate-[spin_7s_linear_infinite_reverse] rounded-full border border-purple-500/50" />
+                        <div className="absolute inset-[30%] flex items-center justify-center rounded-full border border-purple-500 bg-purple-500/20">
                           <Cpu className="h-7 w-7 animate-pulse text-purple-400" />
                         </div>
                       </div>

@@ -162,10 +162,9 @@ export default function EditProfilePage() {
 
   return (
     <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
-      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
       <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
-      <div className="hunter-grid-bg pointer-events-none fixed inset-0 z-0 opacity-70" />
-      <div className="nebula-bg pointer-events-none fixed inset-0 z-0 opacity-70" />
+      <div className="hunter-grid-bg pointer-events-none fixed inset-0 z-0 opacity-20" />
+      <div className="nebula-bg pointer-events-none fixed inset-0 z-0 opacity-25" />
 
       <div className="relative z-20 mx-auto w-full max-w-[1500px] px-4 py-8 sm:px-8">
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

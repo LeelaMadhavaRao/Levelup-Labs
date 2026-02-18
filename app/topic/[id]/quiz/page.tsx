@@ -143,10 +143,9 @@ export default function QuizPage() {
   if (loading || generating) {
     return (
       <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
-        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
         <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
         <div className="relative z-20 container py-8 max-w-3xl">
-        <Card className="border-purple-500/30 bg-black/70 text-slate-100 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
+        <Card className="border-purple-500/30 bg-black/70 text-slate-100 shadow-sm">
           <CardContent className="py-16 text-center space-y-4">
             <Loader2 className="h-12 w-12 animate-spin mx-auto text-purple-300" />
             <h2 className={`${orbitron.className} text-xl font-semibold`}>
@@ -163,10 +162,9 @@ export default function QuizPage() {
   if (!topic || questions.length === 0) {
     return (
       <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
-        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
         <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
         <div className="relative z-20 container py-8 max-w-3xl">
-        <Card className="border-purple-500/30 bg-black/70 text-slate-100 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
+        <Card className="border-purple-500/30 bg-black/70 text-slate-100 shadow-sm">
           <CardContent className="py-16 text-center space-y-4">
             <XCircle className="h-16 w-16 mx-auto text-destructive" />
             <div>
@@ -206,10 +204,9 @@ export default function QuizPage() {
 
     return (
       <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
-        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
         <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
         <div className="relative z-20 container py-8 max-w-3xl">
-        <Card className="border-purple-500/30 bg-black/70 text-slate-100 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
+        <Card className="border-purple-500/30 bg-black/70 text-slate-100 shadow-sm">
           <CardHeader className="text-center pb-8">
             {passed ? (
               <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
@@ -276,11 +273,10 @@ export default function QuizPage() {
 
   return (
     <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
-      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
       <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
 
       <div className="relative z-20 container py-8 max-w-3xl space-y-6">
-      <div className="rounded-xl border border-purple-500/30 bg-black/70 p-4 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
+      <div className="rounded-xl border border-purple-500/30 bg-black/70 p-4 shadow-sm">
         <p className={`${orbitron.className} text-xs tracking-[0.25em] text-purple-300/90`}>ASSESSMENT CENTER</p>
         <h1 className={`${orbitron.className} mt-1 text-xl font-bold text-white`}>{topic.name}</h1>
       </div>

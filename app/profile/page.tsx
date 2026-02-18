@@ -187,7 +187,6 @@ export default function ProfilePage() {
 
   return (
     <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-200`}>
-      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
       <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
 
       <div className="relative z-20 mx-auto w-full max-w-[1500px] px-4 py-8 sm:px-8">
@@ -206,7 +205,7 @@ export default function ProfilePage() {
           <div className="flex flex-col gap-6 lg:col-span-3">
             <div className="group relative">
               <div className="absolute -inset-1 rounded-xl bg-gradient-to-b from-purple-500/40 to-transparent opacity-25 blur-xl transition duration-500 group-hover:opacity-45" />
-              <div className="relative flex h-[500px] flex-col overflow-hidden rounded-xl border border-white/10 bg-slate-950 shadow-[0_0_30px_rgba(127,13,242,0.18)]">
+              <div className="relative flex h-[500px] flex-col overflow-hidden rounded-xl border border-white/10 bg-slate-950 shadow-md">
                 <div className="absolute left-4 top-4 z-20">
                   <div className="flex items-center gap-2 rounded border border-purple-400/50 bg-black/60 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-md">
                     <Sparkles className="h-3.5 w-3.5 text-purple-300" />
@@ -242,7 +241,7 @@ export default function ProfilePage() {
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
                       <div
-                        className="h-full bg-gradient-to-r from-purple-500 to-purple-300 shadow-[0_0_10px_rgba(127,13,242,0.5)]"
+                        className="h-full bg-gradient-to-r from-purple-500 to-purple-300"
                         style={{ width: `${xpPercent}%` }}
                       />
                     </div>
@@ -291,7 +290,6 @@ export default function ProfilePage() {
             </div>
 
             <div className="relative overflow-hidden rounded-xl border border-white/10 bg-slate-900/50 p-6">
-              <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#7f0df2 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
               <div className="relative z-10 grid grid-cols-2 gap-4 sm:grid-cols-3">
                 {filteredBadges.map((achievement) => {
                   const originalIndex = primaryBadges.findIndex((item) => item.id === achievement.id);

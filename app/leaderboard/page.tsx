@@ -188,7 +188,6 @@ export default function LeaderboardPage() {
           backgroundSize: '50px 50px',
         }}
       />
-      <div className="scanlines pointer-events-none absolute inset-0 z-0 opacity-10" />
 
       <header className="relative z-10 w-full border-b border-white/5 bg-background-dark/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4">
@@ -315,7 +314,7 @@ export default function LeaderboardPage() {
                 return (
                   <div
                     key={entry.id}
-                    className={`group grid grid-cols-12 items-center gap-4 rounded px-4 py-3 transition-colors border-l-2 ${isCurrentUser ? 'border-primary/70 bg-primary/10 shadow-[0_0_20px_rgba(166,13,242,0.25)]' : 'border-transparent hover:bg-white/5 hover:border-primary/50'}`}
+                    className={`group grid grid-cols-12 items-center gap-4 rounded px-4 py-3 transition-colors border-l-2 ${isCurrentUser ? 'border-primary/70 bg-primary/10' : 'border-transparent hover:bg-white/5 hover:border-primary/50'}`}
                   >
                     <div className={`${jetBrainsMono.className} col-span-2 text-gray-400 group-hover:text-white sm:col-span-1`}>#{entry.rank.toString().padStart(2, '0')}</div>
                     <div className="col-span-6 flex items-center gap-3 sm:col-span-5">
@@ -382,7 +381,7 @@ export default function LeaderboardPage() {
                   </div>
                 )}
 
-                <div className="relative z-10 -mx-3 flex items-center gap-4 rounded-lg border border-primary/30 bg-primary/10 p-3 shadow-[0_0_15px_rgba(166,13,242,0.45)]">
+                <div className="relative z-10 -mx-3 flex items-center gap-4 rounded-lg border border-primary/30 bg-primary/10 p-3 shadow-md">
                   <div className="h-14 w-14 rounded-full border-2 border-primary bg-gray-800 p-0.5">
                     <img
                       src={getAvatarSource(meEntry.id, meEntry.full_name || 'hunter', meEntry.avatar_url)}
@@ -453,7 +452,7 @@ export default function LeaderboardPage() {
 
             <Link
               href="/my-courses"
-              className="group mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-purple-400/40 bg-[#7b1dd8] py-3 font-bold text-white shadow-[0_0_15px_rgba(166,13,242,0.45)] transition-colors hover:bg-[#9228f4] focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
+              className="group mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-purple-400/40 bg-[#7b1dd8] py-3 font-bold text-white shadow-md transition-colors hover:bg-[#9228f4] focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
             >
               <span>MY COURSES</span>
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

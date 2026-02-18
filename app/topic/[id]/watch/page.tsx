@@ -141,7 +141,6 @@ export default function WatchVideoPage() {
   if (loading) {
     return (
       <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-white`}>
-        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
         <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
         <div className="relative z-20 container py-8 max-w-6xl">
         <div className="animate-pulse space-y-4">
@@ -156,7 +155,6 @@ export default function WatchVideoPage() {
   if (!topic) {
     return (
       <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-white`}>
-        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
         <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
         <div className="relative z-20 container py-8 max-w-3xl text-center">
           <div className="rounded-lg border border-white/10 bg-black/60 p-10">
@@ -170,13 +168,11 @@ export default function WatchVideoPage() {
 
   return (
     <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-white`}>
-      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
       <div className="scan-line" />
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#a60df2 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
       <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-900/10 via-black/80 to-cyan-900/10" />
 
       <div className="relative z-20 mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-[1600px] flex-col gap-4 p-4">
-        <header className="flex-none rounded-lg border border-white/10 bg-black/70 p-4 backdrop-blur-md shadow-[0_0_15px_rgba(166,13,242,0.2)]">
+        <header className="flex-none rounded-lg border border-white/10 bg-black/70 p-4 backdrop-blur-md">
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
             <div className="flex min-w-0 items-center gap-4">
               <div className="flex h-11 w-11 items-center justify-center rounded border border-purple-400/50 bg-purple-500/10">
@@ -221,7 +217,7 @@ export default function WatchVideoPage() {
 
         <main className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-12">
           <section className="col-span-12 lg:col-span-9 flex flex-col gap-4 h-full min-h-0">
-            <div className="relative w-full overflow-hidden rounded-lg border border-purple-400/40 shadow-[0_0_20px_rgba(166,13,242,0.25)] hud-border">
+            <div className="relative w-full overflow-hidden rounded-lg border border-purple-400/40 shadow-md hud-border">
               <div className="absolute inset-0 border border-purple-400/20 animate-pulse pointer-events-none z-10 rounded-lg" />
               <div className="relative z-0">
                 <div className="relative aspect-video w-full bg-black">
@@ -234,7 +230,7 @@ export default function WatchVideoPage() {
                   />
                   {!watched && (
                     <button
-                      className="absolute left-1/2 top-1/2 z-30 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-purple-400 bg-purple-500/20 backdrop-blur-sm transition-transform shadow-[0_0_15px_rgba(166,13,242,0.5)] hover:scale-110"
+                      className="absolute left-1/2 top-1/2 z-30 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-purple-400 bg-purple-500/20 backdrop-blur-sm transition-transform shadow-md hover:scale-110"
                       onClick={handleMarkAsWatched}
                     >
                       <Play className="h-9 w-9 text-white" />

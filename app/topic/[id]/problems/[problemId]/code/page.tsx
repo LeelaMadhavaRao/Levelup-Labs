@@ -231,7 +231,6 @@ function solution(input) {
 
   return (
     <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-200 selection:bg-purple-500/30 selection:text-white`}>
-      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
       <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
       
       {/* Background Orbs */}

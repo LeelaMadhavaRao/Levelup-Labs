@@ -50,8 +50,7 @@ export default function ForgotPasswordPage() {
     return (
       <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#050508] text-slate-100`}>
         <div className="pointer-events-none fixed inset-0 z-0 nebula-bg animate-pulse" style={{ animationDuration: '4s' }} />
-        <div className="hunter-grid-bg pointer-events-none fixed inset-0 z-0 opacity-70" />
-        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-20" />
+        <div className="hunter-grid-bg pointer-events-none fixed inset-0 z-0 opacity-30" />
 
         <main className="relative z-20 mx-auto flex min-h-screen w-full max-w-5xl items-center justify-center p-6">
         <Card className="relative z-20 w-full max-w-xl border-white/15 bg-black/75 p-8 text-slate-100 holo-card">
@@ -100,8 +99,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#050508] text-slate-100`}>
       <div className="pointer-events-none fixed inset-0 z-0 nebula-bg animate-pulse" style={{ animationDuration: '4s' }} />
-      <div className="hunter-grid-bg pointer-events-none fixed inset-0 z-0 opacity-70" />
-      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-20" />
+      <div className="hunter-grid-bg pointer-events-none fixed inset-0 z-0 opacity-30" />
 
       <main className="relative z-20 mx-auto flex w-full max-w-6xl flex-col items-center gap-10 p-6 md:min-h-screen md:flex-row md:gap-12">
         <section className="hidden flex-1 space-y-8 select-none md:flex md:flex-col">

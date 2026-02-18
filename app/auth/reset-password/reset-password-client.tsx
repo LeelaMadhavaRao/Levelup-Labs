@@ -103,7 +103,6 @@ export default function ResetPasswordClient() {
       <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#050508] text-slate-100`}>
         <div className="pointer-events-none fixed inset-0 z-0 nebula-bg animate-pulse" style={{ animationDuration: '4s' }} />
         <div className="hunter-grid-bg pointer-events-none fixed inset-0 z-0 opacity-70" />
-        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-20" />
 
         <main className="relative z-20 mx-auto flex min-h-screen w-full max-w-5xl items-center justify-center p-6">
         <Card className="relative z-20 w-full max-w-xl border-red-500/40 bg-black/75 p-8 text-slate-100 holo-card">
@@ -133,7 +132,6 @@ export default function ResetPasswordClient() {
       <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#050508] text-slate-100`}>
         <div className="pointer-events-none fixed inset-0 z-0 nebula-bg animate-pulse" style={{ animationDuration: '4s' }} />
         <div className="hunter-grid-bg pointer-events-none fixed inset-0 z-0 opacity-70" />
-        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-20" />
 
         <main className="relative z-20 mx-auto flex min-h-screen w-full max-w-5xl items-center justify-center p-6">
         <Card className="relative z-20 w-full max-w-xl border-emerald-500/40 bg-black/75 p-8 text-slate-100 holo-card">
@@ -161,8 +159,7 @@ export default function ResetPasswordClient() {
   return (
     <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#050508] text-slate-100`}>
       <div className="pointer-events-none fixed inset-0 z-0 nebula-bg animate-pulse" style={{ animationDuration: '4s' }} />
-      <div className="hunter-grid-bg pointer-events-none fixed inset-0 z-0 opacity-70" />
-      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-20" />
+      <div className="hunter-grid-bg pointer-events-none fixed inset-0 z-0 opacity-30" />
 
       <main className="relative z-20 mx-auto flex w-full max-w-6xl flex-col items-center gap-10 p-6 md:min-h-screen md:flex-row md:gap-12">
         <section className="hidden flex-1 space-y-8 select-none md:flex md:flex-col">
@@ -204,7 +201,7 @@ export default function ResetPasswordClient() {
         </section>
 
         <section className="w-full max-w-[520px]">
-          <div className="holo-card relative overflow-hidden rounded-xl bg-black/60 p-8 shadow-[0_0_20px_rgba(166,13,242,0.4)] backdrop-blur-xl">
+          <div className="holo-card relative overflow-hidden rounded-xl bg-black/60 p-8 shadow-[0_0_20px_rgba(166,13,242,0.15)] backdrop-blur-xl">
             <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-transparent via-cyan-300 to-transparent opacity-50 animate-pulse" />
 
             <div className="mb-8 text-center">

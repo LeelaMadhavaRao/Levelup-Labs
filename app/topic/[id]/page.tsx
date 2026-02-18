@@ -161,7 +161,6 @@ export default function TopicLandingPage() {
   if (loading) {
     return (
       <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-100`}>
-        <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
         <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
         <div className="relative z-20 container py-8 max-w-6xl">
         <div className="animate-pulse space-y-4">
@@ -224,11 +223,10 @@ export default function TopicLandingPage() {
 
   return (
     <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-100`}>
-      <div className="scanlines pointer-events-none fixed inset-0 z-10 opacity-10" />
       <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
 
       <div className="relative z-20 container max-w-6xl space-y-6 py-8">
-      <div className="rounded-2xl border border-purple-500/30 bg-black/50 p-6 shadow-[0_0_30px_rgba(124,58,237,0.2)]">
+      <div className="rounded-2xl border border-purple-500/30 bg-black/50 p-6 shadow-md">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
             <p className={`${orbitron.className} text-xs tracking-[0.25em] text-purple-300/90`}>CONTENT NODE</p>
