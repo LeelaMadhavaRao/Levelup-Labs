@@ -234,7 +234,7 @@ export default function ExplainProblemPage() {
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-purple-400" />
                 <CardTitle className={`${orbitron.className} text-sm font-bold tracking-wider text-slate-200`}>
-                  MISSION INTEL
+                  PROBLEM DETAILS
                 </CardTitle>
               </div>
             </CardHeader>

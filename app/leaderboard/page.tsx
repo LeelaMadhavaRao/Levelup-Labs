@@ -172,7 +172,7 @@ export default function LeaderboardPage() {
           <div className={`absolute inset-0 ${highlightClass}`}></div>
           <h3 className={`${orbitron.className} text-white font-bold text-lg z-10 text-glow text-center px-2`}>{hunter.full_name}</h3>
           <p className={`${jetBrainsMono.className} ${rankTextClass} text-sm z-10 font-bold`}>{getXpValue(hunter).toLocaleString()} XP</p>
-          <p className="text-gray-500 text-xs mt-1 z-10 uppercase tracking-wide">{hunter.title || 'Elite Hunter'}</p>
+          <p className="text-gray-500 text-xs mt-1 z-10 uppercase tracking-wide">{hunter.title || 'Top Learner'}</p>
         </div>
       </div>
     );
@@ -222,7 +222,7 @@ export default function LeaderboardPage() {
         <div className="flex min-h-0 flex-1 flex-col">
           <section className="flex-none pb-4 pt-2">
             <div className="mb-4 flex items-center justify-between gap-4">
-              <h1 className={`${orbitron.className} text-3xl font-black text-glow md:text-4xl`}>Hunter Ranking Leaderboard</h1>
+              <h1 className={`${orbitron.className} text-3xl font-black text-glow md:text-4xl`}>Learner Ranking Leaderboard</h1>
               <span className={`${jetBrainsMono.className} rounded-lg border border-primary/30 bg-primary/10 px-3 py-1 text-xs uppercase tracking-widest text-primary`}>
                 Global Scope
               </span>
@@ -256,7 +256,7 @@ export default function LeaderboardPage() {
                           onError={(event) => handleAvatarError(event, podium[0].id, podium[0].full_name || 'hunter')}
                         />
                         <div className="absolute -bottom-2 -right-2 rounded-full border border-black bg-primary px-2 py-0.5 text-xs font-bold text-white">
-                          Monarch
+                          Champion
                         </div>
                       </div>
                     </div>
@@ -264,7 +264,7 @@ export default function LeaderboardPage() {
                       <div className="absolute inset-0 bg-primary/10 animate-pulse" />
                       <h3 className={`${orbitron.className} z-10 px-2 text-center text-xl font-bold text-white text-glow`}>{podium[0].full_name}</h3>
                       <p className={`${jetBrainsMono.className} z-10 text-base font-bold text-primary`}>{getXpValue(podium[0]).toLocaleString()} XP</p>
-                      <p className="z-10 mt-1 text-xs uppercase tracking-widest text-gray-400">{podium[0].title || 'Shadow Monarch'}</p>
+                      <p className="z-10 mt-1 text-xs uppercase tracking-widest text-gray-400">{podium[0].title || 'Top Performer'}</p>
                     </div>
                   </>
                 )}
@@ -294,7 +294,7 @@ export default function LeaderboardPage() {
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   className={`${jetBrainsMono.className} block w-full rounded-lg border border-white/10 bg-black/40 py-2.5 pl-10 pr-3 text-gray-300 placeholder-gray-500 leading-5 transition-all focus:border-primary/50 focus:bg-black/60 focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm`}
-                  placeholder="SCAN HUNTER ID OR NAME..."
+                  placeholder="SEARCH LEARNER ID OR NAME..."
                   type="text"
                 />
                 <div className="absolute bottom-0 left-0 h-[1px] w-0 bg-primary transition-all duration-500 ease-out group-focus-within:w-full" />
@@ -303,7 +303,7 @@ export default function LeaderboardPage() {
 
             <div className={`grid grid-cols-12 gap-4 border-b border-white/5 bg-white/5 px-6 py-3 text-xs uppercase tracking-widest text-gray-400 font-bold ${jetBrainsMono.className}`}>
               <div className="col-span-2 sm:col-span-1">Rank</div>
-              <div className="col-span-6 sm:col-span-5">Hunter Identity</div>
+              <div className="col-span-6 sm:col-span-5">Learner Profile</div>
               <div className="hidden sm:block sm:col-span-3">Title / Class</div>
               <div className="col-span-4 text-right sm:col-span-3">Total XP</div>
             </div>
@@ -332,7 +332,7 @@ export default function LeaderboardPage() {
                           {entry.full_name}
                           {isCurrentUser && <span className="ml-2 text-[10px] uppercase tracking-widest">You</span>}
                         </span>
-                        <span className={`${jetBrainsMono.className} text-[10px] uppercase text-gray-500 sm:hidden`}>{entry.title || 'Hunter'}</span>
+                        <span className={`${jetBrainsMono.className} text-[10px] uppercase text-gray-500 sm:hidden`}>{entry.title || 'Learner'}</span>
                       </div>
                     </div>
                     <div className={`${jetBrainsMono.className} hidden text-xs text-gray-400 sm:col-span-3 sm:block`}>{entry.title || 'Unclassified'}</div>
@@ -343,7 +343,7 @@ export default function LeaderboardPage() {
                 );
               })}
               {filteredRows.length === 0 && (
-                <div className="px-4 py-8 text-center text-sm text-gray-500">No hunters detected for this query.</div>
+                <div className="px-4 py-8 text-center text-sm text-gray-500">No learners detected for this query.</div>
               )}
             </div>
           </div>
@@ -360,9 +360,9 @@ export default function LeaderboardPage() {
             </h2>
 
             {!user ? (
-              <p className="text-sm text-gray-500">Sign in to see hunters near your rank.</p>
+              <p className="text-sm text-gray-500">Sign in to see learners near your rank.</p>
             ) : !meEntry ? (
-              <p className="text-sm text-gray-500">No nearby hunters within this scope.</p>
+              <p className="text-sm text-gray-500">No nearby learners within this scope.</p>
             ) : (
               <div className="relative flex flex-col gap-4">
                 <div className="absolute bottom-4 left-[1.65rem] top-4 w-0.5 bg-gradient-to-b from-transparent via-primary/50 to-transparent"></div>
@@ -421,12 +421,12 @@ export default function LeaderboardPage() {
           </div>
 
           <div className="flex flex-col gap-4 rounded-xl border border-white/5 bg-background-dark p-6">
-            <h2 className={`${jetBrainsMono.className} mb-2 text-sm font-bold uppercase tracking-widest text-gray-400`}>My Hunter Stats</h2>
+            <h2 className={`${jetBrainsMono.className} mb-2 text-sm font-bold uppercase tracking-widest text-gray-400`}>My Stats</h2>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 p-3">
                 <div className="flex flex-col">
-                  <span className="text-xs uppercase text-gray-500">Monsters Slayed</span>
+                  <span className="text-xs uppercase text-gray-500">Problems Solved</span>
                   <span className={`${jetBrainsMono.className} text-xl font-bold text-primary`}>{myProfileEntry?.problems_solved ?? 0}</span>
                 </div>
                 <span className="text-[10px] uppercase tracking-widest text-gray-500">Problems Solved</span>
@@ -434,7 +434,7 @@ export default function LeaderboardPage() {
 
               <div className="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 p-3">
                 <div className="flex flex-col">
-                  <span className="text-xs uppercase text-gray-500">Dungeons Cleared</span>
+                  <span className="text-xs uppercase text-gray-500">Courses Completed</span>
                   <span className={`${jetBrainsMono.className} text-xl font-bold text-rank-blue`}>{myProfileEntry?.courses_completed ?? 0}</span>
                 </div>
                 <span className="text-[10px] uppercase tracking-widest text-gray-500">Courses Completed</span>
@@ -455,7 +455,7 @@ export default function LeaderboardPage() {
               href="/my-courses"
               className="group mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-purple-400/40 bg-[#7b1dd8] py-3 font-bold text-white shadow-[0_0_15px_rgba(166,13,242,0.45)] transition-colors hover:bg-[#9228f4] focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60"
             >
-              <span>MY DUNGEONS</span>
+              <span>MY COURSES</span>
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
 

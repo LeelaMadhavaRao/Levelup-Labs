@@ -94,14 +94,14 @@ export default function AdminDashboard() {
               <Shield className="h-3.5 w-3.5" />
               Admin Command Core
             </div>
-            <h1 className={`${orbitron.className} text-3xl font-black tracking-wide md:text-4xl`}>MONARCH CONTROL PANEL</h1>
+            <h1 className={`${orbitron.className} text-3xl font-black tracking-wide md:text-4xl`}>ADMIN CONTROL PANEL</h1>
             <p className="max-w-2xl text-sm text-slate-400 md:text-base">
-              Build and govern every gate curriculum, monitor active hunters, and dispatch content updates from one control surface.
+              Build and govern every course curriculum, monitor active learners, and dispatch content updates from one control surface.
             </p>
             <div className="flex flex-wrap items-center gap-4 text-xs font-semibold uppercase tracking-widest text-slate-400">
               <span className="inline-flex items-center gap-2"><Activity className="h-3.5 w-3.5 text-emerald-400" /> System Online</span>
-              <span className="inline-flex items-center gap-2"><Sparkles className="h-3.5 w-3.5 text-purple-300" /> {courses.length} Active Gates</span>
-              <span className="inline-flex items-center gap-2"><Flame className="h-3.5 w-3.5 text-orange-400" /> {totalStudents} Hunters Enrolled</span>
+              <span className="inline-flex items-center gap-2"><Sparkles className="h-3.5 w-3.5 text-purple-300" /> {courses.length} Active Courses</span>
+              <span className="inline-flex items-center gap-2"><Flame className="h-3.5 w-3.5 text-orange-400" /> {totalStudents} Learners Enrolled</span>
             </div>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
@@ -125,7 +125,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{courses.length}</div>
-            <p className="text-xs text-slate-400">Curriculum gates initialized</p>
+            <p className="text-xs text-slate-400">Curriculum courses initialized</p>
           </CardContent>
         </Card>
 
@@ -138,7 +138,7 @@ export default function AdminDashboard() {
             <div className="text-2xl font-bold">
               {totalStudents}
             </div>
-            <p className="text-xs text-slate-400">Hunters linked to your gates</p>
+            <p className="text-xs text-slate-400">Learners linked to your courses</p>
           </CardContent>
         </Card>
 
@@ -151,7 +151,7 @@ export default function AdminDashboard() {
             <div className="text-2xl font-bold">
               {totalProblems}
             </div>
-            <p className="text-xs text-slate-400">Boss trials deployed</p>
+            <p className="text-xs text-slate-400">Coding challenges deployed</p>
           </CardContent>
         </Card>
       </div>
@@ -159,13 +159,13 @@ export default function AdminDashboard() {
       <div className="grid gap-6 xl:grid-cols-3">
         <Card className="border-white/15 bg-black/60 text-slate-100 xl:col-span-2">
           <CardHeader>
-            <CardTitle className={`${orbitron.className} text-lg`}>Top Performing Gates</CardTitle>
+            <CardTitle className={`${orbitron.className} text-lg`}>Top Performing Courses</CardTitle>
             <CardDescription className="text-slate-400">Highest enrollment and content traction across your registry</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {topCourses.length === 0 ? (
               <div className="rounded-lg border border-white/10 bg-black/40 p-6 text-sm text-slate-400">
-                No gate telemetry yet. Create your first course to begin tracking performance.
+                No course telemetry yet. Create your first course to begin tracking performance.
               </div>
             ) : (
               topCourses.map((course, index) => {
@@ -177,7 +177,7 @@ export default function AdminDashboard() {
                         <p className="truncate text-sm font-semibold text-white">#{index + 1} {course.name}</p>
                         <p className="text-[11px] text-slate-500">{course.problem_count || 0} challenges • {Number(course.completion_reward_xp ?? course.completion_reward_points ?? 0)} XP reward</p>
                       </div>
-                      <span className="rounded border border-purple-500/40 bg-purple-500/15 px-2 py-1 text-[11px] font-semibold text-purple-300">{course.student_count || 0} Hunters</span>
+                      <span className="rounded border border-purple-500/40 bg-purple-500/15 px-2 py-1 text-[11px] font-semibold text-purple-300">{course.student_count || 0} Learners</span>
                     </div>
                     <div className="h-1.5 overflow-hidden rounded bg-white/10">
                       <div className="h-full bg-gradient-to-r from-purple-500 to-cyan-400" style={{ width: `${intensity}%` }} />
@@ -221,7 +221,7 @@ export default function AdminDashboard() {
         <Card className="border-white/15 bg-black/60 text-slate-100">
           <CardHeader>
             <CardTitle className={`${orbitron.className} text-lg`}>Command Snapshot</CardTitle>
-            <CardDescription className="text-slate-400">Fast mission telemetry</CardDescription>
+            <CardDescription className="text-slate-400">Fast performance telemetry</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="rounded-lg border border-white/10 bg-black/40 p-4">

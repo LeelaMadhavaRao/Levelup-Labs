@@ -267,7 +267,7 @@ function solution(input) {
                 className="text-xs text-slate-400 hover:text-white border border-white/5 hover:bg-white/5"
             >
               <ArrowLeft className="mr-2 h-3 w-3" />
-              ABORT MISSION
+              EXIT SESSION
             </Button>
             
             <div className="hidden md:block h-8 w-px bg-white/10"></div>
@@ -293,7 +293,7 @@ function solution(input) {
                 <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-white/5">
                     <div className="flex items-center gap-2">
                         <FileText className="h-4 w-4 text-cyan-400" />
-                        <span className={`text-xs font-bold text-slate-200 tracking-widest uppercase ${orbitron.className}`}>Mission Intel</span>
+                        <span className={`text-xs font-bold text-slate-200 tracking-widest uppercase ${orbitron.className}`}>Problem Details</span>
                     </div>
                 </div>
                 

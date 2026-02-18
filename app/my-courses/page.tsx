@@ -106,7 +106,7 @@ export default function MyCoursesPage() {
             </div>
             <div>
               <h1 className="text-sm font-bold tracking-wider text-white">SYSTEM_CONSOLE</h1>
-              <p className="font-mono text-[10px] uppercase text-purple-400/70">Shadow_Monarch_OS_v9.0</p>
+              <p className="font-mono text-[10px] uppercase text-purple-400/70">Learning_Console_v9.0</p>
             </div>
           </div>
         </div>
@@ -119,14 +119,14 @@ export default function MyCoursesPage() {
             <div className="absolute inset-0 w-1 bg-purple-500 opacity-10 transition-all duration-300 group-hover:w-full" />
             <div className="relative flex items-center justify-center gap-2 px-4 py-4">
               <PlusCircle className="h-5 w-5" />
-              <span className="font-mono text-sm font-bold uppercase tracking-widest">View all Dungeons</span>
+              <span className="font-mono text-sm font-bold uppercase tracking-widest">View all Courses</span>
             </div>
           </button>
         </div>
 
         <div className="flex-1 space-y-2 overflow-y-auto px-4 pb-4">
           <div className="mb-2 flex items-center justify-between px-2 font-mono text-xs uppercase tracking-widest text-slate-500">
-            <span>Active Dungeons</span>
+            <span>Active Courses</span>
             <span>Rank</span>
           </div>
           {courses.map((course, index) => {
@@ -144,7 +144,7 @@ export default function MyCoursesPage() {
               >
                 <div className="mb-1 flex items-start justify-between">
                   <h3 className={`text-sm font-semibold ${active ? 'text-white' : 'text-slate-300 group-hover:text-purple-400'}`}>
-                    GATE: {course.name.toUpperCase()}
+                    COURSE: {course.name.toUpperCase()}
                   </h3>
                   <span className={`font-mono text-[10px] font-bold ${active ? 'text-purple-400' : 'text-slate-500'}`}>{rank}</span>
                 </div>
@@ -160,7 +160,7 @@ export default function MyCoursesPage() {
         <div className="border-t border-purple-500/10 bg-[#050507]/50 p-4">
           <div className="grid grid-cols-2 gap-2 font-mono text-[10px] text-slate-400">
             <div className="flex flex-col">
-              <span className="uppercase tracking-widest text-purple-400/60">Mana Load</span>
+              <span className="uppercase tracking-widest text-purple-400/60">Progress Load</span>
               <span className="text-white">{Math.round(selectedProgress)}% <span className="text-purple-400">■■■□□□</span></span>
             </div>
             <div className="flex flex-col text-right">
@@ -180,14 +180,14 @@ export default function MyCoursesPage() {
             <div className="flex items-center rounded border border-white/5 bg-[#050507] px-3 py-1.5 font-mono text-xs text-slate-400">
               <span className="text-purple-400">root</span>
               <span className="mx-2 text-slate-600">/</span>
-              <span className="text-purple-400">gate_algorithms</span>
+              <span className="text-purple-400">course_paths</span>
               <span className="mx-2 text-slate-600">/</span>
               <span className="text-white">config</span>
             </div>
             <span className="h-4 w-px bg-white/10" />
             <span className="flex items-center gap-2 text-xs uppercase tracking-widest text-purple-400">
               <span className="h-2 w-2 animate-pulse rounded-full bg-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.8)]" />
-              System Online
+              Platform Online
             </span>
           </div>
           
@@ -197,17 +197,17 @@ export default function MyCoursesPage() {
           {!selectedCourse ? (
             <div className="mx-auto max-w-3xl rounded-lg border border-white/10 bg-[#121215] p-10 text-center">
               <Swords className="mx-auto mb-4 h-10 w-10 text-purple-400" />
-              <h3 className={`${orbitron.className} mb-2 text-2xl text-white`}>No Active Gate</h3>
-              <p className="mb-6 text-slate-400">Open a gate to start your hunter mission.</p>
-              <Button onClick={() => router.push('/courses')}>Open Gate</Button>
+              <h3 className={`${orbitron.className} mb-2 text-2xl text-white`}>No Active Course</h3>
+              <p className="mb-6 text-slate-400">Open a course to start your next learning task.</p>
+              <Button onClick={() => router.push('/courses')}>Open Courses</Button>
             </div>
           ) : (
             <div className="mx-auto grid max-w-7xl grid-cols-12 gap-8">
               <div className="col-span-12 space-y-6 lg:col-span-8">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                   <div>
-                    <h2 className={`${orbitron.className} mb-1 text-3xl font-bold text-white`}>Gate Configuration</h2>
-                    <p className="text-sm text-slate-400">Manage your gate parameters and monitor your progress.</p>
+                    <h2 className={`${orbitron.className} mb-1 text-3xl font-bold text-white`}>Course Configuration</h2>
+                    <p className="text-sm text-slate-400">Manage your course settings and monitor your progress.</p>
                   </div>
                 </div>
 
@@ -215,7 +215,7 @@ export default function MyCoursesPage() {
                   <div className="absolute left-0 top-0 h-full w-1 bg-purple-500 shadow-[0_0_10px_#A855F7]" />
                   <div className="mb-6 flex items-center gap-2 border-b border-white/5 pb-2">
                     <SearchCode className="h-4 w-4 text-purple-400" />
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-white">Gate Parameters</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-white">Course Parameters</h3>
                   </div>
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
@@ -224,18 +224,18 @@ export default function MyCoursesPage() {
                     </div>
                     <div>
                       <label className="mb-2 block font-mono text-xs uppercase text-purple-400">Protocol_ID</label>
-                      <input readOnly value={`GATE_${selectedCourse.id.slice(0, 8).toUpperCase()}`} className="w-full cursor-not-allowed rounded border border-white/5 bg-[#09090b]/50 px-4 py-2 font-mono text-sm text-slate-400 outline-none" />
+                      <input readOnly value={`COURSE_${selectedCourse.id.slice(0, 8).toUpperCase()}`} className="w-full cursor-not-allowed rounded border border-white/5 bg-[#09090b]/50 px-4 py-2 font-mono text-sm text-slate-400 outline-none" />
                     </div>
                     <div className="col-span-full">
-                      <label className="mb-2 block font-mono text-xs uppercase text-purple-400">Mission_Description</label>
-                      <textarea readOnly rows={2} value={selectedCourse.description || 'No mission description available.'} className="w-full resize-none rounded border border-white/10 bg-[#09090b] px-4 py-2 font-mono text-sm text-white outline-none" />
+                      <label className="mb-2 block font-mono text-xs uppercase text-purple-400">Course_Description</label>
+                      <textarea readOnly rows={2} value={selectedCourse.description || 'No course description available.'} className="w-full resize-none rounded border border-white/10 bg-[#09090b] px-4 py-2 font-mono text-sm text-white outline-none" />
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Dungeon Layers (Modules)</h3>
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Course Modules</h3>
                     
                   </div>
 
@@ -254,7 +254,7 @@ export default function MyCoursesPage() {
                             <div className="min-w-0 flex-1">
                               <h4 className="mb-1 text-lg font-bold text-white">Module: {module.name}</h4>
                               <div className="mt-2 flex flex-wrap gap-2">
-                                <span className="rounded border border-blue-500/40 bg-blue-900/30 px-2 py-0.5 font-mono text-[10px] uppercase text-blue-300">Logic_Gate</span>
+                                <span className="rounded border border-blue-500/40 bg-blue-900/30 px-2 py-0.5 font-mono text-[10px] uppercase text-blue-300">Logic_Path</span>
                                 <span className="rounded border border-purple-500/40 bg-purple-900/30 px-2 py-0.5 font-mono text-[10px] uppercase text-purple-300">Stable</span>
                               </div>
                             </div>
@@ -275,7 +275,7 @@ export default function MyCoursesPage() {
                                     onClick={() => router.push(`/topic/${topic.id}`)}
                                     className="w-full font-mono text-xs sm:w-auto"
                                   >
-                                    {topic.is_completed ? 'Review' : topic.progress?.quiz_passed ? 'Boss Fight' : topic.progress?.video_watched ? 'Trial' : 'Start'}
+                                    {topic.is_completed ? 'Review' : topic.progress?.quiz_passed ? 'Challenge' : topic.progress?.video_watched ? 'Problem' : 'Start'}
                                   </Button>
                                 </div>
                               ))
@@ -315,12 +315,12 @@ export default function MyCoursesPage() {
 
                 <div className="rounded-lg border border-purple-500/20 bg-purple-500/5 p-4 text-xs text-slate-300">
                   <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">
-                    <ShieldCheck className="h-4 w-4 text-purple-400" /> Hunter Snapshot
+                    <ShieldCheck className="h-4 w-4 text-purple-400" /> Learner Snapshot
                   </div>
                   <div className="space-y-1 font-mono text-[11px]">
-                    <div className="flex justify-between"><span className="text-slate-500">Hunter</span><span>{user?.full_name || 'Unknown'}</span></div>
-                    <div className="flex justify-between"><span className="text-slate-500">Active Gate</span><span>{selectedCourse.name}</span></div>
-                    <div className="flex justify-between"><span className="text-slate-500">Gate Rank</span><span>{gateRank(selectedCourse)}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-500">Learner</span><span>{user?.full_name || 'Unknown'}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-500">Active Course</span><span>{selectedCourse.name}</span></div>
+                    <div className="flex justify-between"><span className="text-slate-500">Course Rank</span><span>{gateRank(selectedCourse)}</span></div>
                     <div className="flex justify-between"><span className="text-slate-500">Progress</span><span>{Math.round(selectedProgress)}%</span></div>
                   </div>
                 </div>

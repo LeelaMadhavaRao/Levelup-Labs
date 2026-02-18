@@ -39,18 +39,18 @@ export default function CoursesPage() {
   const rankConfig = (course: any) => {
     const reward = Number(course.completion_reward_xp ?? course.completion_reward_points ?? 0);
     if (reward >= 700) {
-      return { label: 'S-RANK GATE', tint: 'text-amber-300', border: 'border-amber-400/70', glow: 'shadow-[0_0_18px_rgba(251,191,36,0.35)]', chip: 'bg-amber-400 text-black', tag: 'RED GATE' };
+      return { label: 'S-RANK PATH', tint: 'text-amber-300', border: 'border-amber-400/70', glow: 'shadow-[0_0_18px_rgba(251,191,36,0.35)]', chip: 'bg-amber-400 text-black', tag: 'ADVANCED' };
     }
     if (reward >= 600) {
-      return { label: 'A-RANK GATE', tint: 'text-orange-300', border: 'border-orange-500/70', glow: 'shadow-[0_0_18px_rgba(249,115,22,0.35)]', chip: 'bg-orange-500 text-black', tag: 'BOSS RAID' };
+      return { label: 'A-RANK PATH', tint: 'text-orange-300', border: 'border-orange-500/70', glow: 'shadow-[0_0_18px_rgba(249,115,22,0.35)]', chip: 'bg-orange-500 text-black', tag: 'INTENSIVE' };
     }
     if (reward >= 500) {
-      return { label: 'B-RANK GATE', tint: 'text-purple-300', border: 'border-purple-500/70', glow: 'shadow-[0_0_18px_rgba(168,85,247,0.35)]', chip: 'bg-purple-500 text-white', tag: 'MAGIC CLASS' };
+      return { label: 'B-RANK PATH', tint: 'text-purple-300', border: 'border-purple-500/70', glow: 'shadow-[0_0_18px_rgba(168,85,247,0.35)]', chip: 'bg-purple-500 text-white', tag: 'SKILL TRACK' };
     }
     if (reward >= 400) {
-      return { label: 'C-RANK GATE', tint: 'text-sky-300', border: 'border-sky-400/70', glow: 'shadow-[0_0_18px_rgba(56,189,248,0.35)]', chip: 'bg-sky-500 text-white', tag: 'DUNGEON' };
+      return { label: 'C-RANK PATH', tint: 'text-sky-300', border: 'border-sky-400/70', glow: 'shadow-[0_0_18px_rgba(56,189,248,0.35)]', chip: 'bg-sky-500 text-white', tag: 'COURSE' };
     }
-    return { label: 'E-RANK GATE', tint: 'text-emerald-300', border: 'border-emerald-400/70', glow: 'shadow-[0_0_18px_rgba(52,211,153,0.35)]', chip: 'bg-emerald-400 text-black', tag: 'TUTORIAL' };
+    return { label: 'E-RANK PATH', tint: 'text-emerald-300', border: 'border-emerald-400/70', glow: 'shadow-[0_0_18px_rgba(52,211,153,0.35)]', chip: 'bg-emerald-400 text-black', tag: 'STARTER' };
   };
 
   useEffect(() => {
@@ -163,28 +163,28 @@ export default function CoursesPage() {
                   <Sparkles className="h-6 w-6 text-purple-300" />
                 </div>
                 <div>
-                  <h1 className={`${orbitron.className} text-xl font-bold uppercase tracking-[0.2em]`}>Raid Gates</h1>
-                  <span className="text-xs uppercase tracking-[0.3em] text-purple-300">System Gate Discovery</span>
+                  <h1 className={`${orbitron.className} text-xl font-bold uppercase tracking-[0.2em]`}>Course Library</h1>
+                  <span className="text-xs uppercase tracking-[0.3em] text-purple-300">Learning Path Discovery</span>
                 </div>
               </div>
 
               <div className="flex items-center gap-4 text-right lg:ml-auto">
                 <div className="hidden lg:block">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400">Hunter Rank</p>
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400">Current Rank</p>
                   <p className={`${orbitron.className} text-lg font-semibold`}>{hunterRank}</p>
                 </div>
                 <div className="h-11 w-11 overflow-hidden rounded-full border-2 border-white/20 bg-white/10 flex-shrink-0">
                   {user ? (
                     <img
                       src={avatarSrc}
-                      alt={user.full_name || 'Hunter'}
+                      alt={user.full_name || 'User'}
                       className="h-full w-full object-cover"
                       onError={() =>
                         setAvatarSrc(generateHunterAvatarUrl(`${user.id}-${user.full_name || user.email || 'hunter'}`))
                       }
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">LVL</div>
+                    <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">USR</div>
                   )}
                 </div>
               </div>
@@ -195,7 +195,7 @@ export default function CoursesPage() {
               <div className="relative z-10 flex flex-col lg:flex-row items-center gap-3 px-4 py-2">
                 <Radar className="h-4 w-4 text-purple-300 animate-pulse flex-shrink-0" />
                 <Input
-                  placeholder="Scanning for dungeon gates..."
+                  placeholder="Search courses and learning paths..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="border-none bg-transparent font-mono text-xs uppercase tracking-[0.2em] text-white placeholder:text-gray-400 focus-visible:ring-0 flex-1 min-w-0"
@@ -223,7 +223,7 @@ export default function CoursesPage() {
                       onChange={(e) => setSortMode(e.target.value as typeof sortMode)}
                       className="bg-transparent text-purple-200 focus:outline-none"
                     >
-                      <option value="threat">Threat</option>
+                      <option value="threat">Difficulty</option>
                       <option value="reward">Reward</option>
                       <option value="name">Name</option>
                     </select>
@@ -238,9 +238,9 @@ export default function CoursesPage() {
           {filteredCourses.length === 0 ? (
             <div className="rounded-lg border border-white/10 bg-black/60 p-12 text-center">
               <ShieldCheck className="mx-auto h-12 w-12 text-purple-300" />
-              <h3 className={`${orbitron.className} mt-4 text-xl uppercase tracking-[0.2em]`}>No gates detected</h3>
+              <h3 className={`${orbitron.className} mt-4 text-xl uppercase tracking-[0.2em]`}>No courses found</h3>
               <p className="mt-2 text-sm text-gray-400">
-                {searchQuery ? 'Try refining your scan parameters.' : 'New gates will open soon.'}
+                {searchQuery ? 'Try refining your search.' : 'New courses will appear soon.'}
               </p>
             </div>
           ) : (
@@ -297,7 +297,7 @@ export default function CoursesPage() {
                               className={`w-full clip-corner border ${rank.border} bg-white/5 text-xs uppercase tracking-[0.2em] ${rank.tint} hover:bg-white/10`}
                               onClick={() => router.push('/my-courses')}
                             >
-                              Enter Gate <ChevronRight className="ml-2 h-4 w-4" />
+                              Open Course <ChevronRight className="ml-2 h-4 w-4" />
                             </Button>
                             <Button
                               variant="outline"
@@ -312,7 +312,7 @@ export default function CoursesPage() {
                             className={`w-full clip-corner border ${rank.border} bg-white/5 text-xs uppercase tracking-[0.2em] ${rank.tint} hover:bg-white/10`}
                             onClick={() => handleRegister(course.id, course.name)}
                           >
-                            Buy Gate <Swords className="ml-2 h-4 w-4" />
+                            Enroll <Swords className="ml-2 h-4 w-4" />
                           </Button>
                         )}
                       </div>

@@ -65,13 +65,13 @@ export default function RankUpOverlay({ open, rankLabel, onCloseAction }: RankUp
               <Sparkles className="h-6 w-6 text-purple-400" />
             </div>
             <div className="text-xs uppercase tracking-[0.2em] text-slate-400">New Title</div>
-            <div className="mt-1 text-3xl font-bold text-white">Shadow Monarch</div>
+            <div className="mt-1 text-3xl font-bold text-white">Elite Performer</div>
           </div>
         </div>
 
         <div className="mt-9 flex flex-col items-center gap-3">
           <Button onClick={onCloseAction} className="rankup-cta h-12 w-full max-w-md rounded-full border border-purple-500/40 bg-[#1a0a28] text-base font-bold uppercase tracking-[0.2em] text-white hover:bg-[#271138]">
-            Continue Quest <ArrowRight className="ml-2 h-5 w-5" />
+            Continue Learning <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
           <button onClick={onCloseAction} className="text-xs uppercase tracking-[0.2em] text-slate-500 hover:text-slate-300">Dismiss</button>
         </div>

@@ -193,7 +193,7 @@ export default function ProfilePage() {
       <div className="relative z-20 mx-auto w-full max-w-[1500px] px-4 py-8 sm:px-8">
         <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
-            <p className="mb-1 text-xs font-medium uppercase tracking-[0.18em] text-purple-300">System // Hunter Profile</p>
+            <p className="mb-1 text-xs font-medium uppercase tracking-[0.18em] text-purple-300">Platform // User Profile</p>
             <h1 className={`${orbitron.className} text-3xl font-bold text-white md:text-4xl`}>Profile Overview</h1>
           </div>
           <div className="flex items-center gap-2 rounded border border-white/10 bg-white/5 px-3 py-1 text-sm text-slate-400">
@@ -210,7 +210,7 @@ export default function ProfilePage() {
                 <div className="absolute left-4 top-4 z-20">
                   <div className="flex items-center gap-2 rounded border border-purple-400/50 bg-black/60 px-3 py-1.5 text-xs font-bold text-white backdrop-blur-md">
                     <Sparkles className="h-3.5 w-3.5 text-purple-300" />
-                    {hunterRank.label} HUNTER
+                    {hunterRank.label} USER
                   </div>
                 </div>
 
@@ -219,7 +219,7 @@ export default function ProfilePage() {
                   {user.id ? (
                     <img
                       src={avatarSrc}
-                      alt={user.full_name || 'Hunter avatar'}
+                      alt={user.full_name || 'User avatar'}
                       onError={() => setAvatarSrc(generateHunterAvatarUrl(`${user.id}-${user.full_name || user.email || 'hunter'}`))}
                       className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                     />
@@ -233,8 +233,8 @@ export default function ProfilePage() {
                 )}
 
                 <div className="relative z-20 border-t border-white/10 bg-[#140c1c] p-6">
-                  <h2 className="mb-1 text-3xl font-bold text-white">{user.full_name || 'Unknown Hunter'}</h2>
-                  <p className="mb-4 text-sm font-medium text-purple-300">{overview?.title || user.title || 'Shadow Coder'} · Lvl. {level}</p>
+                  <h2 className="mb-1 text-3xl font-bold text-white">{user.full_name || 'Unknown User'}</h2>
+                  <p className="mb-4 text-sm font-medium text-purple-300">{overview?.title || user.title || 'Focused Coder'} · Lvl. {level}</p>
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs text-slate-400">
                       <span>XP Progress</span>
@@ -257,7 +257,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <div className="text-xs uppercase text-slate-400">Current Guild</div>
-                <div className="font-medium text-white">{githubUsername ? `@${githubUsername}` : 'Independent Hunter'}</div>
+                <div className="font-medium text-white">{githubUsername ? `@${githubUsername}` : 'Independent Learner'}</div>
               </div>
             </div>
           </div>
@@ -328,10 +328,10 @@ export default function ProfilePage() {
             </div>
 
             <div className="rounded-lg border border-white/10 bg-slate-900/40 p-4">
-              <h3 className="mb-3 text-sm font-bold uppercase text-slate-400">Recent Feats</h3>
+              <h3 className="mb-3 text-sm font-bold uppercase text-slate-400">Recent Activity</h3>
               <div className="space-y-3">
                 {recentFeats.length === 0 ? (
-                  <div className="text-sm text-slate-500">No recent feats yet. Complete missions to generate activity.</div>
+                  <div className="text-sm text-slate-500">No recent activity yet. Complete tasks to generate activity.</div>
                 ) : (
                   recentFeats.map((event, index) => (
                     <div key={event.id} className="flex items-center gap-3 text-sm">
@@ -352,7 +352,7 @@ export default function ProfilePage() {
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
                 <Edit className="h-4 w-4 text-purple-300 transition-colors group-hover:text-white" />
-                Edit Hunter Profile
+                Edit Profile
               </span>
               <span className="absolute inset-0 -translate-x-full bg-purple-500/20 transition-transform duration-300 group-hover:translate-x-0" />
             </Button>
@@ -401,7 +401,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="rounded-lg border border-white/10 bg-slate-900/60 p-4 text-sm text-slate-300">
-              <div className="mb-1 font-semibold text-white">Hunter Score</div>
+              <div className="mb-1 font-semibold text-white">Performance Summary</div>
               <div className="text-xs text-slate-400">XP: <span className="text-purple-300">{xp.toLocaleString()}</span></div>
               <div className="text-xs text-slate-400">Current Rank: <span className="text-purple-300">{hunterRank.label}</span></div>
               <div className="text-xs text-slate-400">Courses Completed: <span className="text-cyan-300">{coursesCompleted.toLocaleString()}</span></div>

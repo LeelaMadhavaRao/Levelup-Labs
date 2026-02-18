@@ -245,7 +245,7 @@ export default function QuizPage() {
                       Start Problems
                     </Button>
                     <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => router.push('/my-courses')}>
-                      My Gates
+                      My Courses
                     </Button>
                   </div>
                 </>
@@ -281,7 +281,7 @@ export default function QuizPage() {
 
       <div className="relative z-20 container py-8 max-w-3xl space-y-6">
       <div className="rounded-xl border border-purple-500/30 bg-black/70 p-4 shadow-[0_0_20px_rgba(124,58,237,0.2)]">
-        <p className={`${orbitron.className} text-xs tracking-[0.25em] text-purple-300/90`}>TRIAL CHAMBER</p>
+        <p className={`${orbitron.className} text-xs tracking-[0.25em] text-purple-300/90`}>ASSESSMENT CENTER</p>
         <h1 className={`${orbitron.className} mt-1 text-xl font-bold text-white`}>{topic.name}</h1>
       </div>
       {/* Progress */}

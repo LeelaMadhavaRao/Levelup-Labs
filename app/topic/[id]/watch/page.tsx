@@ -184,7 +184,7 @@ export default function WatchVideoPage() {
               </div>
               <div className="min-w-0">
                 <h1 className={`${orbitron.className} truncate text-lg font-bold uppercase tracking-[0.16em] md:text-xl`}>{topic.name}</h1>
-                <span className="text-xs uppercase tracking-[0.3em] text-cyan-300">Mission 04: Component Composition</span>
+                <span className="text-xs uppercase tracking-[0.3em] text-cyan-300">Session 4: Component Composition</span>
               </div>
             </div>
             <div className="flex flex-wrap items-center justify-start gap-4 lg:justify-end lg:gap-6">
@@ -196,7 +196,7 @@ export default function WatchVideoPage() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="flex flex-col items-end">
-                  <span className="text-sm font-bold text-white">Hunter Rank</span>
+                  <span className="text-sm font-bold text-white">Learner Status</span>
                   <div className="flex items-center gap-1">
                     <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
                     <span className="text-xs text-green-400 font-mono uppercase">Online</span>
@@ -206,9 +206,9 @@ export default function WatchVideoPage() {
                   {user ? (
                     <img
                       src={avatarSrc}
-                      alt={user.full_name || 'Hunter'}
+                      alt={user.full_name || 'Learner'}
                       className="h-full w-full rounded-full object-cover"
-                      onError={() => setAvatarSrc(generateHunterAvatarUrl(`${user.id}-${user.full_name || user.email || 'hunter'}`))}
+                      onError={() => setAvatarSrc(generateHunterAvatarUrl(`${user.id}-${user.full_name || user.email || 'learner'}`))}
                     />
                   ) : (
                     <div className="h-full w-full rounded-full bg-white/10" />
@@ -267,10 +267,10 @@ export default function WatchVideoPage() {
               <div className="absolute inset-0 border border-purple-400/10 animate-pulse pointer-events-none rounded-lg" />
               <h2 className={`${orbitron.className} text-2xl font-bold text-white mb-2 flex items-center gap-2 text-glow`}>
                 <span className="w-1 h-6 bg-cyan-300 rounded-sm" />
-                Mission Briefing
+                Content Overview
               </h2>
               <p className="text-gray-400 text-sm leading-relaxed max-w-4xl pr-1">
-                {topic.overview || topic.description || 'Study the mission dossier and prepare for the trials ahead.'}
+                {topic.overview || topic.description || 'Study the content overview and prepare for the assessment ahead.'}
               </p>
               <div className="mt-auto pt-4 flex flex-wrap gap-3">
                 <div className="flex items-center gap-2 text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded border border-white/5">
@@ -291,14 +291,14 @@ export default function WatchVideoPage() {
                 </Button>
               ) : (
                 <Button onClick={() => router.push(`/topic/${topic.id}/quiz`)} className="btn-hunter border border-purple-400/40 bg-white/10 text-white">
-                  Begin Trial
+                  Begin Assessment
                 </Button>
               )}
               <Button variant="outline" onClick={handleShowOverview} className="border-white/20 text-white">
-                <Sparkles className="mr-2 h-4 w-4" /> {showOverview ? 'Hide Intel' : 'Intel File'}
+                <Sparkles className="mr-2 h-4 w-4" /> {showOverview ? 'Hide Information' : 'Information'}
               </Button>
               <Button variant="ghost" onClick={() => router.push('/my-courses')} className="text-gray-400 hover:text-white">
-                Back to Gates
+                Back to Courses
               </Button>
             </div>
 
@@ -308,22 +308,22 @@ export default function WatchVideoPage() {
                 {enhancing ? (
                   <div className="flex items-center gap-3 justify-center py-8">
                     <Loader2 className="h-5 w-5 animate-spin text-purple-300" />
-                    <span className="text-gray-400">Generating intel with AI...</span>
+                    <span className="text-gray-400">Generating insights with AI...</span>
                   </div>
                 ) : enhancedOverview ? (
                   <div className="space-y-2">
-                    <h3 className={`${orbitron.className} text-lg font-semibold text-white text-glow`}>AI-Enhanced Intel</h3>
+                    <h3 className={`${orbitron.className} text-lg font-semibold text-white text-glow`}>AI-Enhanced Insights</h3>
                     <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap text-gray-200">
                       {enhancedOverview}
                     </div>
                   </div>
                 ) : topic?.overview ? (
                   <div className="space-y-2">
-                    <h3 className={`${orbitron.className} text-lg font-semibold text-white text-glow`}>Mission Intel</h3>
+                    <h3 className={`${orbitron.className} text-lg font-semibold text-white text-glow`}>Topic Summary</h3>
                     <p className="text-gray-300 whitespace-pre-wrap">{topic.overview}</p>
                   </div>
                 ) : (
-                  <p className="text-gray-400">No intel available for this mission.</p>
+                  <p className="text-gray-400">No information available for this topic.</p>
                 )}
               </div>
             )}
@@ -333,7 +333,7 @@ export default function WatchVideoPage() {
             <div className="bg-black/60 border border-white/10 rounded-lg overflow-hidden relative">
               <div className="absolute inset-0 border border-cyan-400/10 animate-pulse pointer-events-none rounded-lg" />
               <div className="p-4 border-b border-white/10 bg-white/5 flex justify-between items-center">
-                <h3 className={`${orbitron.className} text-sm font-bold uppercase tracking-widest text-glow`}>Quest Progression</h3>
+                <h3 className={`${orbitron.className} text-sm font-bold uppercase tracking-widest text-glow`}>Course Progression</h3>
                 <span className="text-xs font-mono text-cyan-300 text-glow">{progressPercent}% COMPLETE</span>
               </div>
               <div className="p-4 space-y-6 relative">
@@ -345,10 +345,10 @@ export default function WatchVideoPage() {
                     </div>
                     <div className="flex-1 cyan-aura bg-cyan-900/10 border border-cyan-500/30 p-3 rounded clip-corner-sm">
                       <div className="flex justify-between items-start mb-1">
-                        <h4 className="text-sm font-bold text-cyan-300 uppercase tracking-wide">01. Intel Acquisition</h4>
+                        <h4 className="text-sm font-bold text-cyan-300 uppercase tracking-wide">01. Watch & Learn</h4>
                         <Play className="h-4 w-4 text-cyan-300" />
                       </div>
-                      <p className="text-xs text-gray-400">Watch the briefing video to unlock gate access.</p>
+                      <p className="text-xs text-gray-400">Watch the lesson video to unlock course access.</p>
                       <div className="mt-2 text-[10px] text-cyan-300 font-mono">{watched ? '>> CLEARED' : '>> IN PROGRESS'}</div>
                     </div>
                   </div>
@@ -360,7 +360,7 @@ export default function WatchVideoPage() {
                     </div>
                     <div className="flex-1 bg-black border border-white/10 p-3 rounded clip-corner-sm">
                       <div className="flex justify-between items-start mb-1">
-                        <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wide">02. The Trial</h4>
+                        <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wide">02. The Assessment</h4>
                         <Zap className="h-4 w-4 text-gray-500" />
                       </div>
                       <p className="text-xs text-gray-600">Complete the knowledge check quiz.</p>
@@ -380,7 +380,7 @@ export default function WatchVideoPage() {
                         <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wide">03. Extraction</h4>
                         <Code className="h-4 w-4 text-gray-500" />
                       </div>
-                      <p className="text-xs text-gray-600">Submit your code solution to pass the gate.</p>
+                      <p className="text-xs text-gray-600">Submit your code solution to complete the course.</p>
                       <div className="mt-2 text-[10px] text-gray-600 font-mono flex items-center gap-1">
                         <Lock className="h-3 w-3" /> {quizPassed ? 'READY' : 'LOCKED'}
                       </div>

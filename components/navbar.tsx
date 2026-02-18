@@ -122,8 +122,8 @@ export default function Navbar() {
         ]
       : [
           { href: '/dashboard', label: 'DASHBOARD' },
-          { href: '/courses', label: 'DUNGEONS' },
-          { href: '/my-courses', label: 'MY DUNGEONS' },
+          { href: '/courses', label: 'COURSES' },
+          { href: '/my-courses', label: 'MY COURSES' },
           { href: '/practice', label: 'PRACTICE' },
           { href: '/leaderboard', label: 'RANKINGS' },
         ]
@@ -152,7 +152,7 @@ export default function Navbar() {
             <span className="bg-gradient-to-r from-gray-100 to-gray-400 bg-clip-text text-xl font-bold tracking-tight text-transparent drop-shadow-[0_0_8px_rgba(147,13,242,0.4)] md:text-2xl">
               LEVELUP-LABS
             </span>
-            <span className="text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-purple-400/80">System Online</span>
+            <span className="text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-purple-400/80">Platform Online</span>
           </div>
         </Link>
 
@@ -246,18 +246,18 @@ export default function Navbar() {
                   <>
                     <DropdownMenuItem onClick={() => router.push('/profile')} className="group relative rounded-none px-4 py-3 text-gray-300 hover:bg-purple-500/10 hover:text-white">
                       <span className="absolute left-0 top-0 h-full w-1 -translate-x-full bg-purple-500 transition-transform group-hover:translate-x-0" />
-                      <User className="mr-2 h-4 w-4" /> Hunter Profile
+                      <User className="mr-2 h-4 w-4" /> Profile
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => router.push('/leaderboard')} className="group relative rounded-none px-4 py-3 text-gray-300 hover:bg-purple-500/10 hover:text-white">
                       <span className="absolute left-0 top-0 h-full w-1 -translate-x-full bg-purple-500 transition-transform group-hover:translate-x-0" />
-                      <Trophy className="mr-2 h-4 w-4" /> Hunter Ranking
+                      <Trophy className="mr-2 h-4 w-4" /> Rankings
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-white/5" />
                   </>
                 )}
                 <DropdownMenuItem onClick={handleSignOut} className="group relative rounded-none px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 focus:text-red-300">
                   <span className="absolute left-0 top-0 h-full w-1 -translate-x-full bg-red-500 transition-transform group-hover:translate-x-0" />
-                  <LogOut className="mr-2 h-4 w-4" /> System Logout
+                  <LogOut className="mr-2 h-4 w-4" /> Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -276,7 +276,7 @@ export default function Navbar() {
                 onClick={() => router.push('/auth/signup')}
                 className="border border-purple-400/60 bg-purple-600 uppercase tracking-[0.12em] text-white shadow-[0_0_16px_rgba(126,34,206,0.45)] hover:bg-purple-500"
               >
-                Initialize
+                Sign Up
               </Button>
             </div>
           )}
@@ -332,7 +332,7 @@ export default function Navbar() {
                   handleSignOut();
                 }}
               >
-                System Logout
+                Sign Out
               </button>
             )}
           </div>

@@ -173,7 +173,7 @@ export default function DashboardPage() {
   const solvedProblems = Number(gamificationOverview?.problems_solved ?? user?.problems_solved ?? 0);
   const totalXp = Number(gamificationOverview?.total_xp ?? gamificationOverview?.xp ?? user?.total_xp ?? user?.xp ?? user?.total_points ?? 0);
   const userRank = gamificationOverview?.rank ?? user?.rank ?? null;
-  const displayName = user?.full_name || 'Hunter';
+  const displayName = user?.full_name || 'Learner';
   const avatarSeed = `${user?.id || 'hunter'}-${displayName}`;
   const avatarSrc = user?.avatar_url || generateHunterAvatarUrl(avatarSeed);
   const streakDays = Math.max(
@@ -198,7 +198,7 @@ export default function DashboardPage() {
     return {
       id: quest.quest_id,
       title: quest.title,
-      description: quest.description || 'Complete this mission to unlock rewards.',
+      description: quest.description || 'Complete this task to unlock rewards.',
       progress,
       rank: quest.completed ? 'CLEARED' : (tags[index] || 'A'),
       color: colors[index] || colors[1],
@@ -240,7 +240,7 @@ export default function DashboardPage() {
                 <div className="relative">
                   <div className="w-16 h-16 rounded bg-slate-800 overflow-hidden border-2 border-[#7C3AED]/50 breathing-purple">
                     <img
-                      alt="Hunter Avatar"
+                      alt="User Avatar"
                       className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
                       src={avatarSrc}
                       onError={(event) => {
@@ -253,9 +253,9 @@ export default function DashboardPage() {
                 <div>
                   <h1 className={`text-2xl font-bold text-white leading-none tracking-tight uppercase ${orbitron.className} text-glow`}>{displayName}</h1>
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#A855F7]">Shadow Monarch</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#A855F7]">Top Performer</span>
                     <span className="text-xs text-slate-600">/</span>
-                    <span className="text-xs text-slate-500 font-mono">SYSTEM_ID: {String(user?.id || '0001').slice(0, 10)}</span>
+                    <span className="text-xs text-slate-500 font-mono">USER_ID: {String(user?.id || '0001').slice(0, 10)}</span>
                   </div>
                 </div>
               </div>
@@ -282,12 +282,12 @@ export default function DashboardPage() {
               <div className="grid grid-cols-3 gap-4">
                 <div className="bg-[#121214] border border-[#A855F7]/30 p-6 flex flex-col items-center justify-center">
                   <span className={`text-4xl font-black text-white ${orbitron.className} text-glow`}>{solvedProblems.toLocaleString()}</span>
-                  <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 mt-2 font-bold">Monsters Slain</span>
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 mt-2 font-bold">Problems Solved</span>
                 </div>
                 
                 <div className="bg-[#121214] border border-[#A855F7]/30 p-6 flex flex-col items-center justify-center">
                   <span className={`text-4xl font-black text-[#A855F7] italic ${orbitron.className} text-glow`}>{hunterRank.label[0]}</span>
-                  <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 mt-2 font-bold">Clearance Rank</span>
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 mt-2 font-bold">Rank Tier</span>
                 </div>
 
                 <div className="bg-[#121214] border border-[#A855F7]/30 p-6 flex flex-col items-center justify-center">
@@ -310,7 +310,7 @@ export default function DashboardPage() {
 
                 {currentCourses.length === 0 ? (
                   <div className="rounded border border-white/10 bg-black/20 px-4 py-6 text-sm text-slate-400">
-                    No active courses detected yet. Enroll in a gate to start progression.
+                    No active courses detected yet. Enroll in a course to start progression.
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -353,7 +353,7 @@ export default function DashboardPage() {
                 </div>
                 <h2 className={`text-6xl font-black text-white mb-2 italic ${orbitron.className} text-glow`}>{streakDays}</h2>
                 <p className="text-[#A855F7] uppercase tracking-[0.4em] text-xs font-black mb-6">Consecutive Days</p>
-                <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6">"You've grown stronger. Do not stop now, Hunter."</p>
+                <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6">"Great consistency. Keep your momentum going."</p>
                 <div className="w-full bg-white/5 h-3 p-0.5 border border-white/10">
                   <div className="bg-gradient-to-r from-[#7C3AED] to-[#A855F7] h-full w-full shadow-[0_0_15px_#A855F7]"></div>
                 </div>
@@ -388,7 +388,7 @@ export default function DashboardPage() {
 
           <footer className="max-w-7xl mx-auto mt-12 pt-8 border-t border-white/5 text-center pb-12">
             <p className={`text-slate-600 text-[10px] font-black tracking-[0.5em] uppercase ${orbitron.className} text-glow`}>
-              Solo Leveling System // Protocol v4.2.0 // Monarch Consciousness Online
+              Levelup Platform // Protocol v4.2.0 // Productivity Mode Online
             </p>
           </footer>
         </div>

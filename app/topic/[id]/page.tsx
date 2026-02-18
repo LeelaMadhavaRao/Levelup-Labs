@@ -231,7 +231,7 @@ export default function TopicLandingPage() {
       <div className="rounded-2xl border border-purple-500/30 bg-black/50 p-6 shadow-[0_0_30px_rgba(124,58,237,0.2)]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
-            <p className={`${orbitron.className} text-xs tracking-[0.25em] text-purple-300/90`}>MISSION NODE</p>
+            <p className={`${orbitron.className} text-xs tracking-[0.25em] text-purple-300/90`}>CONTENT NODE</p>
             <div className="flex items-center gap-3">
               <h1 className={`${orbitron.className} text-3xl font-black tracking-tight md:text-4xl`}>{topic.name}</h1>
               {currentStep === 'completed' && (
@@ -365,7 +365,7 @@ export default function TopicLandingPage() {
       <div className="space-y-4">
         <Card className="border-white/15 bg-black/60 text-slate-100">
           <CardHeader>
-            <CardTitle className="text-lg">Mission Intel</CardTitle>
+            <CardTitle className="text-lg">Topic Information</CardTitle>
             <CardDescription className="text-slate-400">Current operational target</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
@@ -386,7 +386,7 @@ export default function TopicLandingPage() {
         {levelSnapshot && (
           <Card className="border-white/15 bg-black/60 text-slate-100">
             <CardHeader>
-              <CardTitle className="text-lg">Hunter Profile</CardTitle>
+              <CardTitle className="text-lg">Learner Profile</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex items-center justify-between rounded-lg border border-white/10 bg-black/50 p-3">

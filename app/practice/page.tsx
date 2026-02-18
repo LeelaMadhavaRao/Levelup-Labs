@@ -61,7 +61,7 @@ export default function PracticePage() {
       setStreakMultiplier(multiplier);
       setSelectedProblemId(allProblems[0]?.id || null);
     } catch (error) {
-      console.error('Error loading practice missions:', error);
+      console.error('Error loading practice tasks:', error);
       setProblems([]);
     }
 
@@ -128,7 +128,7 @@ export default function PracticePage() {
             </div>
             <div>
               <h1 className="text-sm font-bold tracking-wider text-white">PRACTICE_CONSOLE</h1>
-              <p className="font-mono text-[10px] uppercase text-purple-400/70">Shadow_Training_OS_v3.1</p>
+              <p className="font-mono text-[10px] uppercase text-purple-400/70">Practice_Mode_v3.1</p>
             </div>
           </div>
         </div>
@@ -141,13 +141,13 @@ export default function PracticePage() {
             <div className="absolute inset-0 w-1 bg-purple-500 opacity-10 transition-all duration-300 group-hover:w-full" />
             <div className="relative flex items-center justify-center gap-2 px-4 py-4">
               <PlusCircle className="h-5 w-5" />
-              <span className="font-mono text-sm font-bold uppercase tracking-widest">View all Dungeons</span>
+              <span className="font-mono text-sm font-bold uppercase tracking-widest">View all Courses</span>
             </div>
           </button>
         </div>
 
         <div className="mb-2 flex items-center justify-between px-6 font-mono text-xs uppercase tracking-widest text-slate-500">
-          <span>Active Trials</span>
+          <span>Active Problems</span>
           <span>Tier</span>
         </div>
 
@@ -168,7 +168,7 @@ export default function PracticePage() {
                 }`}
               >
                 <div className="mb-1 flex items-start justify-between">
-                  <h3 className={`text-sm font-semibold ${active ? 'text-white' : 'text-slate-300'}`}>TRIAL: {problem.title}</h3>
+                  <h3 className={`text-sm font-semibold ${active ? 'text-white' : 'text-slate-300'}`}>PROBLEM: {problem.title}</h3>
                   <span className={`font-mono text-[10px] font-bold ${active ? 'text-purple-400' : 'text-slate-500'}`}>{tier}</span>
                 </div>
                 <div className="flex items-end justify-between">
@@ -183,7 +183,7 @@ export default function PracticePage() {
         <div className="border-t border-purple-500/10 bg-[#050507]/50 p-4">
           <div className="grid grid-cols-2 gap-2 font-mono text-[10px] text-slate-400">
             <div className="flex flex-col">
-              <span className="uppercase tracking-widest text-purple-400/60">Hunter Rank</span>
+              <span className="uppercase tracking-widest text-purple-400/60">Current Rank</span>
               <span className="text-white">{hunterRank.label}</span>
             </div>
             <div className="flex flex-col text-right">
@@ -203,14 +203,14 @@ export default function PracticePage() {
             <div className="flex items-center rounded border border-white/5 bg-[#050507] px-3 py-1.5 font-mono text-xs text-slate-400">
               <span className="text-purple-400">root</span>
               <span className="mx-2 text-slate-600">/</span>
-              <span className="text-purple-400">trial_arena</span>
+              <span className="text-purple-400">practice_hub</span>
               <span className="mx-2 text-slate-600">/</span>
               <span className="text-white">practice</span>
             </div>
             <span className="h-4 w-px bg-white/10" />
             <span className="flex items-center gap-2 text-xs uppercase tracking-widest text-purple-400">
               <span className="h-2 w-2 animate-pulse rounded-full bg-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.8)]" />
-              System Online
+              Platform Online
             </span>
           </div>
           <div className="hidden items-center gap-2 sm:flex">
@@ -239,8 +239,8 @@ export default function PracticePage() {
             <div className="col-span-12 space-y-6 lg:col-span-8">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <h2 className={`${orbitron.className} mb-1 text-3xl font-bold text-white`}>Practice Gate</h2>
-                  <p className="font-mono text-sm text-slate-400">Execute boss-fight coding drills and extract XP.</p>
+                  <h2 className={`${orbitron.className} mb-1 text-3xl font-bold text-white`}>Practice Session</h2>
+                  <p className="font-mono text-sm text-slate-400">Solve focused coding drills and earn XP.</p>
                 </div>
                 
               </div>
@@ -248,8 +248,8 @@ export default function PracticePage() {
               {!selectedProblem ? (
                 <div className="rounded-lg border border-white/10 bg-[#121215] p-8 text-center">
                   <Swords className="mx-auto mb-4 h-10 w-10 text-purple-400" />
-                  <h3 className="mb-2 text-2xl text-white">No Trials in this tier</h3>
-                  <p className="text-slate-400">Switch filter or open a new gate.</p>
+                  <h3 className="mb-2 text-2xl text-white">No problems in this tier</h3>
+                  <p className="text-slate-400">Switch filter or pick another course.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -257,27 +257,27 @@ export default function PracticePage() {
                     <div className="absolute left-0 top-0 h-full w-1 bg-purple-500 shadow-[0_0_10px_#A855F7]" />
                     <div className="mb-6 flex items-center gap-2 border-b border-white/5 pb-2">
                       <Code2 className="h-4 w-4 text-purple-400" />
-                      <h3 className="text-sm font-bold uppercase tracking-widest text-white">Trial Parameters</h3>
+                      <h3 className="text-sm font-bold uppercase tracking-widest text-white">Problem Details</h3>
                     </div>
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                       <div>
-                        <label className="mb-2 block font-mono text-xs uppercase text-purple-400">Trial_Name</label>
+                        <label className="mb-2 block font-mono text-xs uppercase text-purple-400">Problem_Name</label>
                         <input readOnly value={selectedProblem.title} className="w-full rounded border border-white/10 bg-[#09090b] px-4 py-2 font-mono text-sm text-white outline-none" />
                       </div>
                       <div>
-                        <label className="mb-2 block font-mono text-xs uppercase text-purple-400">Difficulty_Tier</label>
+                        <label className="mb-2 block font-mono text-xs uppercase text-purple-400">Difficulty_Level</label>
                         <input readOnly value={String(selectedProblem.difficulty || '').toUpperCase()} className="w-full rounded border border-white/10 bg-[#09090b] px-4 py-2 font-mono text-sm text-white outline-none" />
                       </div>
                       <div className="col-span-full">
-                        <label className="mb-2 block font-mono text-xs uppercase text-purple-400">Mission_Description</label>
-                        <textarea readOnly rows={3} value={selectedProblem.description || 'No mission description available.'} className="w-full resize-none rounded border border-white/10 bg-[#09090b] px-4 py-2 font-mono text-sm text-white outline-none" />
+                        <label className="mb-2 block font-mono text-xs uppercase text-purple-400">Problem_Description</label>
+                        <textarea readOnly rows={3} value={selectedProblem.description || 'No problem description available.'} className="w-full resize-none rounded border border-white/10 bg-[#09090b] px-4 py-2 font-mono text-sm text-white outline-none" />
                       </div>
                     </div>
                   </div>
 
                   <div className="rounded-lg border border-purple-500/25 bg-[#121215] p-5">
                     <div className="mb-3 flex items-center justify-between">
-                      <h4 className="font-mono text-xs uppercase tracking-widest text-slate-400">Trial Actions</h4>
+                      <h4 className="font-mono text-xs uppercase tracking-widest text-slate-400">Practice Actions</h4>
                       <Badge className="border border-purple-500/50 bg-purple-500/20 text-purple-300">
                         +{Math.round(getXpReward(selectedProblem.difficulty) * streakMultiplier)} XP
                       </Badge>
@@ -288,10 +288,10 @@ export default function PracticePage() {
                         className="bg-purple-700 hover:bg-purple-600"
                       >
                         <Zap className="mr-2 h-4 w-4" />
-                        {getProblemStatus(selectedProblem) === 'completed' ? 'Re-enter Boss Fight' : 'Start Boss Fight'}
+                        {getProblemStatus(selectedProblem) === 'completed' ? 'Practice Again' : 'Start Practice'}
                       </Button>
                       <Button variant="outline" onClick={() => router.push('/leaderboard')}>
-                        <ShieldCheck className="mr-2 h-4 w-4" /> View Hunter Rankings
+                        <ShieldCheck className="mr-2 h-4 w-4" /> View Rankings
                       </Button>
                     </div>
                   </div>
@@ -301,7 +301,7 @@ export default function PracticePage() {
 
             <div className="col-span-12 space-y-6 lg:col-span-4">
               <div className="rounded-lg border border-white/5 bg-[#121215] p-4 shadow-lg">
-                <h4 className="mb-4 font-mono text-xs uppercase tracking-widest text-slate-400">Hunter_Stats</h4>
+                <h4 className="mb-4 font-mono text-xs uppercase tracking-widest text-slate-400">Progress_Stats</h4>
                 <div className="space-y-4">
                   <div>
                     <div className="mb-1 flex justify-between text-xs text-slate-400"><span>Rank</span><span className="text-purple-300">{hunterRank.label}</span></div>
@@ -330,10 +330,10 @@ export default function PracticePage() {
 
               <div className="rounded-lg border border-purple-500/20 bg-purple-500/5 p-4 text-xs text-slate-300">
                 <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-white">
-                  <Sparkles className="h-4 w-4 text-purple-400" /> Solo Progress Snapshot
+                  <Sparkles className="h-4 w-4 text-purple-400" /> Progress Snapshot
                 </div>
                 <div className="space-y-1 font-mono text-[11px]">
-                  <div className="flex justify-between"><span className="text-slate-500">Hunter</span><span>{user?.full_name || 'Unknown'}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-500">Learner</span><span>{user?.full_name || 'Unknown'}</span></div>
                   <div className="flex justify-between"><span className="text-slate-500">Current Rank</span><span>{hunterRank.label}</span></div>
                   <div className="flex justify-between"><span className="text-slate-500">Total XP</span><span>{Number(user?.total_xp ?? user?.xp ?? user?.total_points ?? 0)}</span></div>
                   <div className="flex justify-between"><span className="text-slate-500">Streak Boost</span><span>x{streakMultiplier.toFixed(2)}</span></div>
@@ -343,7 +343,7 @@ export default function PracticePage() {
           </div>
 
           <footer className="mb-4 mt-12 text-center">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-600">Shadow Training Console // Authorized Hunters Only</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-600">Practice Console // Authorized Users Only</p>
           </footer>
         </div>
       </main>

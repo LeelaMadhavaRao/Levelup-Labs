@@ -98,7 +98,7 @@ export default function SignupPage() {
       <header className="fixed top-0 left-0 right-0 z-30 flex justify-between p-6 opacity-60 mix-blend-screen pointer-events-none">
         <div className="flex items-center gap-2 font-mono text-xs text-purple-400">
            <Terminal className="h-4 w-4" />
-           <span>SYSTEM_REGISTRY_V.2.0.4</span>
+           <span>PLATFORM_REGISTRY_V.2.0.4</span>
         </div>
         <div className="font-mono text-xs tracking-widest text-slate-500">{clock}</div>
       </header>
@@ -111,16 +111,16 @@ export default function SignupPage() {
             <div className="flex items-center gap-3">
               <UserPlus className="h-8 w-8 animate-pulse text-purple-400" />
               <h1 className="text-4xl font-bold tracking-tight text-white font-orbitron">
-                HUNTER<span className="text-purple-400">_REGISTRATION</span>
+                USER<span className="text-purple-400">_REGISTRATION</span>
               </h1>
             </div>
-            <p className="pl-1 font-mono text-sm tracking-[0.25em] text-slate-400">AWAKEN YOUR POTENTIAL // JOIN THE RANKS</p>
+            <p className="pl-1 font-mono text-sm tracking-[0.25em] text-slate-400">BUILD YOUR SKILLS // JOIN THE COMMUNITY</p>
           </div>
 
           <div className="holo-card rounded-lg border-l-4 border-l-purple-500 bg-black/40 p-6 backdrop-blur-sm">
             <div className="space-y-2 font-mono text-xs text-slate-300">
               <p>&gt; Scanning new user signature...</p>
-              <p>&gt; Allocating system resources...</p>
+              <p>&gt; Preparing account resources...</p>
               <p className="text-green-400">&gt; Profile slot available.</p>
               <p className="animate-pulse">&gt; Waiting for input...</p>
             </div>
@@ -150,7 +150,7 @@ export default function SignupPage() {
             <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-80" />
 
             <div className="relative mb-8 text-center">
-              <h2 className="mb-2 text-2xl font-bold uppercase tracking-[0.2em] text-white font-orbitron">New Hunter Profile</h2>
+              <h2 className="mb-2 text-2xl font-bold uppercase tracking-[0.2em] text-white font-orbitron">New User Profile</h2>
               <div className="mx-auto h-0.5 w-16 bg-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.6)]" />
             </div>
 
@@ -244,7 +244,7 @@ export default function SignupPage() {
                 className="group relative w-full overflow-hidden rounded bg-purple-600 p-3 font-mono text-sm font-bold uppercase tracking-widest text-white transition-all hover:bg-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.5)] disabled:opacity-50"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
-                  {loading ? 'Initializing...' : 'Initialize System'}
+                  {loading ? 'Setting up...' : 'Create Account'}
                   {!loading && <UserPlus className="h-4 w-4 transition-transform group-hover:translate-x-1" />}
                 </span>
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />

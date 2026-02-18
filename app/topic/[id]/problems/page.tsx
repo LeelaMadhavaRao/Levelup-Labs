@@ -169,7 +169,7 @@ export default function ProblemsListPage() {
           <div>
             <h1 className={`${orbitron.className} text-3xl font-black tracking-tight md:text-4xl uppercase`}>
               <span className="text-purple-500 mr-2">/</span>
-              MISSION SELECT
+              PROBLEM SELECTION
             </h1>
             <p className="mt-2 text-slate-400 font-mono text-sm">
               // TARGET: {topic.name.toUpperCase()} <br/>
@@ -213,7 +213,7 @@ export default function ProblemsListPage() {
             </div>
             <div>
               <h3 className={`${orbitron.className} text-xl font-bold mb-2 tracking-wide`}>
-                {generating ? 'GENERATING MISSIONS' : 'NO MISSIONS DETECTED'}
+                {generating ? 'GENERATING PROBLEMS' : 'NO PROBLEMS DETECTED'}
               </h3>
               <p className="text-slate-400 max-w-md mx-auto">
                 {generating 
@@ -317,7 +317,7 @@ export default function ProblemsListPage() {
                         ? 'bg-transparent border border-green-500/30 text-green-400 hover:bg-green-500/10 h-8 text-xs' 
                         : 'bg-white/5 hover:bg-purple-600 hover:text-white text-slate-300 border border-white/10 hover:border-purple-500 h-8 text-xs transition-colors'}
                     >
-                      {isCompleted ? 'Review Intel' : 'Engage'}
+                      {isCompleted ? 'Review Details' : 'Start'}
                     </Button>
                   </div>
                 </CardContent>

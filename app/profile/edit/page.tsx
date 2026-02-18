@@ -83,7 +83,7 @@ export default function EditProfilePage() {
         return;
       }
       setFormData((prev) => ({ ...prev, avatar_url: result }));
-      toast.success('Hunter portrait uploaded');
+      toast.success('Profile photo uploaded');
     };
     reader.onerror = () => toast.error('Failed to read image file');
     reader.readAsDataURL(file);
@@ -93,7 +93,7 @@ export default function EditProfilePage() {
     const seed = `${user?.id || 'hunter'}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const generated = generateHunterAvatarUrl(seed);
     setFormData((prev) => ({ ...prev, avatar_url: generated }));
-    toast.success('Generated a new hunter avatar');
+    toast.success('Generated a new avatar');
   };
 
   const loadUser = useCallback(async () => {
@@ -170,8 +170,8 @@ export default function EditProfilePage() {
       <div className="relative z-20 mx-auto w-full max-w-[1500px] px-4 py-8 sm:px-8">
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="mb-1 text-xs font-medium uppercase tracking-[0.18em] text-cyan-300">System Interface // Profile Editing Gate</p>
-            <h1 className={`${orbitron.className} text-3xl font-bold text-white md:text-4xl`}>Hunter Dossier Editor</h1>
+            <p className="mb-1 text-xs font-medium uppercase tracking-[0.18em] text-cyan-300">System Interface // Profile Editing</p>
+            <h1 className={`${orbitron.className} text-3xl font-bold text-white md:text-4xl`}>Profile Editor</h1>
           </div>
           <div className="flex items-center gap-2 rounded border border-cyan-500/30 bg-black/50 px-3 py-1.5 text-xs text-cyan-200">
             <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
@@ -185,14 +185,14 @@ export default function EditProfilePage() {
           className="mb-5 text-slate-200 hover:text-white hover:bg-white/10"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Hunter Profile
+          Back to Profile
         </Button>
 
       <div className="grid gap-6 lg:grid-cols-12">
         <Card className="h-fit border-white/15 bg-black/60 text-slate-100 lg:col-span-4">
           <CardHeader>
-            <CardTitle className={`${orbitron.className} text-lg`}>Hunter Preview</CardTitle>
-            <CardDescription className="text-slate-400">Live dossier panel with realtime profile values.</CardDescription>
+            <CardTitle className={`${orbitron.className} text-lg`}>Learner Preview</CardTitle>
+            <CardDescription className="text-slate-400">Live profile panel with realtime values.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="relative flex justify-center rounded-xl border border-purple-500/25 bg-slate-950/80 py-8">
@@ -209,9 +209,9 @@ export default function EditProfilePage() {
               </Avatar>
             </div>
             <div className="rounded border border-white/10 bg-slate-900/70 p-4">
-              <p className={`${orbitron.className} text-lg text-white`}>{formData.full_name || 'Unknown Hunter'}</p>
-              <p className="mt-1 text-xs uppercase tracking-wider text-purple-300">{user?.role || 'user'} rank dossier</p>
-              <p className="mt-3 line-clamp-5 text-sm text-slate-300">{formData.bio || 'Add your hunter bio to complete the dossier.'}</p>
+              <p className={`${orbitron.className} text-lg text-white`}>{formData.full_name || 'Unknown Learner'}</p>
+              <p className="mt-1 text-xs uppercase tracking-wider text-purple-300">{user?.role || 'user'} profile</p>
+              <p className="mt-3 line-clamp-5 text-sm text-slate-300">{formData.bio || 'Add your bio to complete the profile.'}</p>
             </div>
             <div className="space-y-2 rounded border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
               <div className="flex items-center gap-2"><Shield className="h-3.5 w-3.5 text-purple-300" /> Profile Integrity: Active</div>
@@ -238,8 +238,8 @@ export default function EditProfilePage() {
 
         <Card className="border-white/15 bg-black/60 text-slate-100 lg:col-span-8">
           <CardHeader>
-            <CardTitle className={orbitron.className}>Edit Hunter Profile</CardTitle>
-            <CardDescription className="text-slate-400">Update your hunter dossier and portrait with realtime preview sync.</CardDescription>
+            <CardTitle className={orbitron.className}>Edit Learner Profile</CardTitle>
+            <CardDescription className="text-slate-400">Update your profile and portrait with realtime preview sync.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -276,10 +276,10 @@ export default function EditProfilePage() {
                     <Upload className="mr-2 h-4 w-4" /> Upload Portrait
                   </Button>
                   <Button type="button" variant="outline" size="sm" onClick={handleGenerateAvatar}>
-                    <Sparkles className="mr-2 h-4 w-4" /> Auto-Generate Hunter
+                    <Sparkles className="mr-2 h-4 w-4" /> Auto-Generate Avatar
                   </Button>
                 </div>
-                <p className="mt-2 text-xs text-slate-400">Upload your own image or auto-generate a unique Solo-style hunter avatar.</p>
+                <p className="mt-2 text-xs text-slate-400">Upload your own image or auto-generate a unique avatar.</p>
               </div>
             </div>
             </div>
@@ -313,12 +313,12 @@ export default function EditProfilePage() {
             </div>
 
             <div className="space-y-2 rounded-lg border border-white/10 bg-slate-950/60 p-4">
-              <Label htmlFor="bio">Hunter Bio</Label>
+              <Label htmlFor="bio">Bio</Label>
               <Textarea
                 id="bio"
                 value={formData.bio}
                 onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                placeholder="Write your hunter background..."
+                placeholder="Write your bio..."
                 rows={4}
                 className="bg-black/60 border-white/15 text-slate-100"
               />
