@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signUpWithEmail, loginWithGoogle } from '@/lib/auth';
 import { ShieldCheck, Settings, BadgeCheck, Lock, UserPlus, Users, Terminal } from 'lucide-react';
+import { Orbitron, Rajdhani } from 'next/font/google';
+
+const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
+const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 export default function SignupPage() {
   const router = useRouter();
@@ -109,7 +113,7 @@ export default function SignupPage() {
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <UserPlus className="h-8 w-8 animate-pulse text-purple-400" />
-              <h1 className="text-4xl font-bold tracking-tight text-white font-orbitron">
+              <h1 className={`${orbitron.className} text-4xl font-bold tracking-tight text-white`}>
                 USER<span className="text-purple-400">_REGISTRATION</span>
               </h1>
             </div>
@@ -130,14 +134,14 @@ export default function SignupPage() {
               <div className="mb-1 text-xs uppercase tracking-wider text-slate-500 font-mono">Global Rank</div>
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-slate-500" />
-                <span className="font-bold text-slate-300 font-rajdhani">UNRANKED</span>
+                <span className="font-bold text-slate-300">UNRANKED</span>
               </div>
             </div>
             <div className="rounded border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
               <div className="mb-1 text-xs uppercase tracking-wider text-slate-500 font-mono">Guild Capacity</div>
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-purple-300" />
-                <span className="font-bold text-white font-rajdhani">OPEN</span>
+                <span className="font-bold text-white">OPEN</span>
               </div>
             </div>
           </div>
@@ -149,7 +153,7 @@ export default function SignupPage() {
             <div className="absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-80" />
 
             <div className="relative mb-8 text-center">
-              <h2 className="mb-2 text-2xl font-bold uppercase tracking-[0.2em] text-white font-orbitron">New User Profile</h2>
+              <h2 className={`${orbitron.className} mb-2 text-2xl font-bold uppercase tracking-[0.2em] text-white`}>New User Profile</h2>
               <div className="mx-auto h-0.5 w-16 bg-purple-500 shadow-sm" />
             </div>
 
@@ -173,7 +177,7 @@ export default function SignupPage() {
                     name="fullName"
                     type="text"
                     placeholder="ENTER_NAME"
-                    className="relative w-full bg-black/50 border border-white/10 p-3 pl-4 font-mono text-sm tracking-wider text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500/50 focus:bg-black/70 rounded transition-all font-rajdhani"
+                    className="relative w-full bg-black/50 border border-white/10 p-3 pl-4 font-mono text-sm tracking-wider text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500/50 focus:bg-black/70 rounded transition-all"
                     value={formData.fullName}
                     onChange={handleChange}
                     required
@@ -191,7 +195,7 @@ export default function SignupPage() {
                     name="email"
                     type="email"
                     placeholder="ENTER_EMAIL"
-                    className="relative w-full bg-black/50 border border-white/10 p-3 pl-4 font-mono text-sm tracking-wider text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500/50 focus:bg-black/70 rounded transition-all font-rajdhani"
+                    className="relative w-full bg-black/50 border border-white/10 p-3 pl-4 font-mono text-sm tracking-wider text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500/50 focus:bg-black/70 rounded transition-all"
                     value={formData.email}
                     onChange={handleChange}
                     required
@@ -209,7 +213,7 @@ export default function SignupPage() {
                             name="password"
                             type="password"
                             placeholder="******"
-                            className="relative w-full bg-black/50 border border-white/10 p-3 pl-4 font-mono text-sm tracking-wider text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500/50 focus:bg-black/70 rounded transition-all font-rajdhani"
+                            className="relative w-full bg-black/50 border border-white/10 p-3 pl-4 font-mono text-sm tracking-wider text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500/50 focus:bg-black/70 rounded transition-all"
                             value={formData.password}
                             onChange={handleChange}
                             required
@@ -227,7 +231,7 @@ export default function SignupPage() {
                             name="confirmPassword"
                             type="password"
                             placeholder="******"
-                            className="relative w-full bg-black/50 border border-white/10 p-3 pl-4 font-mono text-sm tracking-wider text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500/50 focus:bg-black/70 rounded transition-all font-rajdhani"
+                            className="relative w-full bg-black/50 border border-white/10 p-3 pl-4 font-mono text-sm tracking-wider text-white placeholder:text-slate-600 focus:outline-none focus:border-purple-500/50 focus:bg-black/70 rounded transition-all"
                             value={formData.confirmPassword}
                             onChange={handleChange}
                             required
@@ -257,7 +261,7 @@ export default function SignupPage() {
 
               <button
                 type="button"
-                className="flex w-full items-center justify-center gap-2 rounded border border-white/10 bg-white/5 p-3 text-sm font-bold text-white transition-colors hover:bg-white/10 hover:shadow-[0_0_10px_rgba(255,255,255,0.1)] disabled:opacity-50 font-rajdhani"
+                className="flex w-full items-center justify-center gap-2 rounded border border-white/10 bg-white/5 p-3 text-sm font-bold text-white transition-colors hover:bg-white/10 hover:shadow-[0_0_10px_rgba(255,255,255,0.1)] disabled:opacity-50"
                 onClick={handleGoogleSignup}
                 disabled={loading || googleLoading}
               >

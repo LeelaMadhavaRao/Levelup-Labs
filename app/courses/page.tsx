@@ -58,23 +58,27 @@ export default function CoursesPage() {
   }, []);
 
   const loadData = async () => {
-    const currentUser = await getCurrentUser();
-    setUser(currentUser);
-    setAvatarSrc(
-      currentUser
-        ? currentUser.avatar_url || generateHunterAvatarUrl(`${currentUser.id}-${currentUser.full_name || currentUser.email || 'hunter'}`)
-        : ''
-    );
+    try {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+      setAvatarSrc(
+        currentUser
+          ? currentUser.avatar_url || generateHunterAvatarUrl(`${currentUser.id}-${currentUser.full_name || currentUser.email || 'hunter'}`)
+          : ''
+      );
 
-    const allCourses = await getAllCourses();
-    setCourses(allCourses);
+      const allCourses = await getAllCourses();
+      setCourses(allCourses);
 
-    if (currentUser) {
-      const userCourses = await getUserCourses(currentUser.id);
-      setUserCourseIds(new Set(userCourses.map((uc: any) => uc.course_id)));
+      if (currentUser) {
+        const userCourses = await getUserCourses(currentUser.id);
+        setUserCourseIds(new Set(userCourses.map((uc: any) => uc.course_id)));
+      }
+    } catch (err) {
+      console.error('Error loading courses:', err);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleRegister = async (courseId: string, courseName: string) => {

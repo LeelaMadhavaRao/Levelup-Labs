@@ -259,6 +259,7 @@ export async function getTopic(topicId: string) {
 export async function getCoursesByAdmin(adminId: string) {
   const supabase = createClient()
   
+  // Show ALL courses to any admin (not filtered by admin_id)
   const { data, error } = await supabase
     .from('courses')
     .select(`
@@ -272,7 +273,6 @@ export async function getCoursesByAdmin(adminId: string) {
       ),
       user_courses (user_id)
     `)
-    .eq('admin_id', adminId)
     .order('created_at', { ascending: false })
   
   if (error) throw toError(error, 'Failed to load admin courses')

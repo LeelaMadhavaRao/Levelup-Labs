@@ -76,38 +76,24 @@ export default function DashboardPage() {
 
   const loadData = async () => {
     try {
-      console.log('📊 Dashboard: Loading data...');
       const currentUser = await getCurrentUser();
-      console.log('📊 Dashboard: Current user:', currentUser ? 'Found' : 'Not found');
       
       if (!currentUser) {
-        console.log('📊 Dashboard: No user found, redirecting to login');
         setLoading(false);
         router.push('/auth/login');
         return;
       }
 
       setUser(currentUser);
-      console.log('📊 Dashboard: User data:', {
-        id: currentUser.id,
-        problems_solved: currentUser.problems_solved,
-        total_xp: currentUser.total_xp ?? currentUser.total_points,
-        rank: currentUser.rank,
-        xp: currentUser.xp,
-        level: currentUser.level
-      });
 
       const [userCourses, topUsers, overview] = await Promise.all([
         getUserCoursesWithProgress(currentUser.id),
         getTopLeaderboard(5),
         getGamificationOverview(currentUser.id).catch((err) => {
-          console.error('📊 Dashboard: Error fetching gamification overview:', err);
+          console.error('Error fetching gamification overview:', err);
           return null;
         }),
       ]);
-
-      console.log('📊 Dashboard: Gamification overview:', overview);
-      console.log('📊 Dashboard: User courses:', userCourses?.length || 0);
 
       let questRows: QuestProgress[] = [];
       let pointRows: any[] = [];

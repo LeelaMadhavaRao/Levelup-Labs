@@ -34,6 +34,7 @@ export default function WatchVideoPage() {
   }, [topicId]);
 
   const loadData = async () => {
+    try {
     const currentUser = await getCurrentUser();
     
     if (!currentUser) {
@@ -45,14 +46,27 @@ export default function WatchVideoPage() {
     setAvatarSrc(currentUser.avatar_url || generateHunterAvatarUrl(`${currentUser.id}-${currentUser.full_name || currentUser.email || 'hunter'}`));
     const topicData = await getTopic(topicId);
     setTopic(topicData);
-    setWatched(topicData?.video_watched || false);
+    
+    // Check actual topic_progress for watch status (topics table doesn't have video_watched)
+    try {
+      const { getTopicProgress } = await import('@/lib/courses');
+      const progress = await getTopicProgress(currentUser.id, topicId);
+      setWatched(progress.video_watched);
+    } catch {
+      setWatched(false);
+    }
+    
     try {
       const passed = await hasUserPassedQuiz(currentUser.id, topicId);
       setQuizPassed(!!passed);
     } catch {
       setQuizPassed(false);
     }
-    setLoading(false);
+    } catch (err) {
+      console.error('Error loading watch page data:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -180,7 +194,7 @@ export default function WatchVideoPage() {
               </div>
               <div className="min-w-0">
                 <h1 className={`${orbitron.className} truncate text-lg font-bold uppercase tracking-[0.16em] md:text-xl`}>{topic.name}</h1>
-                <span className="text-xs uppercase tracking-[0.3em] text-cyan-300">Session 4: Component Composition</span>
+                <span className="text-xs uppercase tracking-[0.3em] text-cyan-300">{topic.description || 'Learning Session'}</span>
               </div>
             </div>
             <div className="flex flex-wrap items-center justify-start gap-4 lg:justify-end lg:gap-6">
@@ -237,10 +251,7 @@ export default function WatchVideoPage() {
                     </button>
                   )}
                   <div className="absolute top-4 left-4 z-30 flex gap-2">
-                    <span className="bg-red-600/80 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider backdrop-blur-md">Live Feed</span>
-                    <span className="bg-black/60 border border-white/10 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider backdrop-blur-md">
-                      1.2k
-                    </span>
+                    <span className="bg-purple-600/80 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider backdrop-blur-md">Video Lesson</span>
                   </div>
                   {watched && (
                     <div className="absolute top-4 right-4 flex items-center gap-2 text-green-300 bg-green-500/10 border border-green-400/30 px-3 py-1 rounded-full">
@@ -249,12 +260,8 @@ export default function WatchVideoPage() {
                     </div>
                   )}
                 </div>
-                <div className="flex h-14 items-center gap-4 border-t border-white/10 bg-black/70 px-4 backdrop-blur-md">
-                  <span className="text-xs font-mono text-cyan-300">04:20</span>
-                  <div className="relative h-1 flex-1 rounded-full bg-white/10">
-                    <div className="absolute left-0 top-0 h-full w-[35%] rounded-full bg-gradient-to-r from-purple-500 to-cyan-300 shadow-[0_0_10px_rgba(0,229,255,0.5)]" />
-                  </div>
-                  <span className="text-xs font-mono text-gray-500">12:45</span>
+                <div className="flex h-10 items-center gap-4 border-t border-white/10 bg-black/70 px-4 backdrop-blur-md">
+                  <span className="text-xs font-mono text-slate-400">Use the YouTube player controls above</span>
                 </div>
               </div>
             </div>
@@ -271,11 +278,7 @@ export default function WatchVideoPage() {
               <div className="mt-auto pt-4 flex flex-wrap gap-3">
                 <div className="flex items-center gap-2 text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded border border-white/5">
                   <Star className="h-3 w-3 text-purple-300" />
-                  Difficulty: <span className="text-white font-bold">A-Rank</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded border border-white/5">
-                  <Clock className="h-3 w-3 text-cyan-300" />
-                  Est. Time: <span className="text-white font-bold">45m</span>
+                  Topic: <span className="text-white font-bold">{topic.name}</span>
                 </div>
               </div>
             </div>

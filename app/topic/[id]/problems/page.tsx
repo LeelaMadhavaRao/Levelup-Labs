@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { getTopicProblems, getTopic, generateProblemsForTopic } from '@/lib/problems';
 import { getCurrentUser } from '@/lib/auth';
@@ -25,10 +25,19 @@ export default function ProblemsListPage() {
   const [streakMultiplier, setStreakMultiplier] = useState(1);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const hasAttemptedGeneration = useRef(false);
 
   useEffect(() => {
     loadData();
   }, [topicId]);
+
+  // Auto-generate problems if none exist and not already generating
+  useEffect(() => {
+    if (!loading && !generating && problems.length === 0 && topic && user && !hasAttemptedGeneration.current) {
+      hasAttemptedGeneration.current = true;
+      handleGenerateProblems();
+    }
+  }, [loading, topic, user]);
 
   const loadData = async () => {
     try {
@@ -77,7 +86,9 @@ export default function ProblemsListPage() {
       }
 
       toast.success(`Successfully generated ${newProblems.length} coding problems!`);
-      setProblems(newProblems);
+      // Reload from DB to get proper structure with solution status
+      const refreshed = await getTopicProblems(topic.id, user.id);
+      setProblems(refreshed);
     } catch (error) {
       console.error('Failed to generate problems:', error);
       toast.error('Failed to generate problems. Please try again.');
@@ -113,10 +124,9 @@ export default function ProblemsListPage() {
   };
 
   const getProblemStatus = (problem: any) => {
-    const statuses = problem.problem_solutions || [];
-    if (!Array.isArray(statuses) || statuses.length === 0) return null;
-    if (statuses.some((s: any) => s.status === 'completed')) return 'completed';
-    if (statuses.some((s: any) => s.status)) return 'attempted';
+    // getTopicProblems maps the user's solution status to a top-level 'status' field
+    if (problem.status === 'completed') return 'completed';
+    if (problem.status) return 'attempted';
     return null;
   };
 

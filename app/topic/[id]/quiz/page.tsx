@@ -138,7 +138,7 @@ export default function QuizPage() {
     }
   };
 
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const progress = questions.length > 0 ? ((currentQuestion + 1) / questions.length) * 100 : 0;
 
   if (loading || generating) {
     return (

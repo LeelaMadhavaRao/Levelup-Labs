@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = new Set<string>(['/', '/auth/login', '/auth/signup', '/auth/callback'])
+const PUBLIC_ROUTES = new Set<string>(['/', '/auth/login', '/auth/signup', '/auth/callback', '/auth/forgot-password', '/auth/reset-password'])
 const AUTH_PAGES = new Set<string>(['/auth/login', '/auth/signup', '/auth/forgot-password', '/auth/reset-password'])
 
 function isPublicRoute(pathname: string) {

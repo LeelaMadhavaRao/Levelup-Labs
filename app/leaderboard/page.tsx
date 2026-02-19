@@ -91,7 +91,7 @@ export default function LeaderboardPage() {
 
   const meInBoard = user ? leaderboard.find((u) => u.id === user.id) : null;
   const podium = leaderboard.slice(0, 3);
-  const boardRows = leaderboard.length > 3 ? leaderboard.slice(3) : leaderboard;
+  const boardRows = leaderboard.length > 3 ? leaderboard.slice(3) : [];
 
   const filteredRows = boardRows.filter((entry) => {
     if (!search.trim()) return true;

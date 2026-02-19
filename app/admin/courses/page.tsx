@@ -332,7 +332,7 @@ export default function AdminCoursesPage() {
                       </TableCell>
                       <TableCell>
                         <Badge className="bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20">
-                          {course.completion_reward_points || 0}
+                          {Number(course.completion_reward_xp ?? course.completion_reward_points ?? 0)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">

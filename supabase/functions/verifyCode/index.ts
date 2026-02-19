@@ -185,7 +185,7 @@ Be strict - even one failing test case means allTestsPassed should be false.`
     let rewardApplied = false
     // Award points FIRST (before updating problem_solutions)
     if (allPassed && points > 0) {
-      const alreadyAwarded = existingSolution?.points_awarded > 0 && existingSolution?.status === 'completed'
+      const alreadyAwarded = existingSolution?.points_awarded > 0 || existingSolution?.status === 'completed'
 
       if (!alreadyAwarded) {
         // Try RPC first (handles users + leaderboard + ranks)
@@ -275,16 +275,36 @@ Be strict - even one failing test case means allTestsPassed should be false.`
       .from('problem_solutions')
       .update({
         code_solution: code,
-        language: language,
         status: allPassed ? 'completed' : 'code_failed',
         code_verified_at: new Date().toISOString(),
         points_awarded: allPassed ? points : 0,
+        updated_at: new Date().toISOString(),
       })
       .eq('user_id', user.id)
       .eq('problem_id', problemId)
 
     if (updateError) {
       console.error('Failed to update solution:', updateError)
+      // Fallback: try upsert in case the row doesn't exist yet
+      const { error: upsertError } = await supabaseAdmin
+        .from('problem_solutions')
+        .upsert({
+          user_id: user.id,
+          problem_id: problemId,
+          code_solution: code,
+          status: allPassed ? 'completed' : 'code_failed',
+          code_verified_at: new Date().toISOString(),
+          points_awarded: allPassed ? points : 0,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id,problem_id',
+          ignoreDuplicates: false,
+        })
+      if (upsertError) {
+        console.error('Fallback upsert also failed:', upsertError)
+      } else {
+        console.log('✅ Fallback upsert succeeded')
+      }
     }
 
     // Update problems_solved count on users table

@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { getProblemById, submitCode, getProblemSolution } from '@/lib/problems';
 import { getCurrentUser } from '@/lib/auth';
 import { updateProblemsCompleted } from '@/lib/courses';
+import { checkCourseCompletion, completeCourse } from '@/lib/courseCompletion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CodeEditor } from '@/components/code-editor';
@@ -201,6 +202,31 @@ export default function CodeProblemPage() {
         const progressResult = await updateProblemsCompleted(user.id, problem.topic_id);
         if (progressResult.allSolved) {
           toast.success('All problems solved! Topic completed! 🎉', { duration: 4000 });
+          
+          // Check if the entire course is now complete
+          try {
+            const { createClient } = await import('@/lib/supabase');
+            const supabase = createClient();
+            // Find the course_id for this topic
+            const { data: topicData } = await supabase
+              .from('topics')
+              .select('module_id, modules!inner(course_id)')
+              .eq('id', problem.topic_id)
+              .single();
+            
+            if (topicData?.modules?.course_id) {
+              const courseId = (topicData.modules as any).course_id;
+              const isComplete = await checkCourseCompletion(user.id, courseId);
+              if (isComplete) {
+                const result = await completeCourse(user.id, courseId);
+                if (!result.error) {
+                  toast.success(`🏆 Course completed! +${result.xpAwarded} XP`, { duration: 6000 });
+                }
+              }
+            }
+          } catch (err) {
+            console.error('Course completion check failed:', err);
+          }
         }
       }
       
