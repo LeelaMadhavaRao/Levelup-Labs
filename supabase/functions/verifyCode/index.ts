@@ -270,41 +270,27 @@ Be strict - even one failing test case means allTestsPassed should be false.`
       }
     }
 
-    // Now update the solution row with code, status, and points_awarded
-    const { error: updateError } = await supabaseAdmin
+    // Now upsert the solution row — handles both insert (no prior algorithm step)
+    // and update (row already exists) in a single atomic operation.
+    const { error: upsertError } = await supabaseAdmin
       .from('problem_solutions')
-      .update({
+      .upsert({
+        user_id: user.id,
+        problem_id: problemId,
         code_solution: code,
         status: allPassed ? 'completed' : 'code_failed',
         code_verified_at: new Date().toISOString(),
         points_awarded: allPassed ? points : 0,
         updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'user_id,problem_id',
+        ignoreDuplicates: false,
       })
-      .eq('user_id', user.id)
-      .eq('problem_id', problemId)
 
-    if (updateError) {
-      console.error('Failed to update solution:', updateError)
-      // Fallback: try upsert in case the row doesn't exist yet
-      const { error: upsertError } = await supabaseAdmin
-        .from('problem_solutions')
-        .upsert({
-          user_id: user.id,
-          problem_id: problemId,
-          code_solution: code,
-          status: allPassed ? 'completed' : 'code_failed',
-          code_verified_at: new Date().toISOString(),
-          points_awarded: allPassed ? points : 0,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'user_id,problem_id',
-          ignoreDuplicates: false,
-        })
-      if (upsertError) {
-        console.error('Fallback upsert also failed:', upsertError)
-      } else {
-        console.log('✅ Fallback upsert succeeded')
-      }
+    if (upsertError) {
+      console.error('Failed to upsert solution:', upsertError)
+    } else {
+      console.log(`✅ Solution upserted with status: ${allPassed ? 'completed' : 'code_failed'}`)
     }
 
     // Update problems_solved count on users table

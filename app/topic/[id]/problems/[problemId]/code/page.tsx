@@ -196,6 +196,9 @@ export default function CodeProblemPage() {
     const allPassed = results.every((r) => r.passed);
 
     if (allPassed) {
+      // Mark the problem as solved immediately so the UI reflects it
+      setIsSolved(true);
+
       // XP already awarded by the edge function in handleRunTests
       // Update topic progress: count problems solved
       if (user && problem?.topic_id) {
@@ -214,8 +217,8 @@ export default function CodeProblemPage() {
               .eq('id', problem.topic_id)
               .single();
             
-            if (topicData?.modules?.course_id) {
-              const courseId = (topicData.modules as any).course_id;
+            if (topicData?.modules && Array.isArray(topicData.modules) && topicData.modules[0]?.course_id) {
+              const courseId = (topicData.modules[0] as any).course_id;
               const isComplete = await checkCourseCompletion(user.id, courseId);
               if (isComplete) {
                 const result = await completeCourse(user.id, courseId);

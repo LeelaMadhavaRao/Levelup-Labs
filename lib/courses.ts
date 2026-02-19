@@ -323,10 +323,17 @@ export async function updateModule(moduleId: string, data: {
   order_index?: number
 }) {
   const supabase = createClient()
-  
+
+  // Sync 'title' with 'name' — modules table has both columns;
+  // createModule writes both, so updates must keep them in sync.
+  const updateData: Record<string, unknown> = { ...data }
+  if (data.name !== undefined) {
+    updateData.title = data.name
+  }
+
   const { data: module, error } = await supabase
     .from('modules')
-    .update(data)
+    .update(updateData)
     .eq('id', moduleId)
     .select()
     .single()
