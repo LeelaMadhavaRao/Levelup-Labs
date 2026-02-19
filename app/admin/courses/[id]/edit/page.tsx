@@ -517,38 +517,33 @@ export default function EditCoursePage() {
                 <AccordionItem
                   key={module.id}
                   value={module.id}
-                  className="border border-white/15 rounded-lg px-4 bg-black/50"
+                  className="border border-white/15 rounded-lg bg-black/50"
                 >
-                  <AccordionTrigger className="hover:no-underline">
-                    <div className="flex items-center justify-between w-full pr-4">
+                  {/* Header row: trigger + action buttons as siblings (not nested) to avoid <button> inside <button> */}
+                  <div className="flex items-center px-4">
+                    <AccordionTrigger className="flex-1 hover:no-underline">
                       <span className="text-lg font-semibold">{module.name}</span>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-slate-300 hover:text-white"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setEditingModule(module.id)
-                          }}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-slate-300 hover:text-white"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            confirmDelete('module', module.id, module.name)
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-400" />
-                        </Button>
-                      </div>
+                    </AccordionTrigger>
+                    <div className="flex gap-2 shrink-0">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-slate-300 hover:text-white"
+                        onClick={() => setEditingModule(module.id)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-slate-300 hover:text-white"
+                        onClick={() => confirmDelete('module', module.id, module.name)}
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400" />
+                      </Button>
                     </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="space-y-4 pt-4">
+                  </div>
+                  <AccordionContent className="space-y-4 pt-4 px-4">
                     {/* Edit Module Form */}
                     {editingModule === module.id && (
                       <ModuleEditForm
