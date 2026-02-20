@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useTheme } from 'next-themes';
 import { getCurrentUser, signOut } from '@/lib/auth';
 import { getGamificationOverview } from '@/lib/gamification';
 import { getHunterRankByPoints, getHunterRankFromCode } from '@/lib/hunter-rank';
@@ -18,24 +17,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Code2, Flame, LogOut, Menu, Moon, Sun, Trophy, User, X } from 'lucide-react';
+import { Code2, Flame, LogOut, Menu, Trophy, User, X } from 'lucide-react';
 
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
-
   const [user, setUser] = useState<any>(null);
   const [playerStats, setPlayerStats] = useState<{ level: number; streak: number; points: number; xp: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [showRankUp, setShowRankUp] = useState(false);
   const [rankUpLabel, setRankUpLabel] = useState('E-RANK');
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     loadUser();
@@ -107,8 +99,6 @@ export default function Navbar() {
       .join('')
       .toUpperCase()
       .slice(0, 2);
-
-  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
   const isAdmin = user?.role === 'admin';
 
@@ -194,18 +184,6 @@ export default function Navbar() {
                 </div>
               </div>
             </div>
-          )}
-
-          {mounted && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="hidden h-9 w-9 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white md:inline-flex"
-              aria-label="Toggle theme"
-            >
-              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
           )}
 
           {loading ? (
@@ -309,20 +287,6 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-
-            {mounted && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start border-white/20 text-gray-300"
-                onClick={() => {
-                  toggleTheme();
-                  setMobileMenuOpen(false);
-                }}
-              >
-                {theme === 'dark' ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />} Toggle Theme
-              </Button>
-            )}
 
             {user && (
               <button
