@@ -6,7 +6,7 @@ const SUPABASE_URL = 'https://eejbvmmgkfptyqcedsfz.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVlamJ2bW1na2ZwdHlxY2Vkc2Z6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5ODc2NTEsImV4cCI6MjA4NjU2MzY1MX0.TnZkWpSz8iMp2EVLSMkseYeTTTjY5nMO_6ho4FZIPgI';
 
 console.log('=' .repeat(70));
-console.log('🚀 LEVELUP-LABS - DATABASE SETUP');
+console.log('🚀 CodeZapra - DATABASE SETUP');
 console.log('='.repeat(70));
 console.log('\n⚠️  IMPORTANT: Manual Setup Required\n');
 console.log('The Supabase client cannot execute DDL statements programmatically.');
@@ -55,7 +55,7 @@ console.log('   🎓 4 Courses (DSA, System Design, Full Stack, Python)');
 console.log('   📚 18 Modules with 25+ Topics');
 console.log('   💻 6 Sample Coding Problems (Easy & Medium)');
 console.log('   👥 10 Sample Users + Leaderboard');
-console.log('   👨‍💼 1 Admin User (admin@levelup-labs.com)');
+console.log('   👨‍💼 1 Admin User (admin@CodeZapra.com)');
 console.log('   🏆 Points System (100/200/300 for Easy/Medium/Hard)');
 console.log('');
 console.log('=' .repeat(70));

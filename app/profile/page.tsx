@@ -414,7 +414,7 @@ export default function ProfilePage() {
 
         <footer className="mt-12 border-t border-white/10 py-8 text-sm text-slate-500">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <div>© 2026 Levelup-Labs. All rights reserved.</div>
+            <div>© 2026 CodeZapra. All rights reserved.</div>
             <div className="flex gap-6">
               <span className="cursor-default hover:text-purple-300">Privacy Policy</span>
               <span className="cursor-default hover:text-purple-300">Terms of Service</span>

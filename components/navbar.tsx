@@ -150,7 +150,7 @@ export default function Navbar() {
           </div>
           <div className="flex flex-col">
             <span className="bg-gradient-to-r from-gray-100 to-gray-400 bg-clip-text text-xl font-bold tracking-tight text-transparent drop-shadow-[0_0_8px_rgba(147,13,242,0.4)] md:text-2xl">
-              LEVELUP-LABS
+              CodeZapra
             </span>
             <span className="text-[0.6rem] font-semibold uppercase tracking-[0.2em] text-purple-400/80">Platform Online</span>
           </div>

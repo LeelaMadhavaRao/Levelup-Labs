@@ -1,5 +1,5 @@
 -- ==============================================
--- Levelup-Labs - Complete Database Setup
+-- CodeZapra - Complete Database Setup
 -- ==============================================
 -- Execute this entire script in Supabase SQL Editor
 -- This will create all tables, policies, and set up the database
@@ -593,21 +593,21 @@ GRANT SELECT ON TABLES TO authenticated;
 
 -- To get the UUID:
 -- 1. Go to Supabase Dashboard → Authentication → Users
--- 2. Create user: admin@levelup-labs.com / admin123
+-- 2. Create user: admin@CodeZapra.com / admin123
 -- 3. Copy the UUID from the user list
 -- 4. Replace the UUID below and run this INSERT
 
 INSERT INTO users (id, email, full_name, role, total_points, created_at, updated_at)
 SELECT 
     id,
-    'admin@levelup-labs.com',
+    'admin@CodeZapra.com',
     'Admin User',
     'admin'::user_role,
     0,
     now(),
     now()
 FROM auth.users
-WHERE email = 'admin@levelup-labs.com'
+WHERE email = 'admin@CodeZapra.com'
 ON CONFLICT (email) DO NOTHING;
 
 -- ==============================================
@@ -643,7 +643,7 @@ ON CONFLICT (name) DO NOTHING;
 -- SETUP COMPLETE!
 -- ==============================================
 -- Next Steps:
--- 1. Create admin user in Supabase Auth (admin@levelup-labs.com / admin123)
+-- 1. Create admin user in Supabase Auth (admin@CodeZapra.com / admin123)
 -- 2. Run this complete script in Supabase SQL Editor
 -- 3. Login to your app with admin credentials
 -- 4. Start creating courses!

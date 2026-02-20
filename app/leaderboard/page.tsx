@@ -194,7 +194,7 @@ export default function LeaderboardPage() {
           <div className="flex items-center space-x-3">
             <Code2 className="h-8 w-8 text-primary" />
             <span className={`${orbitron.className} text-lg font-bold uppercase tracking-wider text-white`}>
-              CodeQuest <span className="text-primary">AI</span>
+              CodeZapra <span className="text-primary">AI</span>
             </span>
           </div>
 

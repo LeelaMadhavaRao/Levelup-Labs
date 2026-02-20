@@ -374,7 +374,7 @@ export default function DashboardPage() {
 
           <footer className="max-w-7xl mx-auto mt-12 pt-8 border-t border-white/5 text-center pb-12">
             <p className={`text-slate-600 text-[10px] font-black tracking-[0.5em] uppercase ${orbitron.className} text-glow`}>
-              Levelup Platform // Protocol v4.2.0 // Productivity Mode Online
+               CodeZapra Platform // Protocol v4.2.0 // Productivity Mode Online
             </p>
           </footer>
         </div>

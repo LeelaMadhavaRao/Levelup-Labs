@@ -1,5 +1,5 @@
 -- ============================================================
--- Levelup-Labs - Realistic Seed Data
+-- CodeZapra - Realistic Seed Data
 -- ============================================================
 -- Run this AFTER database_setup.sql and database_functions.sql
 -- This creates realistic course data for a coding learning platform
@@ -10,7 +10,7 @@
 -- ============================================================
 -- Note: Admin user must be created via Supabase Auth Dashboard first:
 -- 1. Go to Authentication → Users → Add User
--- 2. Email: admin@levelup-labs.com
+-- 2. Email: admin@CodeZapra.com
 -- 3. Password: (choose secure password)
 -- 4. Then run this script to set admin role
 
@@ -430,7 +430,7 @@ ON CONFLICT (user_id, course_id) DO NOTHING;
 -- 2. Run database_functions.sql (if not already done)
 -- 3. Run this seed_data.sql file
 -- 4. Create your first real admin user via Supabase Auth Dashboard
---    Email: admin@levelup-labs.com (or your choice)
+--    Email: admin@CodeZapra.com (or your choice)
 -- 5. Update that user's role to 'admin' in users table
 -- 6. Start using the application!
 --

@@ -330,7 +330,7 @@ export default function HomePage() {
             <div className="flex h-7 w-7 items-center justify-center rounded bg-purple-600">
               <Flame className="h-4 w-4 text-white" />
             </div>
-            <span>© 2026 Levelup-Labs Learning Network</span>
+            <span>© 2026 CodeZapra Learning Network</span>
           </div>
           <div className="flex items-center gap-6">
             <Link href="#" className="hover:text-purple-300">Privacy</Link>

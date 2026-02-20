@@ -9,7 +9,7 @@ import './globals.css'
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['400', '500', '600', '700'] })
 
 export const metadata: Metadata = {
-  title: 'Levelup-Labs - Learning Platform',
+  title: 'CodeZapra - Learning Platform',
   description: 'Master challenging courses, complete hands-on coding challenges, and advance through skill ranks with AI guidance',
 }
 

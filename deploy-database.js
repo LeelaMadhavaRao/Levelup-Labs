@@ -39,7 +39,7 @@ async function executeSQLFile(filePath, name) {
 }
 
 async function main() {
-  console.log('🚀 Levelup-Labs Database Deployment\n');
+  console.log('🚀 CodeZapra Database Deployment\n');
   console.log('=' .repeat(60));
   
   console.log('\n⚠️  MANUAL SETUP REQUIRED\n');
@@ -66,7 +66,7 @@ async function main() {
   console.log('   • 18 modules with 25+ topics');
   console.log('   • 6 sample coding problems');
   console.log('   • 10 sample users with leaderboard data');
-  console.log('   • Admin user: admin@levelup-labs.com');
+  console.log('   • Admin user: admin@CodeZapra.com');
 }
 
 main().catch(console.error);

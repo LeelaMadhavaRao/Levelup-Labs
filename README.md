@@ -1,4 +1,4 @@
-# 🎯 Levelup-Labs - Gamified Coding Learning Platform
+# 🎯 CodeZapra - Gamified Coding Learning Platform
 
 ![Status](https://img.shields.io/badge/Status-Ready%20to%20Deploy-brightgreen)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
@@ -23,7 +23,7 @@ Gemini keys are configured as Supabase Edge Function secrets (server-side only).
 ### 2. Setup Database
 Go to [Supabase Dashboard](https://supabase.com/dashboard) → SQL Editor:
 1. **Create Admin Auth User**: Authentication → Users → Add User
-   - Email: `admin@levelup-labs.com`
+   - Email: `admin@CodeZapra.com`
    - Password: `admin123`
 2. **Run Database Setup**: Copy and execute `supabase/database_setup.sql`
 3. **Run Functions & Triggers**: Copy and execute `supabase/database_functions.sql`
@@ -105,7 +105,7 @@ PostgreSQL (Supabase)
 ## 📂 Project Structure
 
 ```
-levelup-labs/
+CodeZapra/
 ├── app/                    # Next.js App Router pages
 │   ├── page.tsx           # Landing page
 │   ├── layout.tsx         # Root layout
@@ -385,7 +385,7 @@ This project is open source and available for educational purposes.
 3. **Setup database**: Run `supabase/database_setup.sql` in Supabase SQL Editor
 4. **Install dependencies**: `npm install --legacy-peer-deps`
 5. **Start dev server**: `npm run dev`
-6. **Login as admin**: `admin@levelup-labs.com` / `admin123`
+6. **Login as admin**: `admin@CodeZapra.com` / `admin123`
 
 ### For Development:
 - Create courses in admin dashboard

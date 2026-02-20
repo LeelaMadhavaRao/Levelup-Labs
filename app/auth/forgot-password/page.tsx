@@ -139,7 +139,7 @@ export default function ForgotPasswordPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@levelup-labs.com"
+                placeholder="admin@CodeZapra.com"
                 className="bg-black/60 border-white/15 text-slate-100 font-mono"
                 disabled={loading}
                 required

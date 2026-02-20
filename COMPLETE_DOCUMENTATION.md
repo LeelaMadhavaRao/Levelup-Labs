@@ -1,4 +1,4 @@
-# Levelup-Labs - Complete Technical Documentation
+# CodeZapra - Complete Technical Documentation
 
 ## Table of Contents
 1. [Tech Stack](#tech-stack)
@@ -1271,11 +1271,11 @@ GEMINI_API_KEY_4=xxx
 
 ## Admin Login Credentials
 
-**Email**: `admin@levelup-labs.com`  
+**Email**: `admin@CodeZapra.com`  
 **Password**: `admin123`
 
 ---
 
 **Document Version**: 1.0  
 **Last Updated**: February 15, 2026  
-**Project**: Levelup-Labs - AI-Powered Gamified Learning Platform
+**Project**: CodeZapra - AI-Powered Gamified Learning Platform
