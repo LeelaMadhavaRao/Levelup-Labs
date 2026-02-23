@@ -20,11 +20,8 @@ import {
   RotateCcw,
   Trophy,
   Star,
+  Flame,
 } from 'lucide-react';
-import { Orbitron, Rajdhani } from 'next/font/google';
-
-const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
-const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 type TopicStep = 'video' | 'quiz' | 'problems' | 'completed';
 
@@ -72,17 +69,14 @@ export default function TopicLandingPage() {
       setLevelSnapshot({ level: overview.level, title: overview.title });
     }
 
-    // Get progress from topic_progress table
     const topicProgress = await getTopicProgress(user.id, topicId);
     setProgress(topicProgress);
 
-    // Also check quiz_responses directly (in case topic_progress wasn't updated)
     let quizPassed = topicProgress.quiz_passed;
     if (!quizPassed) {
       quizPassed = await hasUserPassedQuiz(user.id, topicId);
     }
 
-    // Get problems info
     let problems: any[] = [];
     try {
       problems = await getTopicProblems(topicId, user.id);
@@ -91,11 +85,8 @@ export default function TopicLandingPage() {
     }
     setTotalProblems(problems.length);
 
-    const solvedCount = problems.filter(
-      (p: any) => p.status === 'completed'
-    ).length;
+    const solvedCount = problems.filter((p: any) => p.status === 'completed').length;
 
-    // Determine current step
     if (!topicProgress.video_watched) {
       setCurrentStep('video');
     } else if (!quizPassed) {
@@ -146,28 +137,25 @@ export default function TopicLandingPage() {
   };
 
   const getProgressPercent = () => {
-    let total = 3; // video + quiz + problems
+    let total = 3;
     let done = 0;
     if (progress.video_watched) done++;
     if (progress.quiz_passed) done++;
     if (totalProblems > 0) {
       done += progress.problems_completed / totalProblems;
     } else if (progress.quiz_passed) {
-      done++; // no problems = auto-complete
+      done++;
     }
     return Math.round((done / total) * 100);
   };
 
   if (loading) {
     return (
-      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-100`}>
-        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
-        <div className="relative z-20 container py-8 max-w-6xl">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-10 w-80 rounded bg-white/10" />
-          <div className="h-48 rounded bg-white/10" />
-          <div className="h-48 rounded bg-white/10" />
-        </div>
+          <div className="h-10 w-80 rounded bg-gray-200" />
+          <div className="h-48 rounded bg-gray-200" />
+          <div className="h-48 rounded bg-gray-200" />
         </div>
       </div>
     );
@@ -175,11 +163,13 @@ export default function TopicLandingPage() {
 
   if (!topic) {
     return (
-      <div className={`${rajdhani.className} container py-8 max-w-3xl`}>
-        <Card className="card-interactive border-white/15 bg-black/60 text-slate-100">
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+        <Card className="border-gray-200 bg-white">
           <CardContent className="py-16 text-center">
-            <h2 className="text-xl font-semibold mb-2">Topic not found</h2>
-            <Button onClick={() => router.push('/my-courses')}>Back to My Courses</Button>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Topic not found</h2>
+            <Button onClick={() => router.push('/my-courses')} className="bg-purple-600 hover:bg-purple-500 text-gray-900">
+              Back to My Courses
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -203,7 +193,7 @@ export default function TopicLandingPage() {
       icon: FileQuestion,
       title: 'Take Quiz',
       description: 'Test your understanding with AI-generated questions',
-      reward: 'Pass reward: unlock coding problems',
+      reward: 'Pass to unlock coding problems',
       action: () => router.push(`/topic/${topicId}/quiz`),
       actionLabel: progress.quiz_passed ? 'Retake Quiz' : 'Start Quiz',
     },
@@ -212,7 +202,7 @@ export default function TopicLandingPage() {
       icon: Code,
       title: 'Solve Problems',
       description: `Complete coding challenges (${progress.problems_completed}/${totalProblems} solved)`,
-      reward: `Each solve: 100-300 pts with x${streakMultiplier.toFixed(2)} streak boost`,
+      reward: `100-300 XP per problem with x${streakMultiplier.toFixed(2)} streak`,
       action: () => router.push(`/topic/${topicId}/problems`),
       actionLabel:
         totalProblems > 0 && progress.problems_completed >= totalProblems
@@ -222,211 +212,219 @@ export default function TopicLandingPage() {
   ];
 
   return (
-    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-100`}>
-      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
-
-      <div className="relative z-20 container max-w-6xl space-y-6 py-8">
-      <div className="rounded-2xl border border-purple-500/30 bg-black/50 p-6 shadow-md">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-2">
-            <p className={`${orbitron.className} text-xs tracking-[0.25em] text-purple-300/90`}>CONTENT NODE</p>
-            <div className="flex items-center gap-3">
-              <h1 className={`${orbitron.className} text-3xl font-black tracking-tight md:text-4xl`}>{topic.name}</h1>
-              {currentStep === 'completed' && (
-                <Badge className="border border-green-500/40 bg-green-500/20 text-green-400">
-                  <CheckCircle className="mr-1 h-3 w-3" />
-                  Completed
-                </Badge>
-              )}
-            </div>
-            {topic.description && <p className="max-w-3xl text-slate-400">{topic.description}</p>}
-          </div>
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3">
-              <p className="text-xs uppercase tracking-wider text-slate-400">Progress</p>
-              <p className="text-2xl font-bold text-cyan-300">{progressPercent}%</p>
-            </div>
-            <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3">
-              <p className="text-xs uppercase tracking-wider text-slate-400">Solved</p>
-              <p className="text-2xl font-bold text-purple-300">{progress.problems_completed}/{totalProblems}</p>
-            </div>
-            <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3">
-              <p className="text-xs uppercase tracking-wider text-slate-400">Streak</p>
-              <p className="text-2xl font-bold text-amber-300">x{streakMultiplier.toFixed(2)}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-      <div className="space-y-6 lg:col-span-2">
-
-      <Card className="card-interactive border-white/15 bg-black/60 text-slate-100">
-        <CardContent className="pt-6">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              {levelSnapshot && (
-                <Badge variant="secondary" className="gap-1">
-                  <Star className="h-3 w-3" />
-                  Lv {levelSnapshot.level} {levelSnapshot.title}
-                </Badge>
-              )}
-              <Badge variant="outline" className="gap-1">
-                <Trophy className="h-3 w-3 text-yellow-500" />
-                Streak x{streakMultiplier.toFixed(2)}
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-gray-900">{topic.name}</h1>
+            {currentStep === 'completed' && (
+              <Badge className="border-green-500/40 bg-green-100 text-green-600">
+                <CheckCircle className="mr-1 h-3 w-3" />
+                Completed
               </Badge>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-400">Topic Progress</span>
-              <span className="font-semibold">{progressPercent}%</span>
-            </div>
-            <Progress value={progressPercent} className="h-2" />
+            )}
           </div>
-        </CardContent>
-      </Card>
-
-      <div className="space-y-3">
-        {steps.map((step) => {
-          const status = getStepStatus(step.id);
-          const Icon = step.icon;
-          const isDone = status === 'done';
-          const isCurrent = status === 'current';
-
-          return (
-            <Card
-              key={step.id}
-              className={`card-interactive reveal-in transition-all ${
-                isCurrent
-                  ? 'border-purple-500/60 ring-1 ring-purple-500/30 bg-purple-500/10'
-                  : isDone
-                  ? 'border-green-500/30 bg-green-500/10'
-                  : 'opacity-75 border-white/10 bg-black/50'
-              }`}
-            >
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
-                      isDone
-                        ? 'bg-green-500/10'
-                        : isCurrent
-                        ? 'bg-primary/10'
-                        : 'bg-muted'
-                    }`}
-                  >
-                    {isDone ? (
-                      <CheckCircle className="h-6 w-6 text-green-500" />
-                    ) : (
-                      <Icon
-                        className={`h-6 w-6 ${
-                          isCurrent ? 'text-purple-300' : 'text-slate-400'
-                        }`}
-                      />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold">{step.title}</h3>
-                    <p className="text-sm text-slate-400">{step.description}</p>
-                    <p className="text-xs text-purple-300 mt-1">{step.reward}</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant={isCurrent ? 'default' : isDone ? 'outline' : 'ghost'}
-                    disabled={!isDone && !isCurrent}
-                    onClick={step.action}
-                  >
-                    {isCurrent && <ArrowRight className="mr-1 h-4 w-4" />}
-                    {isDone && <RotateCcw className="mr-1 h-4 w-4" />}
-                    {step.actionLabel}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {currentStep !== 'completed' && (
-        <div className="flex justify-center">
-          <Button size="lg" onClick={handleContinue} className="min-w-[220px] bg-purple-700 hover:bg-purple-600 text-white">
-            <ArrowRight className="mr-2 h-5 w-5" />
-            {currentStep === 'video'
-              ? 'Watch Video'
-              : currentStep === 'quiz'
-              ? 'Take Quiz'
-              : 'Solve Problems'}
-          </Button>
+          {topic.description && (
+            <p className="max-w-3xl text-gray-500">{topic.description}</p>
+          )}
         </div>
-      )}
+
+        <div className="flex gap-3 text-center">
+          <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 min-w-[90px]">
+            <p className="text-xs text-gray-400">Progress</p>
+            <p className="text-2xl font-bold text-purple-600">{progressPercent}%</p>
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 min-w-[90px]">
+            <p className="text-xs text-gray-400">Solved</p>
+            <p className="text-2xl font-bold text-gray-900">{progress.problems_completed}/{totalProblems}</p>
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 min-w-[90px]">
+            <p className="text-xs text-gray-400">Streak</p>
+            <p className="text-2xl font-bold text-amber-400">x{streakMultiplier.toFixed(2)}</p>
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-4">
-        <Card className="border-white/15 bg-black/60 text-slate-100">
-          <CardHeader>
-            <CardTitle className="text-lg">Topic Information</CardTitle>
-            <CardDescription className="text-slate-400">Current operational target</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="rounded-lg border border-white/10 bg-black/50 p-3">
-              <p className="text-slate-400">Active Step</p>
-              <p className="font-semibold text-slate-100 capitalize">{currentStep}</p>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-black/50 p-3">
-              <p className="text-slate-400">Quiz Status</p>
-              <p className="font-semibold text-slate-100">{progress.quiz_passed ? 'Passed' : 'Pending'}</p>
-            </div>
-            <div className="rounded-lg border border-white/10 bg-black/50 p-3">
-              <p className="text-slate-400">Video Status</p>
-              <p className="font-semibold text-slate-100">{progress.video_watched ? 'Watched' : 'Not Watched'}</p>
-            </div>
-          </CardContent>
-        </Card>
-        {levelSnapshot && (
-          <Card className="border-white/15 bg-black/60 text-slate-100">
-            <CardHeader>
-              <CardTitle className="text-lg">Learner Profile</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-black/50 p-3">
-                <span className="text-slate-400">Level</span>
-                <span className="font-semibold">{levelSnapshot.level}</span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-black/50 p-3">
-                <span className="text-slate-400">Title</span>
-                <span className="font-semibold">{levelSnapshot.title}</span>
-              </div>
-              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-black/50 p-3">
-                <span className="text-slate-400">Streak Bonus</span>
-                <span className="font-semibold text-amber-300">x{streakMultiplier.toFixed(2)}</span>
+      {/* Main grid */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
+          {/* Progress bar card */}
+          <Card className="border-gray-200 bg-white">
+            <CardContent className="pt-6">
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  {levelSnapshot && (
+                    <Badge variant="secondary" className="gap-1 bg-gray-100 text-gray-600 border-gray-200">
+                      <Star className="h-3 w-3 text-yellow-500" />
+                      Lv {levelSnapshot.level} · {levelSnapshot.title}
+                    </Badge>
+                  )}
+                  <Badge variant="outline" className="gap-1 border-gray-200 text-gray-600">
+                    <Flame className="h-3 w-3 text-amber-500" />
+                    Streak x{streakMultiplier.toFixed(2)}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">Topic Progress</span>
+                  <span className="font-semibold text-gray-900">{progressPercent}%</span>
+                </div>
+                <Progress value={progressPercent} className="h-2 bg-gray-200 [&>div]:bg-purple-500" />
               </div>
             </CardContent>
           </Card>
-        )}
-      </div>
+
+          {/* Steps */}
+          <div className="space-y-3">
+            {steps.map((step) => {
+              const status = getStepStatus(step.id);
+              const Icon = step.icon;
+              const isDone = status === 'done';
+              const isCurrent = status === 'current';
+
+              return (
+                <Card
+                  key={step.id}
+                  className={`transition-all ${
+                    isCurrent
+                      ? 'border-purple-500/50 bg-purple-500/5'
+                      : isDone
+                      ? 'border-green-200 bg-green-50'
+                      : 'border-gray-200 bg-white opacity-60'
+                  }`}
+                >
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
+                          isDone
+                            ? 'bg-green-50'
+                            : isCurrent
+                            ? 'bg-purple-50'
+                            : 'bg-gray-100'
+                        }`}
+                      >
+                        {isDone ? (
+                          <CheckCircle className="h-6 w-6 text-green-500" />
+                        ) : (
+                          <Icon className={`h-6 w-6 ${isCurrent ? 'text-purple-600' : 'text-gray-400'}`} />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900">{step.title}</h3>
+                        <p className="text-sm text-gray-500">{step.description}</p>
+                        <p className="text-xs text-purple-600 mt-1">{step.reward}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant={isCurrent ? 'default' : isDone ? 'outline' : 'ghost'}
+                        disabled={!isDone && !isCurrent}
+                        onClick={step.action}
+                        className={
+                          isCurrent
+                            ? 'bg-purple-600 hover:bg-purple-500 text-gray-900'
+                            : isDone
+                            ? 'border-gray-200 text-gray-600 hover:bg-gray-100'
+                            : ''
+                        }
+                      >
+                        {isCurrent && <ArrowRight className="mr-1 h-4 w-4" />}
+                        {isDone && <RotateCcw className="mr-1 h-4 w-4" />}
+                        {step.actionLabel}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Continue button */}
+          {currentStep !== 'completed' && (
+            <div className="flex justify-center pt-2">
+              <Button size="lg" onClick={handleContinue} className="min-w-[220px] bg-purple-600 hover:bg-purple-500 text-gray-900">
+                <ArrowRight className="mr-2 h-5 w-5" />
+                {currentStep === 'video'
+                  ? 'Watch Video'
+                  : currentStep === 'quiz'
+                  ? 'Take Quiz'
+                  : 'Solve Problems'}
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-4">
+          <Card className="border-gray-200 bg-white">
+            <CardHeader>
+              <CardTitle className="text-lg text-gray-900">Topic Info</CardTitle>
+              <CardDescription className="text-gray-400">Current progress details</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <span className="text-gray-500">Active Step</span>
+                <span className="font-semibold text-gray-900 capitalize">{currentStep}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <span className="text-gray-500">Quiz Status</span>
+                <span className={`font-semibold ${progress.quiz_passed ? 'text-green-600' : 'text-gray-600'}`}>
+                  {progress.quiz_passed ? 'Passed' : 'Pending'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <span className="text-gray-500">Video</span>
+                <span className={`font-semibold ${progress.video_watched ? 'text-green-600' : 'text-gray-600'}`}>
+                  {progress.video_watched ? 'Watched' : 'Not Watched'}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {levelSnapshot && (
+            <Card className="border-gray-200 bg-white">
+              <CardHeader>
+                <CardTitle className="text-lg text-gray-900">Your Profile</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-3">
+                  <span className="text-gray-500">Level</span>
+                  <span className="font-semibold text-gray-900">{levelSnapshot.level}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-3">
+                  <span className="text-gray-500">Title</span>
+                  <span className="font-semibold text-gray-900">{levelSnapshot.title}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-3">
+                  <span className="text-gray-500">Streak Bonus</span>
+                  <span className="font-semibold text-amber-400">x{streakMultiplier.toFixed(2)}</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
 
+      {/* Completed celebration */}
       {currentStep === 'completed' && (
-        <Card className="border-green-500/40 bg-green-500/10 text-slate-100">
+        <Card className="border-green-200 bg-green-50">
           <CardContent className="pt-6 text-center space-y-4">
             <Trophy className="h-16 w-16 text-yellow-500 mx-auto" />
             <div>
-              <h2 className="text-2xl font-bold">Topic Completed!</h2>
-              <p className="text-slate-400 mt-1">
-                You've mastered this topic. Great work!
-              </p>
+              <h2 className="text-2xl font-bold text-gray-900">Topic Completed!</h2>
+              <p className="text-gray-500 mt-1">You&apos;ve mastered this topic. Great work!</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button onClick={() => router.push('/my-courses')}>
+              <Button onClick={() => router.push('/my-courses')} className="bg-purple-600 hover:bg-purple-500 text-gray-900">
                 Back to My Courses
               </Button>
-              <Button variant="outline" onClick={() => router.push(`/topic/${topicId}/problems`)}>
+              <Button variant="outline" onClick={() => router.push(`/topic/${topicId}/problems`)} className="border-gray-200 text-gray-600 hover:bg-gray-100">
                 Review Problems
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
-      </div>
     </div>
   );
 }

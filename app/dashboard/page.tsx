@@ -9,25 +9,19 @@ import { getUserCoursesWithProgress } from '@/lib/courses';
 import { getTopLeaderboard } from '@/lib/leaderboard';
 import { getQuestProgress, getRecentPointEvents, getGamificationOverview, type QuestProgress, type GamificationOverview } from '@/lib/gamification';
 import { subscribeToLeaderboard, subscribeToUserGamification } from '@/lib/realtime';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Settings,
-  Shield,
-  Swords,
+import {
   Trophy,
-  Package,
-  Bell,
   Flame,
   ChevronRight,
   BookOpen,
   Clock3,
+  Zap,
+  Target,
+  Hash,
 } from 'lucide-react';
-import { Orbitron, Space_Grotesk } from 'next/font/google';
-
-const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
-const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -77,7 +71,7 @@ export default function DashboardPage() {
   const loadData = async () => {
     try {
       const currentUser = await getCurrentUser();
-      
+
       if (!currentUser) {
         setLoading(false);
         router.push('/auth/login');
@@ -121,79 +115,41 @@ export default function DashboardPage() {
 
   const calculateProgress = (course: any) => {
     if (!course.modules || course.modules.length === 0) return 0;
-    
-    const totalTopics = course.modules.reduce((acc: number, module: any) => 
-      acc + (module.topics?.length || 0), 0
-    );
-    
+    const totalTopics = course.modules.reduce((acc: number, module: any) => acc + (module.topics?.length || 0), 0);
     if (totalTopics === 0) return 0;
-    
-    const completedTopics = course.modules.reduce((acc: number, module: any) => 
-      acc + (module.topics?.filter((t: any) => t.is_completed)?.length || 0), 0
+    const completedTopics = course.modules.reduce(
+      (acc: number, module: any) => acc + (module.topics?.filter((t: any) => t.is_completed)?.length || 0),
+      0
     );
-    
     return Math.round((completedTopics / totalTopics) * 100);
   };
 
   if (loading) {
     return (
-      <div className={`${spaceGrotesk.className} min-h-screen bg-[#09090B] p-8`}>
-        <div className="animate-pulse space-y-4">
-          <div className="h-10 w-80 rounded bg-white/10" />
-          <div className="grid gap-4 md:grid-cols-3">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 w-64 rounded-md bg-gray-200" />
+          <div className="grid gap-4 sm:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-24 rounded bg-white/10" />
+              <div key={i} className="h-24 rounded-lg bg-gray-200" />
             ))}
           </div>
-          <div className="h-72 rounded bg-white/10" />
+          <div className="h-72 rounded-lg bg-gray-200" />
         </div>
       </div>
     );
   }
 
-  const inProgressCourses = courses.filter(c => {
-    const progress = calculateProgress(c);
-    return progress > 0 && progress < 100;
-  });
-
   const solvedProblems = Number(gamificationOverview?.problems_solved ?? user?.problems_solved ?? 0);
   const totalXp = Number(gamificationOverview?.total_xp ?? gamificationOverview?.xp ?? user?.total_xp ?? user?.xp ?? user?.total_points ?? 0);
   const userRank = gamificationOverview?.rank ?? user?.rank ?? null;
   const displayName = user?.full_name || 'Learner';
-  const avatarSeed = `${user?.id || 'hunter'}-${displayName}`;
-  const avatarSrc = user?.avatar_url || generateHunterAvatarUrl(avatarSeed);
-  const streakDays = Math.max(
-    1,
-    Math.min(
-      365,
-      Number(
-        gamificationOverview?.current_streak ||
-          (user as any)?.streak_days ||
-          0
-      )
-    )
-  );
-  const questCompletion = dailyQuests.length > 0
-    ? Math.round((dailyQuests.filter((q) => q.progress >= q.target_count).length / dailyQuests.length) * 100)
-    : 0;
-
-  const activeQuests = dailyQuests.slice(0, 4).map((quest, index) => {
-    const progress = quest.target_count > 0 ? Math.min(100, Math.round((quest.progress / quest.target_count) * 100)) : 0;
-    const tags = ['S', 'A', 'B', 'E'];
-    const colors = ['border-l-[#7C3AED] text-[#A855F7]', 'border-l-yellow-500 text-yellow-500', 'border-l-cyan-500 text-cyan-400', 'border-l-slate-500 text-slate-400'];
-    return {
-      id: quest.quest_id,
-      title: quest.title,
-      description: quest.description || 'Complete this task to unlock rewards.',
-      progress,
-      rank: quest.completed ? 'CLEARED' : (tags[index] || 'A'),
-      color: colors[index] || colors[1],
-    };
-  });
-
-  const manaGoalUnits = 10;
-  const manaUnitsDone = Math.min(manaGoalUnits, Math.max(0, Math.round((questCompletion / 100) * manaGoalUnits)));
+  const streakDays = Math.max(0, Number(gamificationOverview?.current_streak || (user as any)?.streak_days || 0));
   const hunterRank = getHunterRankByXp(totalXp);
+  const level = Math.max(1, Math.floor(totalXp / 1000) + 1);
+  const xpInLevel = totalXp % 1000;
+  const xpPercent = Math.round((xpInLevel / 1000) * 100);
+
   const currentCourses = courses
     .map((course) => {
       const progress = calculateProgress(course);
@@ -212,173 +168,233 @@ export default function DashboardPage() {
     .slice(0, 6);
 
   return (
-    <div className={`${spaceGrotesk.className} min-h-screen bg-[#09090B] text-slate-200 flex overflow-hidden`}>
-      
-
-      <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#7C3AED]/10 rounded-full blur-[120px] pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#A855F7]/10 rounded-full blur-[100px] pointer-events-none"></div>
-
-        <header className="bg-[#09090B]/80 backdrop-blur-xl border-b border-white/5 z-10 sticky top-0">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="flex items-center gap-5">
-                <div className="relative">
-                  <div className="w-16 h-16 rounded bg-slate-800 overflow-hidden border-2 border-[#7C3AED]/50 breathing-purple">
-                    <img
-                      alt="User Avatar"
-                      className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
-                      src={avatarSrc}
-                      onError={(event) => {
-                        event.currentTarget.src = generateHunterAvatarUrl(avatarSeed);
-                      }}
-                    />
-                  </div>
-                  <div className="absolute -top-2 -right-2 bg-[#7C3AED] text-[10px] font-black px-2 py-0.5 rounded border border-[#A855F7] text-white">{hunterRank.label}</div>
-                </div>
-                <div>
-                  <h1 className={`text-2xl font-bold text-white leading-none tracking-tight uppercase ${orbitron.className} text-glow`}>{displayName}</h1>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#A855F7]">Top Performer</span>
-                    <span className="text-xs text-slate-600">/</span>
-                    <span className="text-xs text-slate-500 font-mono">USER_ID: {String(user?.id || '0001').slice(0, 10)}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex-1 max-w-xl w-full">
-                <div className="flex justify-between items-end mb-2">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Level</span>
-                    <span className={`text-2xl font-black text-white italic ${orbitron.className} text-glow`}>{Math.max(1, Math.floor(totalXp / 1000) + 1)}</span>
-                  </div>
-                  <span className="text-xs font-bold text-[#A855F7] tracking-widest uppercase">{totalXp.toLocaleString()} / 100,000 XP</span>
-                </div>
-                <div className="h-3 w-full bg-white/5 rounded-sm overflow-hidden relative border border-white/10">
-                  <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#7C3AED] via-[#A855F7] to-blue-500" style={{ width: `${Math.min(100, (totalXp / 100000) * 100)}%` }}></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="flex-1 overflow-y-auto p-6 terminal-scroll">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-8 space-y-8">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-[#121214] border border-[#A855F7]/30 p-6 flex flex-col items-center justify-center">
-                  <span className={`text-4xl font-black text-white ${orbitron.className} text-glow`}>{solvedProblems.toLocaleString()}</span>
-                  <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 mt-2 font-bold">Problems Solved</span>
-                </div>
-                
-                <div className="bg-[#121214] border border-[#A855F7]/30 p-6 flex flex-col items-center justify-center">
-                  <span className={`text-4xl font-black text-[#A855F7] italic ${orbitron.className} text-glow`}>{hunterRank.label[0]}</span>
-                  <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 mt-2 font-bold">Rank Tier</span>
-                </div>
-
-                <div className="bg-[#121214] border border-[#A855F7]/30 p-6 flex flex-col items-center justify-center">
-                  <span className={`text-4xl font-black text-white ${orbitron.className} text-glow`}>#{userRank || '—'}</span>
-                  <span className="text-[10px] uppercase tracking-[0.3em] text-slate-500 mt-2 font-bold">Global Rank</span>
-                </div>
-              </div>
-
-
-
-              <div className="bg-[#121214] border border-[#A855F7]/20 rounded-md p-5">
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className={`text-lg font-black text-white uppercase tracking-widest ${orbitron.className}`}>
-                    Current Courses
-                  </h2>
-                  <Link href="/my-courses" className="text-xs font-bold text-[#A855F7] hover:text-white transition-colors inline-flex items-center gap-1">
-                    MANAGE <ChevronRight className="h-3 w-3" />
-                  </Link>
-                </div>
-
-                {currentCourses.length === 0 ? (
-                  <div className="rounded border border-white/10 bg-black/20 px-4 py-6 text-sm text-slate-400">
-                    No active courses detected yet. Enroll in a course to start progression.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {currentCourses.map((course) => (
-                      <div key={course.id} className="rounded border border-white/10 bg-black/20 px-4 py-3">
-                        <div className="mb-2 flex items-center justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-white">{course.name}</p>
-                            <p className="text-[11px] text-slate-500">{course.modulesCount} modules</p>
-                          </div>
-                          <span className="text-xs font-bold text-[#A855F7]">{course.progress}%</span>
-                        </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded bg-white/10">
-                          <div className="h-full bg-gradient-to-r from-[#7C3AED] to-[#A855F7]" style={{ width: `${course.progress}%` }} />
-                        </div>
-                        <div className="mt-2 flex items-center justify-between">
-                          <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 uppercase tracking-wider">
-                            <Clock3 className="h-3 w-3" />
-                            {course.isCompleted ? 'Completed' : 'In Progress'}
-                          </span>
-                          <Button asChild size="sm" variant="outline" className="h-7 border-[#A855F7]/30 text-[#A855F7] hover:text-white hover:bg-[#7C3AED]/20">
-                            <Link href="/my-courses">Continue</Link>
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              
-            </div>
-
-            <div className="lg:col-span-4 space-y-6">
-              <div className="bg-[#121214] p-8 rounded border border-[#A855F7]/30 relative overflow-hidden flex flex-col items-center text-center shadow-[0_0_10px_rgba(124,58,237,0.22)]">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#A855F7] to-transparent"></div>
-                <div className="relative w-28 h-28 mb-6 flex items-center justify-center">
-                  <div className="absolute inset-0 bg-[#A855F7]/30 rounded-full blur-2xl animate-pulse"></div>
-                  <Flame className="h-16 w-16 text-[#A855F7] relative z-10" />
-                </div>
-                <h2 className={`text-6xl font-black text-white mb-2 italic ${orbitron.className} text-glow`}>{streakDays}</h2>
-                <p className="text-[#A855F7] uppercase tracking-[0.4em] text-xs font-black mb-6">Consecutive Days</p>
-                <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6">"Great consistency. Keep your momentum going."</p>
-                <div className="w-full bg-white/5 h-3 p-0.5 border border-white/10">
-                  <div className="bg-gradient-to-r from-[#7C3AED] to-[#A855F7] h-full w-full"></div>
-                </div>
-              </div>
-
-              <div className="bg-[#121214] border border-[#A855F7]/30 rounded p-6">
-                <h2 className={`text-lg font-black text-white uppercase tracking-widest mb-4 ${orbitron.className}`}>
-                  Recent XP Logs
-                </h2>
-                <div className="space-y-3">
-                  {recentXpEvents.length === 0 ? (
-                    <p className="text-sm text-slate-500">No XP activity yet.</p>
-                  ) : (
-                    recentXpEvents.map((event: any) => (
-                      <div key={event.id} className="flex items-center justify-between border-b border-white/10 pb-3 last:border-b-0">
-                        <div>
-                          <p className="text-sm font-medium text-white">{event.event_type.replace(/_/g, ' ')}</p>
-                          <p className="text-xs text-slate-500">
-                            {new Date(event.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold text-[#A855F7]">+{Number(event.xp_delta ?? event.xp ?? event.points ?? 0)} XP</p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <footer className="max-w-7xl mx-auto mt-12 pt-8 border-t border-white/5 text-center pb-12">
-            <p className={`text-slate-600 text-[10px] font-black tracking-[0.5em] uppercase ${orbitron.className} text-glow`}>
-               CodeZapra Platform // Protocol v4.2.0 // Productivity Mode Online
-            </p>
-          </footer>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* Header */}
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome back, {displayName}</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Level {level} · {hunterRank.label} · {totalXp.toLocaleString()} XP
+          </p>
         </div>
-      </main>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-100 px-3 py-2">
+            <Flame className="h-4 w-4 text-orange-600" />
+            <span className="text-sm font-semibold text-gray-900">{streakDays} day streak</span>
+          </div>
+        </div>
+      </div>
+
+      {/* XP Progress */}
+      <Card className="mb-6 border-gray-200 bg-white">
+        <CardContent className="py-4">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-500">Level {level} Progress</span>
+            <span className="text-gray-500">{xpInLevel} / 1,000 XP</span>
+          </div>
+          <Progress value={xpPercent} className="mt-2 h-2" />
+        </CardContent>
+      </Card>
+
+      {/* Stats cards */}
+      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+        <Card className="border-gray-200 bg-white">
+          <CardContent className="flex items-center gap-4 py-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
+              <Target className="h-5 w-5 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{solvedProblems}</p>
+              <p className="text-xs text-gray-500">Problems Solved</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-gray-200 bg-white">
+          <CardContent className="flex items-center gap-4 py-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
+              <Zap className="h-5 w-5 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{hunterRank.code}</p>
+              <p className="text-xs text-gray-500">Current Rank</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-gray-200 bg-white">
+          <CardContent className="flex items-center gap-4 py-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
+              <Hash className="h-5 w-5 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">#{userRank || '—'}</p>
+              <p className="text-xs text-gray-500">Global Rank</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main content grid */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Courses - takes 2 cols */}
+        <div className="space-y-6 lg:col-span-2">
+          <Card className="border-gray-200 bg-white">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="text-base font-semibold text-gray-900">Current Courses</CardTitle>
+              <Link href="/my-courses" className="flex items-center gap-1 text-xs font-medium text-purple-600 hover:text-purple-700">
+                View all <ChevronRight className="h-3 w-3" />
+              </Link>
+            </CardHeader>
+            <CardContent>
+              {currentCourses.length === 0 ? (
+                <div className="rounded-lg border border-dashed border-gray-200 px-4 py-8 text-center">
+                  <BookOpen className="mx-auto mb-2 h-8 w-8 text-gray-400" />
+                  <p className="text-sm text-gray-500">No active courses yet.</p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-3 border-gray-200 text-gray-600 hover:bg-gray-100"
+                    onClick={() => router.push('/courses')}
+                  >
+                    Browse Courses
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {currentCourses.map((course) => (
+                    <div key={course.id} className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-gray-900">{course.name}</p>
+                          <p className="text-xs text-gray-400">{course.modulesCount} modules</p>
+                        </div>
+                        <span className="text-xs font-semibold text-purple-600">{course.progress}%</span>
+                      </div>
+                      <Progress value={course.progress} className="h-1.5" />
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="flex items-center gap-1 text-xs text-gray-400">
+                          <Clock3 className="h-3 w-3" />
+                          {course.isCompleted ? 'Completed' : 'In Progress'}
+                        </span>
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs text-purple-600 hover:bg-purple-50 hover:text-purple-700"
+                        >
+                          <Link href="/my-courses">Continue</Link>
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Daily Quests */}
+          {dailyQuests.length > 0 && (
+            <Card className="border-gray-200 bg-white">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-semibold text-gray-900">Daily Quests</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {dailyQuests.slice(0, 4).map((quest) => {
+                    const pct = quest.target_count > 0 ? Math.min(100, Math.round((quest.progress / quest.target_count) * 100)) : 0;
+                    const done = quest.progress >= quest.target_count;
+                    return (
+                      <div key={quest.quest_id} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                        <div className="mb-1 flex items-center justify-between">
+                          <p className={`text-sm font-medium ${done ? 'text-green-600' : 'text-gray-900'}`}>
+                            {quest.title}
+                          </p>
+                          <span className="text-xs text-gray-400">
+                            {quest.progress}/{quest.target_count}
+                          </span>
+                        </div>
+                        {quest.description && (
+                          <p className="mb-2 text-xs text-gray-400">{quest.description}</p>
+                        )}
+                        <Progress value={pct} className="h-1.5" />
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Streak Card */}
+          <Card className="border-gray-200 bg-white">
+            <CardContent className="flex flex-col items-center py-6">
+              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-orange-50">
+                <Flame className="h-7 w-7 text-orange-600" />
+              </div>
+              <p className="text-3xl font-bold text-gray-900">{streakDays}</p>
+              <p className="text-xs text-gray-500">Consecutive Days</p>
+              <p className="mt-3 text-center text-xs text-gray-400">Keep your streak going!</p>
+            </CardContent>
+          </Card>
+
+          {/* Recent XP */}
+          <Card className="border-gray-200 bg-white">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold text-gray-900">Recent XP</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {recentXpEvents.length === 0 ? (
+                <p className="text-sm text-gray-400">No XP activity yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {recentXpEvents.map((event: any) => (
+                    <div key={event.id} className="flex items-center justify-between border-b border-gray-100 pb-2 last:border-b-0">
+                      <div>
+                        <p className="text-sm text-gray-900">{event.event_type.replace(/_/g, ' ')}</p>
+                        <p className="text-xs text-gray-400">
+                          {new Date(event.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </p>
+                      </div>
+                      <p className="text-sm font-semibold text-purple-600">
+                        +{Number(event.xp_delta ?? event.xp ?? event.points ?? 0)} XP
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Leaderboard Preview */}
+          <Card className="border-gray-200 bg-white">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="text-base font-semibold text-gray-900">Top Learners</CardTitle>
+              <Link href="/leaderboard" className="text-xs text-purple-600 hover:text-purple-700">
+                View all
+              </Link>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {leaderboard.slice(0, 5).map((entry: any, i: number) => (
+                  <div key={entry.id} className="flex items-center gap-3">
+                    <span className="w-5 text-center text-xs font-semibold text-gray-400">
+                      {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`}
+                    </span>
+                    <p className="flex-1 truncate text-sm text-gray-900">{entry.full_name}</p>
+                    <span className="text-xs text-gray-500">
+                      {Number(entry.total_xp ?? entry.xp ?? entry.total_points ?? 0).toLocaleString()} XP
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

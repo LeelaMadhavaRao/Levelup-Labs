@@ -8,12 +8,8 @@ import { getStreakMultiplier } from '@/lib/gamification';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Code, Trophy, CheckCircle, Circle, Flame, Star, Target, Zap, Lock, Unlock, Loader2 } from 'lucide-react';
-import { Orbitron, Rajdhani } from 'next/font/google';
+import { Code, CheckCircle, Circle, Flame, Zap, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-
-const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
-const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 export default function ProblemsListPage() {
   const router = useRouter();
@@ -31,7 +27,6 @@ export default function ProblemsListPage() {
     loadData();
   }, [topicId]);
 
-  // Auto-generate problems if none exist and not already generating
   useEffect(() => {
     if (!loading && !generating && problems.length === 0 && topic && user && !hasAttemptedGeneration.current) {
       hasAttemptedGeneration.current = true;
@@ -42,19 +37,18 @@ export default function ProblemsListPage() {
   const loadData = async () => {
     try {
       const currentUser = await getCurrentUser();
-      
       if (!currentUser) {
         router.push('/auth/login');
         return;
       }
-
       setUser(currentUser);
+
       const [topicData, problemsData, multiplier] = await Promise.all([
         getTopic(topicId),
         getTopicProblems(topicId, currentUser.id),
         getStreakMultiplier(currentUser.id).catch(() => 1),
       ]);
-      
+
       setTopic(topicData);
       setProblems(problemsData);
       setStreakMultiplier(multiplier);
@@ -68,12 +62,11 @@ export default function ProblemsListPage() {
 
   const handleGenerateProblems = async () => {
     if (!topic || !user) return;
-    
     setGenerating(true);
     toast.info('Generating coding problems using AI... This may take 30-60 seconds.');
 
     try {
-      const numProblems = 3; // Generate 3 problems
+      const numProblems = 3;
       const { problems: newProblems, error } = await generateProblemsForTopic(
         topic.id,
         topic.name,
@@ -86,7 +79,6 @@ export default function ProblemsListPage() {
       }
 
       toast.success(`Successfully generated ${newProblems.length} coding problems!`);
-      // Reload from DB to get proper structure with solution status
       const refreshed = await getTopicProblems(topic.id, user.id);
       setProblems(refreshed);
     } catch (error) {
@@ -99,32 +91,23 @@ export default function ProblemsListPage() {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'medium':
-        return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
-      case 'hard':
-        return 'bg-red-500/10 text-red-500 border-red-500/20';
-      default:
-        return '';
+      case 'easy': return 'bg-green-50 text-green-600 border-green-500/20';
+      case 'medium': return 'bg-yellow-50 text-yellow-600 border-yellow-500/20';
+      case 'hard': return 'bg-red-50 text-red-600 border-red-500/20';
+      default: return '';
     }
   };
 
   const getXpByDifficulty = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy':
-        return 100;
-      case 'medium':
-        return 200;
-      case 'hard':
-        return 300;
-      default:
-        return 0;
+      case 'easy': return 100;
+      case 'medium': return 200;
+      case 'hard': return 300;
+      default: return 0;
     }
   };
 
   const getProblemStatus = (problem: any) => {
-    // getTopicProblems maps the user's solution status to a top-level 'status' field
     if (problem.status === 'completed') return 'completed';
     if (problem.status) return 'attempted';
     return null;
@@ -132,16 +115,13 @@ export default function ProblemsListPage() {
 
   if (loading) {
     return (
-      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-100`}>
-        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
-        <div className="relative z-20 container py-8 max-w-6xl">
-          <div className="animate-pulse space-y-4">
-            <div className="h-10 w-80 rounded bg-white/10" />
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-32 rounded bg-white/10" />
-              ))}
-            </div>
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-10 w-80 rounded bg-gray-200" />
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-48 rounded-lg bg-gray-200" />
+            ))}
           </div>
         </div>
       </div>
@@ -150,11 +130,11 @@ export default function ProblemsListPage() {
 
   if (!topic) {
     return (
-      <div className={`${rajdhani.className} container py-8`}>
-        <Card className="card-interactive border-white/15 bg-black/60 text-slate-100">
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+        <Card className="border-gray-200 bg-white">
           <CardContent className="py-16 text-center">
-            <h2 className="text-xl font-semibold mb-2">Topic not found</h2>
-            <Button onClick={() => router.push('/my-courses')}>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Topic not found</h2>
+            <Button onClick={() => router.push('/my-courses')} className="bg-purple-600 hover:bg-purple-500 text-gray-900">
               Back to My Courses
             </Button>
           </CardContent>
@@ -167,90 +147,63 @@ export default function ProblemsListPage() {
   const totalXp = problems.reduce((acc, p) => acc + getXpByDifficulty(p.difficulty), 0);
 
   return (
-    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden bg-[#09090B] text-slate-100`}>
-      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Coding Problems</h1>
+          <p className="text-gray-500 text-sm mt-1">{topic.name} — Complete challenges to master this topic</p>
+        </div>
 
-      <div className="relative z-20 container py-8 max-w-6xl space-y-8">
-      {/* Header Panel */}
-      <div className="rounded-2xl border border-purple-500/30 bg-black/50 p-6 shadow-md">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h1 className={`${orbitron.className} text-3xl font-black tracking-tight md:text-4xl uppercase`}>
-              <span className="text-purple-500 mr-2">/</span>
-              PROBLEM SELECTION
-            </h1>
-            <p className="mt-2 text-slate-400 font-mono text-sm">
-              // TARGET: {topic.name.toUpperCase()} <br/>
-              // OBJECTIVE: Complete coding challenges to master this domain.
-            </p>
+        <div className="flex gap-3 text-center">
+          <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 min-w-[80px]">
+            <p className="text-xs text-gray-400">Solved</p>
+            <p className="text-xl font-bold text-gray-900">{completedCount}/{problems.length}</p>
           </div>
-          
-          <div className="grid grid-cols-3 gap-3 text-center min-w-[300px]">
-            <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3">
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Status</p>
-              <p className="text-2xl font-bold text-cyan-300 font-mono leading-none">{completedCount}/{problems.length}</p>
-            </div>
-            <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3">
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">XP Pool</p>
-              <p className="text-2xl font-bold text-purple-300 font-mono leading-none">{totalXp}</p>
-            </div>
-            <div className="rounded-lg border border-white/15 bg-black/60 px-4 py-3 bg-gradient-to-b from-amber-950/30 to-black/60 border-amber-500/30">
-              <p className="text-[10px] uppercase tracking-wider text-amber-400 mb-1">Multiplier</p>
-              <div className="flex items-center justify-center gap-1">
-                <Flame className="h-4 w-4 text-amber-500 fill-amber-500 animate-pulse" />
-                <p className="text-2xl font-bold text-amber-300 font-mono leading-none">x{streakMultiplier.toFixed(2)}</p>
-              </div>
+          <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 min-w-[80px]">
+            <p className="text-xs text-gray-400">Total XP</p>
+            <p className="text-xl font-bold text-purple-600">{totalXp}</p>
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 min-w-[80px]">
+            <p className="text-xs text-gray-400">Streak</p>
+            <div className="flex items-center justify-center gap-1">
+              <Flame className="h-4 w-4 text-amber-500" />
+              <p className="text-xl font-bold text-amber-400">x{streakMultiplier.toFixed(2)}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Problems List */}
+      {/* Problems */}
       {problems.length === 0 ? (
-        <Card className="card-interactive border-white/15 bg-black/60 text-slate-100 min-h-[400px] flex items-center justify-center">
+        <Card className="border-gray-200 bg-white">
           <CardContent className="text-center space-y-4 py-16">
-            <div className="relative">
-              {generating ? (
-                <Loader2 className="h-16 w-16 text-purple-500 mx-auto animate-spin" />
-              ) : (
-                <>
-                  <Code className="h-16 w-16 text-slate-700 mx-auto" />
-                  <Lock className="h-6 w-6 text-slate-500 absolute bottom-0 right-1/2 translate-x-12" />
-                </>
-              )}
-            </div>
-            <div>
-              <h3 className={`${orbitron.className} text-xl font-bold mb-2 tracking-wide`}>
-                {generating ? 'GENERATING PROBLEMS' : 'NO PROBLEMS DETECTED'}
-              </h3>
-              <p className="text-slate-400 max-w-md mx-auto">
-                {generating 
-                  ? 'AI is creating custom coding challenges for this topic. Please wait...' 
-                  : 'No active coding challenges found. Generate AI-powered problems to continue your training.'}
-              </p>
-            </div>
-            {!generating ? (
-              <div className="flex gap-3 justify-center">
-                <Button 
-                  onClick={handleGenerateProblems}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
-                >
-                  <Zap className="mr-2 h-4 w-4" />
-                  Generate Problems with AI
-                </Button>
-                <Button 
-                  onClick={() => router.push('/my-courses')} 
-                  variant="outline" 
-                  className="border-white/20 hover:bg-white/10"
-                >
-                  Return to Base
-                </Button>
-              </div>
+            {generating ? (
+              <>
+                <Loader2 className="h-12 w-12 text-purple-600 mx-auto animate-spin" />
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Generating Problems</h3>
+                  <p className="text-gray-500 text-sm mt-1">AI is creating custom challenges for this topic...</p>
+                  <p className="text-gray-400 text-xs mt-2">This may take 30-60 seconds</p>
+                </div>
+              </>
             ) : (
-              <div className="flex items-center gap-2 justify-center text-sm text-slate-400">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>This may take 30-60 seconds...</span>
-              </div>
+              <>
+                <Code className="h-12 w-12 text-gray-400 mx-auto" />
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">No Problems Yet</h3>
+                  <p className="text-gray-500 text-sm mt-1">Generate AI-powered coding challenges to continue</p>
+                </div>
+                <div className="flex gap-3 justify-center">
+                  <Button onClick={handleGenerateProblems} className="bg-purple-600 hover:bg-purple-500 text-gray-900">
+                    <Zap className="mr-2 h-4 w-4" />
+                    Generate Problems
+                  </Button>
+                  <Button onClick={() => router.push('/my-courses')} variant="outline" className="border-gray-200 text-gray-600 hover:bg-gray-100">
+                    Back to Courses
+                  </Button>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -261,87 +214,70 @@ export default function ProblemsListPage() {
             const isCompleted = status === 'completed';
             const baseXp = getXpByDifficulty(problem.difficulty);
             const effectiveXp = Math.round(baseXp * streakMultiplier);
-            
-            // Difficulty styling
-            let diffColor = 'text-slate-400';
-            let diffBorder = 'border-slate-500/30';
-            if (problem.difficulty === 'easy') { diffColor = 'text-green-400'; diffBorder = 'border-green-500/30'; }
-            if (problem.difficulty === 'medium') { diffColor = 'text-yellow-400'; diffBorder = 'border-yellow-500/30'; }
-            if (problem.difficulty === 'hard') { diffColor = 'text-red-400'; diffBorder = 'border-red-500/30'; }
 
             return (
               <Card
                 key={problem.id}
-                className={`group relative flex flex-col justify-between overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(124,58,237,0.15)] ${
-                  isCompleted 
-                    ? 'border-green-500/30 bg-green-950/10' 
-                    : 'border-white/10 bg-black/80 hover:border-purple-500/50'
+                className={`flex flex-col justify-between transition-colors hover:border-gray-300 ${
+                  isCompleted
+                    ? 'border-green-200 bg-green-50'
+                    : 'border-gray-200 bg-white'
                 }`}
               >
-                {/* Background Decoration */}
-                <div className="absolute right-0 top-0 h-24 w-24 translate-x-8 translate-y--8 bg-gradient-to-br from-purple-500/10 to-transparent blur-2xl transition-opacity group-hover:opacity-100 opacity-0" />
-                
-                <CardHeader className="relative z-10 space-y-4 pb-2">
+                <CardHeader className="space-y-3 pb-2">
                   <div className="flex items-start justify-between">
-                    <Badge variant="outline" className={`uppercase tracking-wider text-[10px] ${diffBorder} ${diffColor} bg-transparent`}>
+                    <Badge variant="outline" className={`text-xs capitalize ${getDifficultyColor(problem.difficulty)}`}>
                       {problem.difficulty}
                     </Badge>
-                    <div className="flex items-center gap-1 text-xs font-mono text-slate-500">
-                      <Zap className="h-3 w-3 text-yellow-500/70" />
-                      <span>{effectiveXp} XP</span>
+                    <div className="flex items-center gap-1 text-xs text-gray-400">
+                      <Zap className="h-3 w-3 text-yellow-500" />
+                      {effectiveXp} XP
                     </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <CardTitle className={`text-lg leading-tight ${isCompleted ? 'text-green-300' : 'text-slate-100 group-hover:text-purple-300'} transition-colors`}>
-                       {problem.title}
+                  <div>
+                    <CardTitle className={`text-base ${isCompleted ? 'text-green-300' : 'text-gray-900'}`}>
+                      {problem.title}
                     </CardTitle>
-                    <CardDescription className="line-clamp-2 text-xs text-slate-400">
+                    <CardDescription className="line-clamp-2 text-xs text-gray-500 mt-1">
                       {problem.description}
                     </CardDescription>
                   </div>
                 </CardHeader>
 
-                <CardContent className="relative z-10 pt-4">
-                  <div className="mt-auto flex items-center justify-between border-t border-white/5 pt-4">
-                    <div className="flex items-center gap-2">
+                <CardContent className="pt-3">
+                  <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+                    <div className="flex items-center gap-1.5 text-xs">
                       {isCompleted ? (
-                        <div className="flex items-center gap-1.5 text-xs text-green-400 font-bold tracking-wide">
-                          <CheckCircle className="h-4 w-4" />
-                          <span>CLEARED</span>
-                        </div>
+                        <span className="flex items-center gap-1 text-green-600 font-medium">
+                          <CheckCircle className="h-3.5 w-3.5" />
+                          Solved
+                        </span>
                       ) : (
-                        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
-                           <Target className="h-3.5 w-3.5" />
-                           <span>PENDING</span>
-                        </div>
+                        <span className="flex items-center gap-1 text-gray-400">
+                          <Circle className="h-3.5 w-3.5" />
+                          Pending
+                        </span>
                       )}
                     </div>
-                    
                     <Button
                       size="sm"
                       onClick={() => router.push(`/topic/${topicId}/problems/${problem.id}/explain`)}
-                      className={isCompleted 
-                        ? 'bg-transparent border border-green-500/30 text-green-400 hover:bg-green-500/10 h-8 text-xs' 
-                        : 'bg-white/5 hover:bg-purple-600 hover:text-white text-slate-300 border border-white/10 hover:border-purple-500 h-8 text-xs transition-colors'}
+                      className={
+                        isCompleted
+                          ? 'border-gray-200 bg-transparent text-gray-600 hover:bg-gray-100 h-8 text-xs'
+                          : 'bg-purple-600 hover:bg-purple-500 text-gray-900 h-8 text-xs'
+                      }
+                      variant={isCompleted ? 'outline' : 'default'}
                     >
-                      {isCompleted ? 'Review Details' : 'Start'}
+                      {isCompleted ? 'Review' : 'Start'}
                     </Button>
                   </div>
                 </CardContent>
-                
-                {/* Active Corner Accent */}
-                {!isCompleted && (
-                   <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Unlock className="h-4 w-4 text-purple-400" />
-                   </div>
-                )}
               </Card>
             );
           })}
         </div>
       )}
-      </div>
     </div>
   );
 }

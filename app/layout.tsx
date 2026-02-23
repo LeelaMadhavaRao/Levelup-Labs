@@ -19,19 +19,17 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className={`${spaceGrotesk.className} antialiased`}>
         <ThemeProvider
           attribute="class"
-          forcedTheme="dark"
+          defaultTheme="light"
+          forcedTheme="light"
           disableTransitionOnChange
         >
           <Navbar />
-          <main className="page-shell solo-root relative min-h-screen overflow-hidden bg-[#050508] text-slate-100">
-            <div className="pointer-events-none fixed inset-0 z-[1] nebula-bg opacity-30" />
-            <div className="hunter-grid-bg pointer-events-none fixed inset-0 z-[1] opacity-20" />
-            <div className="scanlines pointer-events-none fixed inset-0 z-[2] opacity-[0.04]" />
-            <div className="relative z-[3]">{children}</div>
+          <main className="relative min-h-screen bg-gray-50 text-gray-900">
+            {children}
           </main>
           <Toaster />
         </ThemeProvider>

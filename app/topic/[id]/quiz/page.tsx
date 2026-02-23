@@ -2,93 +2,75 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { getTopic, generateQuiz, submitQuizResponse } from '@/lib/quiz';
+import { getTopic, markQuizPassed } from '@/lib/courses';
+import { generateQuiz, submitQuizResponse } from '@/lib/quiz';
 import { getCurrentUser } from '@/lib/auth';
-import { markQuizPassed } from '@/lib/courses';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
-import { CheckCircle, Loader2, XCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
-import { Orbitron, Rajdhani } from 'next/font/google';
-
-const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
-const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
-
-interface Question {
-  question: string;
-  options: string[];
-  correctAnswer: number;
-}
 
 export default function QuizPage() {
   const router = useRouter();
   const params = useParams();
   const topicId = params.id as string;
+
   const [user, setUser] = useState<any>(null);
   const [topic, setTopic] = useState<any>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, setQuestions] = useState<any[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadData();
+    loadQuiz();
   }, [topicId]);
 
-  const loadData = async () => {
-    const currentUser = await getCurrentUser();
-    
-    if (!currentUser) {
-      router.push('/auth/login');
-      return;
-    }
-
-    setUser(currentUser);
-    const topicData = await getTopic(topicId);
-    setTopic(topicData);
-
-    // Generate quiz
-    await generateQuizQuestions(topicId, topicData.name, topicData.overview);
-  };
-
-  const generateQuizQuestions = async (topicId: string, topicName: string, topicOverview?: string) => {
-    setGenerating(true);
-    
+  const loadQuiz = async () => {
     try {
-      const quizData = await generateQuiz(topicId, topicName, 5, topicOverview);
-      
-      if (quizData.error || !quizData.questions) {
-        console.error('Error generating quiz:', quizData.error);
-        toast.error(quizData.error || 'Failed to generate quiz');
-        setQuestions([]); // Set empty array to show error state
-      } else {
-        setQuestions(quizData.questions);
-        setSelectedAnswers(new Array(quizData.questions.length).fill(-1));
-        if ((quizData as any).warning) {
-          toast.message((quizData as any).warning);
-        }
+      const currentUser = await getCurrentUser();
+      if (!currentUser) {
+        router.push('/auth/login');
+        return;
       }
-    } catch (error) {
-      console.error('Error generating quiz:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast.error(`Failed to generate quiz: ${errorMessage}`);
-      setQuestions([]); // Set empty array to show error state
+      setUser(currentUser);
+
+      const topicData = await getTopic(topicId);
+      if (!topicData) {
+        setError('Topic not found');
+        setLoading(false);
+        return;
+      }
+      setTopic(topicData);
+
+      const result = await generateQuiz(topicId, topicData.name, 5, topicData.overview || topicData.description || '');
+      if (result.error || !result.questions || result.questions.length === 0) {
+        setError(result.error || 'Failed to generate quiz questions');
+        setLoading(false);
+        return;
+      }
+
+      setQuestions(result.questions);
+      setSelectedAnswers(new Array(result.questions.length).fill(-1));
+    } catch (err) {
+      console.error('Failed to load quiz:', err);
+      setError('Failed to load quiz. Please try again.');
     } finally {
-      setGenerating(false);
       setLoading(false);
     }
   };
 
   const handleAnswerSelect = (answerIndex: number) => {
-    const newAnswers = [...selectedAnswers];
-    newAnswers[currentQuestion] = answerIndex;
-    setSelectedAnswers(newAnswers);
+    const updated = [...selectedAnswers];
+    updated[currentQuestion] = answerIndex;
+    setSelectedAnswers(updated);
   };
 
   const handleNext = () => {
@@ -104,167 +86,122 @@ export default function QuizPage() {
   };
 
   const handleSubmit = async () => {
-    if (selectedAnswers.includes(-1)) {
+    if (selectedAnswers.some((a) => a === -1)) {
       toast.error('Please answer all questions before submitting');
       return;
     }
 
-    // Calculate score
-    let correctCount = 0;
-    questions.forEach((question, index) => {
-      if (selectedAnswers[index] === question.correctAnswer) {
-        correctCount++;
+    setSubmitting(true);
+
+    try {
+      let correct = 0;
+      for (let i = 0; i < questions.length; i++) {
+        if (selectedAnswers[i] === questions[i].correctAnswer) {
+          correct++;
+        }
       }
-    });
 
-    const finalScore = (correctCount / questions.length) * 100;
-    setScore(finalScore);
-    setSubmitted(true);
+      const scorePercent = Math.round((correct / questions.length) * 100);
+      setScore(scorePercent);
 
-    // Submit quiz response
-    if (user && topic) {
-      await submitQuizResponse(user.id, topic.id, finalScore, selectedAnswers, questions);
-      
-      // If passed, update topic_progress.quiz_passed
-      if (finalScore >= 70) {
-        await markQuizPassed(user.id, topic.id);
+      await submitQuizResponse(user.id, topicId, scorePercent, selectedAnswers, questions);
+
+      if (scorePercent >= 70) {
+        await markQuizPassed(user.id, topicId);
+        toast.success(`Quiz passed! ${scorePercent}%`);
+      } else {
+        toast.error(`Quiz not passed. You scored ${scorePercent}%, need 70% to pass.`);
       }
-    }
 
-    if (finalScore >= 70) {
-      toast.success('Congratulations! You passed the quiz!');
-    } else {
-      toast.error('You need at least 70% to pass. Try again!');
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Failed to submit quiz:', err);
+      toast.error('Failed to submit quiz');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const progress = questions.length > 0 ? ((currentQuestion + 1) / questions.length) * 100 : 0;
 
-  if (loading || generating) {
+  if (loading) {
     return (
-      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
-        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
-        <div className="relative z-20 container py-8 max-w-3xl">
-        <Card className="border-purple-500/30 bg-black/70 text-slate-100 shadow-sm">
-          <CardContent className="py-16 text-center space-y-4">
-            <Loader2 className="h-12 w-12 animate-spin mx-auto text-purple-300" />
-            <h2 className={`${orbitron.className} text-xl font-semibold`}>
-              {generating ? 'Generating quiz questions with AI...' : 'Loading...'}
-            </h2>
-            <p className="text-slate-400">This may take a few moments</p>
-          </CardContent>
-        </Card>
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="flex flex-col items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-purple-600 mb-4" />
+          <p className="text-gray-500">Generating quiz questions with AI...</p>
+          <p className="text-xs text-gray-400 mt-1">This may take a few seconds</p>
         </div>
       </div>
     );
   }
 
-  if (!topic || questions.length === 0) {
+  if (error) {
     return (
-      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
-        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
-        <div className="relative z-20 container py-8 max-w-3xl">
-        <Card className="border-purple-500/30 bg-black/70 text-slate-100 shadow-sm">
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+        <Card className="border-gray-200 bg-white">
           <CardContent className="py-16 text-center space-y-4">
-            <XCircle className="h-16 w-16 mx-auto text-destructive" />
-            <div>
-              <h2 className="text-xl font-semibold mb-2">Unable to Generate Quiz</h2>
-              <p className="text-sm text-slate-400 max-w-md mx-auto">
-                The quiz generation service is unavailable. This usually means:
-              </p>
-              <ul className="text-sm text-slate-400 mt-3 space-y-1 max-w-md mx-auto text-left">
-                <li>• Edge Function not deployed</li>
-                <li>• Gemini API keys not configured in Supabase</li>
-                <li>• API rate limit exceeded</li>
-              </ul>
-            </div>
-            <div className="flex gap-2 justify-center mt-6">
-              <Button onClick={() => router.push(`/topic/${topicId}/watch`)}>
-                Back to Video
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setLoading(true);
-                  loadData();
-                }}
-              >
+            <XCircle className="h-12 w-12 text-red-600 mx-auto" />
+            <h2 className="text-xl font-semibold text-gray-900">{error}</h2>
+            <div className="flex gap-3 justify-center">
+              <Button onClick={() => window.location.reload()} className="bg-purple-600 hover:bg-purple-500 text-gray-900">
+                <RotateCcw className="mr-2 h-4 w-4" />
                 Try Again
               </Button>
+              <Button variant="outline" onClick={() => router.push(`/topic/${topicId}`)} className="border-gray-200 text-gray-600 hover:bg-gray-100">
+                Back to Topic
+              </Button>
             </div>
           </CardContent>
         </Card>
-        </div>
       </div>
     );
   }
 
+  // Results screen
   if (submitted) {
     const passed = score >= 70;
-
     return (
-      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
-        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
-        <div className="relative z-20 container py-8 max-w-3xl">
-        <Card className="border-purple-500/30 bg-black/70 text-slate-100 shadow-sm">
-          <CardHeader className="text-center pb-8">
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+        <Card className={`${passed ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
+          <CardContent className="py-10 text-center space-y-4">
             {passed ? (
-              <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+              <CheckCircle className="h-16 w-16 text-green-600 mx-auto" />
             ) : (
-              <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+              <XCircle className="h-16 w-16 text-red-600 mx-auto" />
             )}
-            <CardTitle className={`${orbitron.className} text-3xl`}>
-              {passed ? 'Congratulations!' : 'Keep Learning'}
-            </CardTitle>
-            <CardDescription className="text-xl pt-2">
-              Your score: <span className="font-bold text-white">{score.toFixed(0)}%</span>
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Correct Answers</span>
-                <span className="font-medium">
-                  {questions.filter((q, i) => selectedAnswers[i] === q.correctAnswer).length} / {questions.length}
-                </span>
-              </div>
-              <Progress value={score} className="h-2" />
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {passed ? 'Quiz Passed!' : 'Quiz Not Passed'}
+              </h2>
+              <p className="text-gray-500 mt-1">
+                You scored <span className={`font-bold ${passed ? 'text-green-600' : 'text-red-600'}`}>{score}%</span>
+                {passed ? '' : ' — You need 70% to pass'}
+              </p>
             </div>
-
-            <div className="space-y-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
               {passed ? (
-                <>
-                  <p className="text-center text-slate-400">
-                    Great job! You're ready to move on to the coding challenges.
-                  </p>
-                  <div className="flex gap-3 justify-center">
-                    <Button onClick={() => router.push(`/topic/${topic.id}/problems`)} className="bg-purple-700 hover:bg-purple-600 text-white border border-purple-400/40">
-                      Start Problems
-                    </Button>
-                    <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => router.push('/my-courses')}>
-                      My Courses
-                    </Button>
-                  </div>
-                </>
+                <Button onClick={() => router.push(`/topic/${topicId}/problems`)} className="bg-purple-600 hover:bg-purple-500 text-gray-900">
+                  <ArrowRight className="mr-2 h-4 w-4" />
+                  Start Problems
+                </Button>
               ) : (
                 <>
-                  <p className="text-center text-slate-400">
-                    You need at least 70% to pass. Review the material and try again!
-                  </p>
-                  <div className="flex gap-3 justify-center">
-                    <Button onClick={() => router.push(`/topic/${topic.id}/watch`)} className="bg-purple-700 hover:bg-purple-600 text-white border border-purple-400/40">
-                      Watch Video Again
-                    </Button>
-                    <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => window.location.reload()}>
-                      Retry Quiz
-                    </Button>
-                  </div>
+                  <Button onClick={() => router.push(`/topic/${topicId}/watch`)} variant="outline" className="border-gray-200 text-gray-600 hover:bg-gray-100">
+                    Watch Video Again
+                  </Button>
+                  <Button onClick={() => window.location.reload()} className="bg-purple-600 hover:bg-purple-500 text-gray-900">
+                    <RotateCcw className="mr-2 h-4 w-4" />
+                    Retry Quiz
+                  </Button>
                 </>
               )}
+              <Button variant="ghost" onClick={() => router.push(`/topic/${topicId}`)} className="text-gray-500 hover:text-gray-900">
+                Back to Topic
+              </Button>
             </div>
           </CardContent>
         </Card>
-        </div>
       </div>
     );
   }
@@ -272,27 +209,28 @@ export default function QuizPage() {
   const currentQ = questions[currentQuestion];
 
   return (
-    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
-      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-xl font-bold text-gray-900">{topic.name}</h1>
+        <p className="text-sm text-gray-500">Quiz Assessment</p>
+      </div>
 
-      <div className="relative z-20 container py-8 max-w-3xl space-y-6">
-      <div className="rounded-xl border border-purple-500/30 bg-black/70 p-4 shadow-sm">
-        <p className={`${orbitron.className} text-xs tracking-[0.25em] text-purple-300/90`}>ASSESSMENT CENTER</p>
-        <h1 className={`${orbitron.className} mt-1 text-xl font-bold text-white`}>{topic.name}</h1>
-      </div>
       {/* Progress */}
-      <div className="space-y-2 rounded-xl border border-white/10 bg-black/60 p-4">
-        <div className="flex justify-between text-sm">
-          <span className="text-slate-400">Question {currentQuestion + 1} of {questions.length}</span>
-          <span className="font-medium">{progress.toFixed(0)}% Complete</span>
-        </div>
-        <Progress value={progress} />
-      </div>
+      <Card className="border-gray-200 bg-white">
+        <CardContent className="pt-6 pb-4">
+          <div className="flex justify-between text-sm mb-2">
+            <span className="text-gray-500">Question {currentQuestion + 1} of {questions.length}</span>
+            <span className="font-medium text-gray-900">{progress.toFixed(0)}%</span>
+          </div>
+          <Progress value={progress} className="h-1.5 bg-gray-200 [&>div]:bg-purple-500" />
+        </CardContent>
+      </Card>
 
       {/* Question */}
-      <Card className="border-purple-500/20 bg-black/70 text-slate-100">
+      <Card className="border-gray-200 bg-white">
         <CardHeader>
-          <CardTitle className={`${orbitron.className} text-xl`}>{currentQ.question}</CardTitle>
+          <CardTitle className="text-lg text-gray-900">{currentQ.question}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <RadioGroup
@@ -300,20 +238,17 @@ export default function QuizPage() {
             onValueChange={(value) => handleAnswerSelect(parseInt(value))}
           >
             <div className="space-y-3">
-              {currentQ.options.map((option, index) => (
+              {currentQ.options.map((option: string, index: number) => (
                 <div
                   key={index}
-                  className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-colors ${
+                  className={`flex items-center space-x-3 p-4 rounded-lg border transition-colors cursor-pointer ${
                     selectedAnswers[currentQuestion] === index
-                      ? 'border-purple-500/60 bg-purple-500/10'
-                      : 'border-white/10 hover:border-purple-500/40'
+                      ? 'border-purple-500/60 bg-purple-50'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   <RadioGroupItem value={index.toString()} id={`option-${index}`} />
-                  <Label
-                    htmlFor={`option-${index}`}
-                    className="flex-1 cursor-pointer text-base leading-relaxed"
-                  >
+                  <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-sm text-gray-700 leading-relaxed">
                     {option}
                   </Label>
                 </div>
@@ -322,23 +257,36 @@ export default function QuizPage() {
           </RadioGroup>
 
           {/* Navigation */}
-          <div className="flex justify-between pt-4">
+          <div className="flex justify-between pt-4 border-t border-gray-100">
             <Button
               variant="outline"
               onClick={handlePrevious}
               disabled={currentQuestion === 0}
-              className="border-white/20 text-white hover:bg-white/10"
+              className="border-gray-200 text-gray-600 hover:bg-gray-100"
             >
+              <ArrowLeft className="mr-2 h-4 w-4" />
               Previous
             </Button>
 
             {currentQuestion === questions.length - 1 ? (
-              <Button onClick={handleSubmit} className="bg-purple-700 hover:bg-purple-600 text-white border border-purple-400/40">
-                Submit Quiz
+              <Button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="bg-purple-600 hover:bg-purple-500 text-gray-900"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  'Submit Quiz'
+                )}
               </Button>
             ) : (
-              <Button onClick={handleNext} className="bg-purple-700 hover:bg-purple-600 text-white border border-purple-400/40">
+              <Button onClick={handleNext} className="bg-purple-600 hover:bg-purple-500 text-gray-900">
                 Next
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             )}
           </div>
@@ -346,7 +294,7 @@ export default function QuizPage() {
       </Card>
 
       {/* Question Navigator */}
-      <Card className="border-white/10 bg-black/60 text-slate-100">
+      <Card className="border-gray-200 bg-white">
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-2">
             {questions.map((_, index) => (
@@ -354,7 +302,11 @@ export default function QuizPage() {
                 key={index}
                 variant={currentQuestion === index ? 'default' : 'outline'}
                 size="sm"
-                className="w-10 h-10 border-white/20"
+                className={`w-10 h-10 ${
+                  currentQuestion === index
+                    ? 'bg-purple-600 hover:bg-purple-500 text-gray-900'
+                    : 'border-gray-200 text-gray-600 hover:bg-gray-100'
+                }`}
                 onClick={() => setCurrentQuestion(index)}
               >
                 {selectedAnswers[index] !== -1 ? (
@@ -367,7 +319,6 @@ export default function QuizPage() {
           </div>
         </CardContent>
       </Card>
-      </div>
     </div>
   );
 }

@@ -1,18 +1,17 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Orbitron, Rajdhani } from 'next/font/google';
-import { getTopic, markVideoAsWatched } from '@/lib/courses';
-import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
+import { getTopic, markVideoAsWatched, getTopicProgress } from '@/lib/courses';
+import { getCurrentUser } from '@/lib/auth';
 import { createClient } from '@/lib/supabase';
 import { hasUserPassedQuiz } from '@/lib/quiz';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Play, BookOpen, Loader2, Sparkles, Clock, Lock, Star, Zap, Code } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { CheckCircle, PlayCircle, BookOpen, Loader2, Sparkles, Lock, ArrowRight, Code, FileQuestion } from 'lucide-react';
 import { toast } from 'sonner';
-
-const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
-const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 export default function WatchVideoPage() {
   const router = useRouter();
@@ -26,8 +25,6 @@ export default function WatchVideoPage() {
   const [showOverview, setShowOverview] = useState(false);
   const [enhancedOverview, setEnhancedOverview] = useState<string | null>(null);
   const [enhancing, setEnhancing] = useState(false);
-  const [systemTime, setSystemTime] = useState<string>(() => new Date().toLocaleTimeString('en-US', { hour12: false }));
-  const [avatarSrc, setAvatarSrc] = useState<string>('');
 
   useEffect(() => {
     loadData();
@@ -35,33 +32,29 @@ export default function WatchVideoPage() {
 
   const loadData = async () => {
     try {
-    const currentUser = await getCurrentUser();
-    
-    if (!currentUser) {
-      router.push('/auth/login');
-      return;
-    }
+      const currentUser = await getCurrentUser();
+      if (!currentUser) {
+        router.push('/auth/login');
+        return;
+      }
 
-    setUser(currentUser);
-    setAvatarSrc(currentUser.avatar_url || generateHunterAvatarUrl(`${currentUser.id}-${currentUser.full_name || currentUser.email || 'hunter'}`));
-    const topicData = await getTopic(topicId);
-    setTopic(topicData);
-    
-    // Check actual topic_progress for watch status (topics table doesn't have video_watched)
-    try {
-      const { getTopicProgress } = await import('@/lib/courses');
-      const progress = await getTopicProgress(currentUser.id, topicId);
-      setWatched(progress.video_watched);
-    } catch {
-      setWatched(false);
-    }
-    
-    try {
-      const passed = await hasUserPassedQuiz(currentUser.id, topicId);
-      setQuizPassed(!!passed);
-    } catch {
-      setQuizPassed(false);
-    }
+      setUser(currentUser);
+      const topicData = await getTopic(topicId);
+      setTopic(topicData);
+
+      try {
+        const progress = await getTopicProgress(currentUser.id, topicId);
+        setWatched(progress.video_watched);
+      } catch {
+        setWatched(false);
+      }
+
+      try {
+        const passed = await hasUserPassedQuiz(currentUser.id, topicId);
+        setQuizPassed(!!passed);
+      } catch {
+        setQuizPassed(false);
+      }
     } catch (err) {
       console.error('Error loading watch page data:', err);
     } finally {
@@ -69,36 +62,24 @@ export default function WatchVideoPage() {
     }
   };
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setSystemTime(new Date().toLocaleTimeString('en-US', { hour12: false }));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   const handleMarkAsWatched = async () => {
     if (!user || !topic) return;
-
     const { error } = await markVideoAsWatched(user.id, topic.id);
-    
     if (error) {
       toast.error('Failed to mark video as watched');
       return;
     }
-
     setWatched(true);
     toast.success('Video marked as watched!');
   };
 
   const handleShowOverview = async () => {
     if (enhancedOverview) {
-      // Already loaded, just toggle
       setShowOverview(!showOverview);
       return;
     }
 
     if (!topic?.overview) {
-      // No admin-provided overview, just show description
       setShowOverview(!showOverview);
       return;
     }
@@ -129,16 +110,12 @@ export default function WatchVideoPage() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to enhance overview');
-      }
-
+      if (!response.ok) throw new Error('Failed to enhance overview');
       const data = await response.json();
       setEnhancedOverview(data.enhancedOverview);
     } catch (error) {
       console.error('Error enhancing overview:', error);
       toast.error('Failed to generate enhanced overview');
-      // Fall back to showing raw overview
       setEnhancedOverview(topic.overview);
     } finally {
       setEnhancing(false);
@@ -154,13 +131,10 @@ export default function WatchVideoPage() {
 
   if (loading) {
     return (
-      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-white`}>
-        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
-        <div className="relative z-20 container py-8 max-w-6xl">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-10 w-80 rounded bg-white/10" />
-          <div className="aspect-video rounded bg-white/10" />
-        </div>
+          <div className="h-10 w-80 rounded bg-gray-200" />
+          <div className="aspect-video rounded bg-gray-200" />
         </div>
       </div>
     );
@@ -168,228 +142,192 @@ export default function WatchVideoPage() {
 
   if (!topic) {
     return (
-      <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-white`}>
-        <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
-        <div className="relative z-20 container py-8 max-w-3xl text-center">
-          <div className="rounded-lg border border-white/10 bg-black/60 p-10">
-            <h2 className="text-xl font-semibold mb-2">Topic not found</h2>
-            <Button onClick={() => router.push('/my-courses')} className="bg-purple-700 hover:bg-purple-600 border border-purple-400/40 text-white">Back to My Courses</Button>
-          </div>
-        </div>
+      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+        <Card className="border-gray-200 bg-white">
+          <CardContent className="py-16 text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Topic not found</h2>
+            <Button onClick={() => router.push('/my-courses')} className="bg-purple-600 hover:bg-purple-500 text-gray-900">
+              Back to My Courses
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  return (
-    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-white`}>
-      <div className="scan-line" />
-      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-900/10 via-black/80 to-cyan-900/10" />
+  const progressionSteps = [
+    {
+      label: 'Watch Video',
+      icon: PlayCircle,
+      done: watched,
+      active: !watched,
+    },
+    {
+      label: 'Take Quiz',
+      icon: FileQuestion,
+      done: quizPassed,
+      active: watched && !quizPassed,
+    },
+    {
+      label: 'Solve Problems',
+      icon: Code,
+      done: false,
+      active: quizPassed,
+    },
+  ];
 
-      <div className="relative z-20 mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-[1600px] flex-col gap-4 p-4">
-        <header className="flex-none rounded-lg border border-white/10 bg-black/70 p-4 backdrop-blur-md">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-            <div className="flex min-w-0 items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded border border-purple-400/50 bg-purple-500/10">
-                <BookOpen className="h-6 w-6 text-purple-300" />
-              </div>
-              <div className="min-w-0">
-                <h1 className={`${orbitron.className} truncate text-lg font-bold uppercase tracking-[0.16em] md:text-xl`}>{topic.name}</h1>
-                <span className="text-xs uppercase tracking-[0.3em] text-cyan-300">{topic.description || 'Learning Session'}</span>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center justify-start gap-4 lg:justify-end lg:gap-6">
-              <div className="hidden md:flex flex-col items-end border-r border-white/10 pr-4 lg:pr-6">
-                <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">System Time</span>
-                <span className="text-xl font-mono text-cyan-300 font-bold tracking-widest drop-shadow-[0_0_5px_rgba(0,229,255,0.5)]">
-                  {systemTime}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="flex flex-col items-end">
-                  <span className="text-sm font-bold text-white">Learner Status</span>
-                  <div className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-xs text-green-400 font-mono uppercase">Online</span>
-                  </div>
-                </div>
-                <div className="h-10 w-10 rounded-full border-2 border-purple-400 p-0.5 ml-2 breathing-purple">
-                  {user ? (
-                    <img
-                      src={avatarSrc}
-                      alt={user.full_name || 'Learner'}
-                      className="h-full w-full rounded-full object-cover"
-                      onError={() => setAvatarSrc(generateHunterAvatarUrl(`${user.id}-${user.full_name || user.email || 'learner'}`))}
-                    />
-                  ) : (
-                    <div className="h-full w-full rounded-full bg-white/10" />
-                  )}
-                </div>
-              </div>
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
+            <BookOpen className="h-4 w-4" />
+            <span>Video Lesson</span>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">{topic.name}</h1>
+          {topic.description && (
+            <p className="text-gray-500 mt-1 text-sm">{topic.description}</p>
+          )}
+        </div>
+        {watched && (
+          <Badge className="border-green-500/40 bg-green-100 text-green-600 self-start">
+            <CheckCircle className="mr-1 h-3 w-3" />
+            Watched
+          </Badge>
+        )}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
+        {/* Main content */}
+        <div className="space-y-4">
+          {/* Video player */}
+          <div className="overflow-hidden rounded-lg border border-gray-200 bg-black">
+            <div className="relative aspect-video w-full">
+              <iframe
+                src={getYouTubeEmbedUrl(topic.video_url)}
+                className="absolute inset-0 h-full w-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title={`${topic.name} video`}
+              />
             </div>
           </div>
-        </header>
 
-        <main className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-12">
-          <section className="col-span-12 lg:col-span-9 flex flex-col gap-4 h-full min-h-0">
-            <div className="relative w-full overflow-hidden rounded-lg border border-purple-400/40 shadow-md hud-border">
-              <div className="absolute inset-0 border border-purple-400/20 animate-pulse pointer-events-none z-10 rounded-lg" />
-              <div className="relative z-0">
-                <div className="relative aspect-video w-full bg-black">
-                  <iframe
-                    src={getYouTubeEmbedUrl(topic.video_url)}
-                    className="absolute inset-0 h-full w-full opacity-90"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title={`${topic.name} video`}
-                  />
-                  {!watched && (
-                    <button
-                      className="absolute left-1/2 top-1/2 z-30 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-purple-400 bg-purple-500/20 backdrop-blur-sm transition-transform shadow-md hover:scale-110"
-                      onClick={handleMarkAsWatched}
-                    >
-                      <Play className="h-9 w-9 text-white" />
-                    </button>
-                  )}
-                  <div className="absolute top-4 left-4 z-30 flex gap-2">
-                    <span className="bg-purple-600/80 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider backdrop-blur-md">Video Lesson</span>
-                  </div>
-                  {watched && (
-                    <div className="absolute top-4 right-4 flex items-center gap-2 text-green-300 bg-green-500/10 border border-green-400/30 px-3 py-1 rounded-full">
-                      <CheckCircle className="h-4 w-4" />
-                      <span className="text-xs font-semibold uppercase tracking-[0.2em]">Watched</span>
-                    </div>
-                  )}
-                </div>
-                <div className="flex h-10 items-center gap-4 border-t border-white/10 bg-black/70 px-4 backdrop-blur-md">
-                  <span className="text-xs font-mono text-slate-400">Use the YouTube player controls above</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="min-h-[11rem] bg-black/60 border border-white/10 rounded-lg p-6 flex flex-col relative overflow-hidden clip-path-slant">
-              <div className="absolute inset-0 border border-purple-400/10 animate-pulse pointer-events-none rounded-lg" />
-              <h2 className={`${orbitron.className} text-2xl font-bold text-white mb-2 flex items-center gap-2 text-glow`}>
-                <span className="w-1 h-6 bg-cyan-300 rounded-sm" />
-                Content Overview
-              </h2>
-              <p className="text-gray-400 text-sm leading-relaxed max-w-4xl pr-1">
-                {topic.overview || topic.description || 'Study the content overview and prepare for the assessment ahead.'}
+          {/* Overview section */}
+          <Card className="border-gray-200 bg-white">
+            <CardContent className="pt-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">Content Overview</h2>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                {topic.overview || topic.description || 'Study the content and prepare for the assessment ahead.'}
               </p>
-              <div className="mt-auto pt-4 flex flex-wrap gap-3">
-                <div className="flex items-center gap-2 text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded border border-white/5">
-                  <Star className="h-3 w-3 text-purple-300" />
-                  Topic: <span className="text-white font-bold">{topic.name}</span>
-                </div>
-              </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="flex flex-wrap items-center gap-3">
-              {!watched ? (
-                <Button onClick={handleMarkAsWatched} className="btn-hunter border border-cyan-400/40 bg-white/10 text-white">
-                  <CheckCircle className="mr-2 h-4 w-4" /> Mark as Watched
-                </Button>
-              ) : (
-                <Button onClick={() => router.push(`/topic/${topic.id}/quiz`)} className="btn-hunter border border-purple-400/40 bg-white/10 text-white">
-                  Begin Assessment
-                </Button>
-              )}
-              <Button variant="outline" onClick={handleShowOverview} className="border-white/20 text-white">
-                <Sparkles className="mr-2 h-4 w-4" /> {showOverview ? 'Hide Information' : 'Information'}
+          {/* Action buttons */}
+          <div className="flex flex-wrap items-center gap-3">
+            {!watched ? (
+              <Button onClick={handleMarkAsWatched} className="bg-purple-600 hover:bg-purple-500 text-gray-900">
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Mark as Watched
               </Button>
-              <Button variant="ghost" onClick={() => router.push('/my-courses')} className="text-gray-400 hover:text-white">
-                Back to Courses
+            ) : (
+              <Button onClick={() => router.push(`/topic/${topic.id}/quiz`)} className="bg-purple-600 hover:bg-purple-500 text-gray-900">
+                <ArrowRight className="mr-2 h-4 w-4" />
+                Begin Quiz
               </Button>
-            </div>
+            )}
+            <Button variant="outline" onClick={handleShowOverview} className="border-gray-200 text-gray-600 hover:bg-gray-100">
+              <Sparkles className="mr-2 h-4 w-4" />
+              {showOverview ? 'Hide AI Insights' : 'AI Insights'}
+            </Button>
+            <Button variant="ghost" onClick={() => router.push('/my-courses')} className="text-gray-500 hover:text-gray-900">
+              Back to Courses
+            </Button>
+          </div>
 
-            {showOverview && (
-              <div className="rounded-lg border border-white/10 bg-black/60 p-6 relative overflow-hidden terminal-scroll max-h-[400px]">
-                <div className="absolute inset-0 border border-cyan-400/10 animate-pulse pointer-events-none rounded-lg" />
+          {/* AI Enhanced Overview */}
+          {showOverview && (
+            <Card className="border-gray-200 bg-white">
+              <CardContent className="pt-6">
                 {enhancing ? (
                   <div className="flex items-center gap-3 justify-center py-8">
-                    <Loader2 className="h-5 w-5 animate-spin text-purple-300" />
-                    <span className="text-gray-400">Generating insights with AI...</span>
+                    <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
+                    <span className="text-gray-500">Generating insights with AI...</span>
                   </div>
                 ) : enhancedOverview ? (
                   <div className="space-y-2">
-                    <h3 className={`${orbitron.className} text-lg font-semibold text-white text-glow`}>AI-Enhanced Insights</h3>
-                    <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap text-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">AI-Enhanced Insights</h3>
+                    <div className="prose prose-sm prose-invert max-w-none whitespace-pre-wrap text-gray-600">
                       {enhancedOverview}
                     </div>
                   </div>
                 ) : topic?.overview ? (
                   <div className="space-y-2">
-                    <h3 className={`${orbitron.className} text-lg font-semibold text-white text-glow`}>Topic Summary</h3>
-                    <p className="text-gray-300 whitespace-pre-wrap">{topic.overview}</p>
+                    <h3 className="text-lg font-semibold text-gray-900">Topic Summary</h3>
+                    <p className="text-gray-500 whitespace-pre-wrap">{topic.overview}</p>
                   </div>
                 ) : (
-                  <p className="text-gray-400">No information available for this topic.</p>
+                  <p className="text-gray-400">No additional information available for this topic.</p>
                 )}
-              </div>
-            )}
-          </section>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
-          <aside className="col-span-12 lg:col-span-3 flex flex-col gap-6 h-full min-h-0 terminal-scroll lg:overflow-y-auto lg:pr-1">
-            <div className="bg-black/60 border border-white/10 rounded-lg overflow-hidden relative">
-              <div className="absolute inset-0 border border-cyan-400/10 animate-pulse pointer-events-none rounded-lg" />
-              <div className="p-4 border-b border-white/10 bg-white/5 flex justify-between items-center">
-                <h3 className={`${orbitron.className} text-sm font-bold uppercase tracking-widest text-glow`}>Course Progression</h3>
-                <span className="text-xs font-mono text-cyan-300 text-glow">{progressPercent}% COMPLETE</span>
+        {/* Sidebar - Course Progression */}
+        <div>
+          <Card className="border-gray-200 bg-white">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-semibold text-gray-900">Course Progression</CardTitle>
+                <span className="text-xs text-gray-500">{progressPercent}%</span>
               </div>
-              <div className="p-4 space-y-6 relative">
-                <div className="absolute left-[27px] top-8 bottom-8 w-0.5 bg-white/10" />
-                <div className="relative">
-                  <div className="flex items-start gap-4">
-                    <div className="w-6 h-6 rounded-full bg-black border-2 border-cyan-300 flex items-center justify-center shadow-[0_0_10px_rgba(0,229,255,0.5)]">
-                      <div className="w-2 h-2 bg-cyan-300 rounded-full animate-pulse" />
+              <Progress value={progressPercent} className="h-1.5 bg-gray-200 [&>div]:bg-purple-500 mt-2" />
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {progressionSteps.map((step, index) => {
+                const Icon = step.icon;
+                return (
+                  <div
+                    key={index}
+                    className={`flex items-start gap-3 rounded-lg border p-3 ${
+                      step.done
+                        ? 'border-green-200 bg-green-50'
+                        : step.active
+                        ? 'border-purple-200 bg-purple-500/5'
+                        : 'border-gray-100 bg-gray-50 opacity-50'
+                    }`}
+                  >
+                    <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
+                      step.done
+                        ? 'bg-green-100'
+                        : step.active
+                        ? 'bg-purple-100'
+                        : 'bg-gray-100'
+                    }`}>
+                      {step.done ? (
+                        <CheckCircle className="h-3.5 w-3.5 text-green-600" />
+                      ) : step.active ? (
+                        <Icon className="h-3.5 w-3.5 text-purple-600" />
+                      ) : (
+                        <Lock className="h-3 w-3 text-slate-600" />
+                      )}
                     </div>
-                    <div className="flex-1 cyan-aura bg-cyan-900/10 border border-cyan-500/30 p-3 rounded clip-corner-sm">
-                      <div className="flex justify-between items-start mb-1">
-                        <h4 className="text-sm font-bold text-cyan-300 uppercase tracking-wide">01. Watch & Learn</h4>
-                        <Play className="h-4 w-4 text-cyan-300" />
-                      </div>
-                      <p className="text-xs text-gray-400">Watch the lesson video to unlock course access.</p>
-                      <div className="mt-2 text-[10px] text-cyan-300 font-mono">{watched ? '>> CLEARED' : '>> IN PROGRESS'}</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="relative opacity-60">
-                  <div className="flex items-start gap-4">
-                    <div className="w-6 h-6 rounded-full bg-black border-2 border-gray-600 flex items-center justify-center">
-                      <span className="text-[10px] text-gray-500 font-bold">2</span>
-                    </div>
-                    <div className="flex-1 bg-black border border-white/10 p-3 rounded clip-corner-sm">
-                      <div className="flex justify-between items-start mb-1">
-                        <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wide">02. The Assessment</h4>
-                        <Zap className="h-4 w-4 text-gray-500" />
-                      </div>
-                      <p className="text-xs text-gray-600">Complete the knowledge check quiz.</p>
-                      <div className="mt-2 text-[10px] text-gray-600 font-mono flex items-center gap-1">
-                        <Lock className="h-3 w-3" /> {watched ? (quizPassed ? 'CLEARED' : 'AVAILABLE') : 'LOCKED'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="relative opacity-60">
-                  <div className="flex items-start gap-4">
-                    <div className="w-6 h-6 rounded-full bg-black border-2 border-gray-600 flex items-center justify-center">
-                      <span className="text-[10px] text-gray-500 font-bold">3</span>
-                    </div>
-                    <div className="flex-1 bg-black border border-white/10 p-3 rounded clip-corner-sm">
-                      <div className="flex justify-between items-start mb-1">
-                        <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wide">03. Extraction</h4>
-                        <Code className="h-4 w-4 text-gray-500" />
-                      </div>
-                      <p className="text-xs text-gray-600">Submit your code solution to complete the course.</p>
-                      <div className="mt-2 text-[10px] text-gray-600 font-mono flex items-center gap-1">
-                        <Lock className="h-3 w-3" /> {quizPassed ? 'READY' : 'LOCKED'}
-                      </div>
+                    <div>
+                      <p className={`text-sm font-medium ${step.done ? 'text-green-600' : step.active ? 'text-gray-900' : 'text-gray-400'}`}>
+                        {index + 1}. {step.label}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {step.done ? 'Completed' : step.active ? 'In Progress' : 'Locked'}
+                      </p>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </aside>
-        </main>
+                );
+              })}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

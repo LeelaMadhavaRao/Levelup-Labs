@@ -142,7 +142,7 @@ export function CodeEditor({
                         <span className="text-muted-foreground">Actual:</span>
                         <code
                           className={`ml-2 px-2 py-1 rounded ${
-                            result.passed ? 'bg-green-500/20' : 'bg-red-500/20'
+                            result.passed ? 'bg-green-100' : 'bg-red-100'
                           }`}
                         >
                           {result.actual_output}

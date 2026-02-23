@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import {
@@ -37,10 +37,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { Pencil, Trash2, Plus, Save, X } from 'lucide-react'
-import { Orbitron, Rajdhani } from 'next/font/google'
-
-const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] })
-const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] })
 
 interface Topic {
   id: string
@@ -84,19 +80,16 @@ export default function EditCoursePage() {
     name: string
   } | null>(null)
 
-  // Form states
   const [courseName, setCourseName] = useState('')
   const [courseDescription, setCourseDescription] = useState('')
   const [courseThumbnail, setCourseThumbnail] = useState('')
   const [coursePoints, setCoursePoints] = useState(100)
 
-  // Edit states for modules and topics
   const [editingModule, setEditingModule] = useState<string | null>(null)
   const [editingTopic, setEditingTopic] = useState<string | null>(null)
   const [addingModule, setAddingModule] = useState(false)
   const [addingTopicToModule, setAddingTopicToModule] = useState<string | null>(null)
 
-  // New module/topic states
   const [newModuleName, setNewModuleName] = useState('')
   const [newModuleDescription, setNewModuleDescription] = useState('')
   const [newTopicName, setNewTopicName] = useState('')
@@ -206,10 +199,7 @@ export default function EditCoursePage() {
   async function handleUpdateModule(moduleId: string, name: string, description: string) {
     setSaving(true)
     try {
-      const { error } = await updateModule(moduleId, {
-        name,
-        description,
-      })
+      const { error } = await updateModule(moduleId, { name, description })
 
       if (error) {
         toast.error(typeof error === 'string' ? error : 'Operation failed')
@@ -338,174 +328,148 @@ export default function EditCoursePage() {
 
   function handleConfirmDelete() {
     if (!itemToDelete) return
-
-    if (itemToDelete.type === 'course') {
-      handleDeleteCourse()
-    } else if (itemToDelete.type === 'module') {
-      handleDeleteModule(itemToDelete.id)
-    } else if (itemToDelete.type === 'topic') {
-      handleDeleteTopic(itemToDelete.id)
-    }
+    if (itemToDelete.type === 'course') handleDeleteCourse()
+    else if (itemToDelete.type === 'module') handleDeleteModule(itemToDelete.id)
+    else if (itemToDelete.type === 'topic') handleDeleteTopic(itemToDelete.id)
   }
 
   if (loading) {
     return (
-      <div className="container py-12 flex items-center justify-center">
-        <div className="text-xl">Loading course...</div>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-purple-500 border-t-transparent" />
+          <p className="mt-4 text-sm text-gray-500">Loading course...</p>
+        </div>
       </div>
     )
   }
 
   if (!course) {
     return (
-      <div className="container py-12 flex items-center justify-center">
-        <div className="text-xl">Course not found</div>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <p className="text-lg text-gray-500">Course not found</p>
       </div>
     )
   }
 
   return (
-    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
-      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
-
-      <div className="relative z-20 container py-8 max-w-6xl space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className={`${orbitron.className} text-4xl font-bold mb-2`}>Edit Course</h1>
-            <p className="text-slate-400">Update course details, modules, and topics</p>
-          </div>
-          <Button
-            onClick={() => router.push('/admin/courses')}
-            variant="outline"
-            className="border-white/20 text-slate-200"
-          >
-            Back to Courses
-          </Button>
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Edit Course</h1>
+          <p className="mt-1 text-sm text-gray-500">Update course details, modules, and topics</p>
         </div>
+        <Button onClick={() => router.push('/admin/courses')} variant="outline" className="border-gray-200 text-gray-600 hover:bg-gray-100">
+          Back to Courses
+        </Button>
+      </div>
 
-        {/* Course Details */}
-        <Card className="p-6 border-white/15 bg-black/60 text-slate-100">
-          <h2 className="text-2xl font-bold mb-4">Course Details</h2>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="name">Course Name</Label>
-              <Input
-                id="name"
-                value={courseName}
-                onChange={(e) => setCourseName(e.target.value)}
-                className="bg-black/60 border-white/15 text-slate-100"
-              />
-            </div>
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={courseDescription}
-                onChange={(e) => setCourseDescription(e.target.value)}
-                className="min-h-[100px] bg-black/60 border-white/15 text-slate-100"
-              />
-            </div>
-            <div>
-              <Label htmlFor="thumbnail">Thumbnail URL</Label>
-              <Input
-                id="thumbnail"
-                value={courseThumbnail}
-                onChange={(e) => setCourseThumbnail(e.target.value)}
-                placeholder="https://example.com/thumbnail.jpg"
-                className="bg-black/60 border-white/15 text-slate-100"
-              />
-            </div>
-            <div>
-              <Label htmlFor="points">Completion Reward XP</Label>
-              <Input
-                id="points"
-                type="number"
-                value={coursePoints}
-                onChange={(e) => setCoursePoints(Number(e.target.value))}
-                className="bg-black/60 border-white/15 text-slate-100"
-              />
-            </div>
-            <div className="flex gap-4">
-              <Button
-                onClick={handleUpdateCourse}
-                disabled={saving}
-                className="bg-purple-700 hover:bg-purple-600 text-white"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                {saving ? 'Saving...' : 'Save Course'}
-              </Button>
-              <Button
-                onClick={() => confirmDelete('course', courseId, courseName)}
-                variant="destructive"
-                disabled={saving}
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete Course
-              </Button>
-            </div>
+      {/* Course Details */}
+      <Card className="border-gray-200 bg-white text-gray-900">
+        <CardHeader>
+          <CardTitle>Course Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Course Name</Label>
+            <Input
+              id="name"
+              value={courseName}
+              onChange={(e) => setCourseName(e.target.value)}
+              className="border-gray-200 bg-gray-100 text-gray-900"
+            />
           </div>
-        </Card>
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={courseDescription}
+              onChange={(e) => setCourseDescription(e.target.value)}
+              className="min-h-[100px] border-gray-200 bg-gray-100 text-gray-900"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="thumbnail">Thumbnail URL</Label>
+            <Input
+              id="thumbnail"
+              value={courseThumbnail}
+              onChange={(e) => setCourseThumbnail(e.target.value)}
+              placeholder="https://example.com/thumbnail.jpg"
+              className="border-gray-200 bg-white text-gray-900 placeholder:text-gray-400"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="points">Completion Reward XP</Label>
+            <Input
+              id="points"
+              type="number"
+              value={coursePoints}
+              onChange={(e) => setCoursePoints(Number(e.target.value))}
+              className="border-gray-200 bg-gray-100 text-gray-900"
+            />
+          </div>
+          <div className="flex gap-4">
+            <Button onClick={handleUpdateCourse} disabled={saving} className="bg-purple-600 text-white hover:bg-purple-500">
+              <Save className="mr-2 h-4 w-4" />
+              {saving ? 'Saving...' : 'Save Course'}
+            </Button>
+            <Button onClick={() => confirmDelete('course', courseId, courseName)} variant="destructive" disabled={saving}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Course
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-        {/* Modules & Topics */}
-        <Card className="p-6 border-white/15 bg-black/60 text-slate-100">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold">Modules & Topics</h2>
-            <Button
-              onClick={() => setAddingModule(true)}
-              className="bg-purple-700 hover:bg-purple-600 text-white"
-            >
-              <Plus className="w-4 h-4 mr-2" />
+      {/* Modules & Topics */}
+      <Card className="border-gray-200 bg-white text-gray-900">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Modules & Topics</CardTitle>
+            <Button onClick={() => setAddingModule(true)} className="bg-purple-600 text-white hover:bg-purple-500">
+              <Plus className="mr-2 h-4 w-4" />
               Add Module
             </Button>
           </div>
-
+        </CardHeader>
+        <CardContent className="space-y-4">
           {/* Add New Module Form */}
           {addingModule && (
-            <Card className="p-4 mb-4 border-white/15 bg-black/60 text-slate-100">
-              <h3 className="text-lg font-bold mb-3">New Module</h3>
-              <div className="space-y-3">
-                <div>
-                  <Label htmlFor="newModuleName">Module Name</Label>
+            <Card className="border-gray-200 bg-gray-50 text-gray-900">
+              <CardContent className="space-y-3 pt-6">
+                <h3 className="text-lg font-semibold">New Module</h3>
+                <div className="space-y-2">
+                  <Label>Module Name</Label>
                   <Input
-                    id="newModuleName"
                     value={newModuleName}
                     onChange={(e) => setNewModuleName(e.target.value)}
-                    className="bg-black/60 border-white/15 text-slate-100"
+                    className="border-gray-200 bg-gray-100 text-gray-900"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="newModuleDescription">Description</Label>
+                <div className="space-y-2">
+                  <Label>Description</Label>
                   <Textarea
-                    id="newModuleDescription"
                     value={newModuleDescription}
                     onChange={(e) => setNewModuleDescription(e.target.value)}
-                    className="bg-black/60 border-white/15 text-slate-100"
+                    className="border-gray-200 bg-gray-100 text-gray-900"
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button
-                    onClick={handleAddModule}
-                    disabled={saving}
-                    className="bg-purple-700 hover:bg-purple-600 text-white"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
+                  <Button onClick={handleAddModule} disabled={saving} className="bg-purple-600 text-white hover:bg-purple-500">
+                    <Save className="mr-2 h-4 w-4" />
                     Save Module
                   </Button>
                   <Button
-                    onClick={() => {
-                      setAddingModule(false)
-                      setNewModuleName('')
-                      setNewModuleDescription('')
-                    }}
+                    onClick={() => { setAddingModule(false); setNewModuleName(''); setNewModuleDescription(''); }}
                     variant="outline"
-                    className="border-white/20 text-slate-200"
+                    className="border-gray-200 text-gray-600 hover:bg-gray-100"
                   >
-                    <X className="w-4 h-4 mr-2" />
+                    <X className="mr-2 h-4 w-4" />
                     Cancel
                   </Button>
                 </div>
-              </div>
+              </CardContent>
             </Card>
           )}
 
@@ -517,33 +481,22 @@ export default function EditCoursePage() {
                 <AccordionItem
                   key={module.id}
                   value={module.id}
-                  className="border border-white/15 rounded-lg bg-black/50"
+                  className="rounded-lg border border-gray-200 bg-gray-50"
                 >
-                  {/* Header row: trigger + action buttons as siblings (not nested) to avoid <button> inside <button> */}
                   <div className="flex items-center px-4">
                     <AccordionTrigger className="flex-1 hover:no-underline">
-                      <span className="text-lg font-semibold">{module.name}</span>
+                      <span className="text-base font-semibold">{module.name}</span>
                     </AccordionTrigger>
-                    <div className="flex gap-2 shrink-0">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-slate-300 hover:text-white"
-                        onClick={() => setEditingModule(module.id)}
-                      >
-                        <Pencil className="w-4 h-4" />
+                    <div className="flex shrink-0 gap-1">
+                      <Button size="sm" variant="ghost" className="text-gray-500 hover:text-gray-900" onClick={() => setEditingModule(module.id)}>
+                        <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-slate-300 hover:text-white"
-                        onClick={() => confirmDelete('module', module.id, module.name)}
-                      >
-                        <Trash2 className="w-4 h-4 text-red-400" />
+                      <Button size="sm" variant="ghost" className="text-gray-500 hover:text-red-600" onClick={() => confirmDelete('module', module.id, module.name)}>
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
-                  <AccordionContent className="space-y-4 pt-4 px-4">
+                  <AccordionContent className="space-y-4 px-4 pt-4">
                     {/* Edit Module Form */}
                     {editingModule === module.id && (
                       <ModuleEditForm
@@ -555,93 +508,51 @@ export default function EditCoursePage() {
                     )}
 
                     {/* Add Topic Button */}
-                    <Button
-                      onClick={() => setAddingTopicToModule(module.id)}
-                      size="sm"
-                      className="bg-purple-700 hover:bg-purple-600 text-white"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
+                    <Button onClick={() => setAddingTopicToModule(module.id)} size="sm" className="bg-purple-600 text-white hover:bg-purple-500">
+                      <Plus className="mr-2 h-4 w-4" />
                       Add Topic
                     </Button>
 
                     {/* Add New Topic Form */}
                     {addingTopicToModule === module.id && (
-                      <Card className="p-4 border-white/15 bg-black/60 text-slate-100">
-                        <h4 className="text-md font-bold mb-3">New Topic</h4>
-                        <div className="space-y-3">
-                          <div>
-                            <Label htmlFor="newTopicName">Topic Name</Label>
-                            <Input
-                              id="newTopicName"
-                              value={newTopicName}
-                              onChange={(e) => setNewTopicName(e.target.value)}
-                              className="bg-black/60 border-white/15 text-slate-100"
-                            />
+                      <Card className="border-gray-200 bg-gray-50 text-gray-900">
+                        <CardContent className="space-y-3 pt-6">
+                          <h4 className="font-semibold">New Topic</h4>
+                          <div className="space-y-2">
+                            <Label>Topic Name</Label>
+                            <Input value={newTopicName} onChange={(e) => setNewTopicName(e.target.value)} className="border-gray-200 bg-gray-100 text-gray-900" />
                           </div>
-                          <div>
-                            <Label htmlFor="newTopicDescription">Description</Label>
-                            <Textarea
-                              id="newTopicDescription"
-                              value={newTopicDescription}
-                              onChange={(e) => setNewTopicDescription(e.target.value)}
-                              className="bg-black/60 border-white/15 text-slate-100"
-                            />
+                          <div className="space-y-2">
+                            <Label>Description</Label>
+                            <Textarea value={newTopicDescription} onChange={(e) => setNewTopicDescription(e.target.value)} className="border-gray-200 bg-gray-100 text-gray-900" />
                           </div>
-                          <div>
-                            <Label htmlFor="newTopicVideoUrl">Video URL</Label>
-                            <Input
-                              id="newTopicVideoUrl"
-                              value={newTopicVideoUrl}
-                              onChange={(e) => setNewTopicVideoUrl(e.target.value)}
-                              className="bg-black/60 border-white/15 text-slate-100"
-                            />
+                          <div className="space-y-2">
+                            <Label>Video URL</Label>
+                            <Input value={newTopicVideoUrl} onChange={(e) => setNewTopicVideoUrl(e.target.value)} className="border-gray-200 bg-gray-100 text-gray-900" />
                           </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                              <Label htmlFor="newTopicMcqs">Number of MCQs</Label>
-                              <Input
-                                id="newTopicMcqs"
-                                type="number"
-                                value={newTopicMcqs}
-                                onChange={(e) => setNewTopicMcqs(Number(e.target.value))}
-                                className="bg-black/60 border-white/15 text-slate-100"
-                              />
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <div className="space-y-2">
+                              <Label>Number of MCQs</Label>
+                              <Input type="number" value={newTopicMcqs} onChange={(e) => setNewTopicMcqs(Number(e.target.value))} className="border-gray-200 bg-gray-100 text-gray-900" />
                             </div>
-                            <div>
-                              <Label htmlFor="newTopicProblems">Number of Problems</Label>
-                              <Input
-                                id="newTopicProblems"
-                                type="number"
-                                value={newTopicProblems}
-                                onChange={(e) => setNewTopicProblems(Number(e.target.value))}
-                                className="bg-black/60 border-white/15 text-slate-100"
-                              />
+                            <div className="space-y-2">
+                              <Label>Number of Problems</Label>
+                              <Input type="number" value={newTopicProblems} onChange={(e) => setNewTopicProblems(Number(e.target.value))} className="border-gray-200 bg-gray-100 text-gray-900" />
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <Button
-                              onClick={() => handleAddTopic(module.id)}
-                              disabled={saving}
-                              className="bg-purple-700 hover:bg-purple-600 text-white"
-                            >
-                              <Save className="w-4 h-4 mr-2" />
-                              Save Topic
+                            <Button onClick={() => handleAddTopic(module.id)} disabled={saving} className="bg-purple-600 text-white hover:bg-purple-500">
+                              <Save className="mr-2 h-4 w-4" /> Save Topic
                             </Button>
                             <Button
-                              onClick={() => {
-                                setAddingTopicToModule(null)
-                                setNewTopicName('')
-                                setNewTopicDescription('')
-                                setNewTopicVideoUrl('')
-                              }}
+                              onClick={() => { setAddingTopicToModule(null); setNewTopicName(''); setNewTopicDescription(''); setNewTopicVideoUrl(''); }}
                               variant="outline"
-                              className="border-white/20 text-slate-200"
+                              className="border-gray-200 text-gray-600 hover:bg-gray-100"
                             >
-                              <X className="w-4 h-4 mr-2" />
-                              Cancel
+                              <X className="mr-2 h-4 w-4" /> Cancel
                             </Button>
                           </div>
-                        </div>
+                        </CardContent>
                       </Card>
                     )}
 
@@ -650,44 +561,34 @@ export default function EditCoursePage() {
                       {module.topics
                         .sort((a, b) => a.order_index - b.order_index)
                         .map((topic) => (
-                          <Card key={topic.id} className="p-4 border-white/15 bg-black/60 text-slate-100">
-                            {editingTopic === topic.id ? (
-                              <TopicEditForm
-                                topic={topic}
-                                onSave={handleUpdateTopic}
-                                onCancel={() => setEditingTopic(null)}
-                                saving={saving}
-                              />
-                            ) : (
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <h4 className="font-semibold">{topic.name}</h4>
-                                  <p className="text-sm text-slate-400">
-                                    {topic.num_mcqs} MCQs • {topic.num_problems} Problems
-                                  </p>
+                          <Card key={topic.id} className="border-gray-200 bg-gray-50 text-gray-900">
+                            <CardContent className="p-4">
+                              {editingTopic === topic.id ? (
+                                <TopicEditForm
+                                  topic={topic}
+                                  onSave={handleUpdateTopic}
+                                  onCancel={() => setEditingTopic(null)}
+                                  saving={saving}
+                                />
+                              ) : (
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <h4 className="font-medium text-gray-900">{topic.name}</h4>
+                                    <p className="text-sm text-gray-400">
+                                      {topic.num_mcqs} MCQs · {topic.num_problems} Problems
+                                    </p>
+                                  </div>
+                                  <div className="flex gap-1">
+                                    <Button size="sm" variant="ghost" className="text-gray-500 hover:text-gray-900" onClick={() => setEditingTopic(topic.id)}>
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <Button size="sm" variant="ghost" className="text-gray-500 hover:text-red-600" onClick={() => confirmDelete('topic', topic.id, topic.name)}>
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
                                 </div>
-                                <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="text-slate-300 hover:text-white"
-                                    onClick={() => setEditingTopic(topic.id)}
-                                  >
-                                    <Pencil className="w-4 h-4" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="text-slate-300 hover:text-white"
-                                    onClick={() =>
-                                      confirmDelete('topic', topic.id, topic.name)
-                                    }
-                                  >
-                                    <Trash2 className="w-4 h-4 text-red-400" />
-                                  </Button>
-                                </div>
-                              </div>
-                            )}
+                              )}
+                            </CardContent>
                           </Card>
                         ))}
                     </div>
@@ -695,33 +596,23 @@ export default function EditCoursePage() {
                 </AccordionItem>
               ))}
           </Accordion>
-        </Card>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Delete {itemToDelete?.type}?
-            </AlertDialogTitle>
+            <AlertDialogTitle>Delete {itemToDelete?.type}?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{itemToDelete?.name}"? This action cannot be
-              undone.
-              {itemToDelete?.type === 'course' &&
-                ' All modules, topics, and user progress will be deleted.'}
-              {itemToDelete?.type === 'module' &&
-                ' All topics in this module will be deleted.'}
+              Are you sure you want to delete &quot;{itemToDelete?.name}&quot;? This action cannot be undone.
+              {itemToDelete?.type === 'course' && ' All modules, topics, and user progress will be deleted.'}
+              {itemToDelete?.type === 'module' && ' All topics in this module will be deleted.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-              <AlertDialogCancel>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-red-600 hover:bg-red-700">
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -747,46 +638,26 @@ function ModuleEditForm({
   const [description, setDescription] = useState(module.description || '')
 
   return (
-    <Card className="p-4 border-white/15 bg-black/60 text-slate-100">
-      <h4 className="text-md font-bold mb-3">Edit Module</h4>
-      <div className="space-y-3">
-        <div>
-          <Label htmlFor={`moduleName-${module.id}`}>Module Name</Label>
-          <Input
-            id={`moduleName-${module.id}`}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="bg-black/60 border-white/15 text-slate-100"
-          />
+    <Card className="border-gray-200 bg-gray-50 text-gray-900">
+      <CardContent className="space-y-3 pt-6">
+        <h4 className="font-semibold">Edit Module</h4>
+        <div className="space-y-2">
+          <Label>Module Name</Label>
+          <Input value={name} onChange={(e) => setName(e.target.value)} className="border-gray-200 bg-gray-100 text-gray-900" />
         </div>
-        <div>
-          <Label htmlFor={`moduleDescription-${module.id}`}>Description</Label>
-          <Textarea
-            id={`moduleDescription-${module.id}`}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="bg-black/60 border-white/15 text-slate-100"
-          />
+        <div className="space-y-2">
+          <Label>Description</Label>
+          <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="border-gray-200 bg-gray-100 text-gray-900" />
         </div>
         <div className="flex gap-2">
-          <Button
-            onClick={() => onSave(module.id, name, description)}
-            disabled={saving}
-            className="bg-purple-700 hover:bg-purple-600 text-white"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            Save
+          <Button onClick={() => onSave(module.id, name, description)} disabled={saving} className="bg-purple-600 text-white hover:bg-purple-500">
+            <Save className="mr-2 h-4 w-4" /> Save
           </Button>
-          <Button
-            onClick={onCancel}
-            variant="outline"
-            className="border-white/20 text-slate-200"
-          >
-            <X className="w-4 h-4 mr-2" />
-            Cancel
+          <Button onClick={onCancel} variant="outline" className="border-gray-200 text-gray-600 hover:bg-gray-100">
+            <X className="mr-2 h-4 w-4" /> Cancel
           </Button>
         </div>
-      </div>
+      </CardContent>
     </Card>
   )
 }
@@ -799,14 +670,7 @@ function TopicEditForm({
   saving,
 }: {
   topic: Topic
-  onSave: (
-    id: string,
-    name: string,
-    description: string,
-    videoUrl: string,
-    mcqs: number,
-    problems: number
-  ) => void
+  onSave: (id: string, name: string, description: string, videoUrl: string, mcqs: number, problems: number) => void
   onCancel: () => void
   saving: boolean
 }) {
@@ -818,71 +682,34 @@ function TopicEditForm({
 
   return (
     <div className="space-y-3">
-      <div>
-        <Label htmlFor={`topicName-${topic.id}`}>Topic Name</Label>
-        <Input
-          id={`topicName-${topic.id}`}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="bg-black/60 border-white/15 text-slate-100"
-        />
+      <div className="space-y-2">
+        <Label>Topic Name</Label>
+        <Input value={name} onChange={(e) => setName(e.target.value)} className="border-gray-200 bg-gray-100 text-gray-900" />
       </div>
-      <div>
-        <Label htmlFor={`topicDescription-${topic.id}`}>Description</Label>
-        <Textarea
-          id={`topicDescription-${topic.id}`}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="bg-black/60 border-white/15 text-slate-100"
-        />
+      <div className="space-y-2">
+        <Label>Description</Label>
+        <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="border-gray-200 bg-gray-100 text-gray-900" />
       </div>
-      <div>
-        <Label htmlFor={`topicVideoUrl-${topic.id}`}>Video URL</Label>
-        <Input
-          id={`topicVideoUrl-${topic.id}`}
-          value={videoUrl}
-          onChange={(e) => setVideoUrl(e.target.value)}
-          className="bg-black/60 border-white/15 text-slate-100"
-        />
+      <div className="space-y-2">
+        <Label>Video URL</Label>
+        <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} className="border-gray-200 bg-gray-100 text-gray-900" />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor={`topicMcqs-${topic.id}`}>Number of MCQs</Label>
-          <Input
-            id={`topicMcqs-${topic.id}`}
-            type="number"
-            value={mcqs}
-            onChange={(e) => setMcqs(Number(e.target.value))}
-            className="bg-black/60 border-white/15 text-slate-100"
-          />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label>Number of MCQs</Label>
+          <Input type="number" value={mcqs} onChange={(e) => setMcqs(Number(e.target.value))} className="border-gray-200 bg-gray-100 text-gray-900" />
         </div>
-        <div>
-          <Label htmlFor={`topicProblems-${topic.id}`}>Number of Problems</Label>
-          <Input
-            id={`topicProblems-${topic.id}`}
-            type="number"
-            value={problems}
-            onChange={(e) => setProblems(Number(e.target.value))}
-            className="bg-black/60 border-white/15 text-slate-100"
-          />
+        <div className="space-y-2">
+          <Label>Number of Problems</Label>
+          <Input type="number" value={problems} onChange={(e) => setProblems(Number(e.target.value))} className="border-gray-200 bg-gray-100 text-gray-900" />
         </div>
       </div>
       <div className="flex gap-2">
-        <Button
-          onClick={() => onSave(topic.id, name, description, videoUrl, mcqs, problems)}
-          disabled={saving}
-          className="bg-purple-700 hover:bg-purple-600 text-white"
-        >
-          <Save className="w-4 h-4 mr-2" />
-          Save
+        <Button onClick={() => onSave(topic.id, name, description, videoUrl, mcqs, problems)} disabled={saving} className="bg-purple-600 text-white hover:bg-purple-500">
+          <Save className="mr-2 h-4 w-4" /> Save
         </Button>
-        <Button
-          onClick={onCancel}
-          variant="outline"
-          className="border-white/20 text-slate-200"
-        >
-          <X className="w-4 h-4 mr-2" />
-          Cancel
+        <Button onClick={onCancel} variant="outline" className="border-gray-200 text-gray-600 hover:bg-gray-100">
+          <X className="mr-2 h-4 w-4" /> Cancel
         </Button>
       </div>
     </div>

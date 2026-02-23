@@ -9,12 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Save, Upload, Sparkles, Shield, UserRound, Link2, AtSign, Mail, CalendarDays } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Sparkles, Mail } from 'lucide-react';
 import { toast } from 'sonner';
-import { Orbitron, Rajdhani } from 'next/font/google';
-
-const orbitron = Orbitron({ subsets: ['latin'], weight: ['500', '700', '900'] });
-const rajdhani = Rajdhani({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
 
 type EditableUser = {
   id: string;
@@ -56,25 +52,28 @@ export default function EditProfilePage() {
   const avatarPreview = useMemo(() => {
     if (formData.avatar_url) return formData.avatar_url;
     if (user?.id) {
-      return generateHunterAvatarUrl(`${user.id}-${formData.full_name || user.email || 'hunter'}`);
+      return generateHunterAvatarUrl(
+        `${user.id}-${formData.full_name || user.email || 'user'}`
+      );
     }
-    return generateHunterAvatarUrl('hunter');
+    return generateHunterAvatarUrl('user');
   }, [formData.avatar_url, formData.full_name, user?.email, user?.id]);
 
   const joinedAt = useMemo(() => {
     if (!user?.created_at) return 'Unknown';
-    return new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    return new Date(user.created_at).toLocaleDateString('en-US', {
+      month: 'short',
+      year: 'numeric',
+    });
   }, [user?.created_at]);
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload an image file');
       return;
     }
-
     const reader = new FileReader();
     reader.onload = () => {
       const result = typeof reader.result === 'string' ? reader.result : '';
@@ -90,7 +89,7 @@ export default function EditProfilePage() {
   };
 
   const handleGenerateAvatar = () => {
-    const seed = `${user?.id || 'hunter'}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const seed = `${user?.id || 'user'}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const generated = generateHunterAvatarUrl(seed);
     setFormData((prev) => ({ ...prev, avatar_url: generated }));
     toast.success('Generated a new avatar');
@@ -103,7 +102,6 @@ export default function EditProfilePage() {
         router.push('/auth/login');
         return;
       }
-
       setUser(currentUser);
       setFormData({
         full_name: currentUser.full_name || '',
@@ -124,22 +122,18 @@ export default function EditProfilePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-
     if (!user) {
       toast.error('User not loaded');
       setSaving(false);
       return;
     }
-
     try {
       const { error } = await updateUserProfile(user.id, formData);
-
       if (error) {
         toast.error('Failed to update profile');
         setSaving(false);
         return;
       }
-
       toast.success('Profile updated successfully!');
       router.push('/profile');
     } catch (error) {
@@ -151,54 +145,57 @@ export default function EditProfilePage() {
 
   if (loading) {
     return (
-      <div className="container py-8 max-w-2xl">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-1/3"></div>
-          <div className="h-96 bg-muted rounded"></div>
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 w-48 rounded-md bg-gray-200" />
+          <div className="h-96 rounded-lg bg-gray-200" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`${rajdhani.className} relative min-h-screen overflow-hidden text-slate-100`}>
-      <div className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-br from-purple-950/20 via-black to-cyan-950/20" />
-      <div className="hunter-grid-bg pointer-events-none fixed inset-0 z-0 opacity-20" />
-      <div className="nebula-bg pointer-events-none fixed inset-0 z-0 opacity-25" />
-
-      <div className="relative z-20 mx-auto w-full max-w-[1500px] px-4 py-8 sm:px-8">
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="mb-1 text-xs font-medium uppercase tracking-[0.18em] text-cyan-300">System Interface // Profile Editing</p>
-            <h1 className={`${orbitron.className} text-3xl font-bold text-white md:text-4xl`}>Profile Editor</h1>
-          </div>
-          <div className="flex items-center gap-2 rounded border border-cyan-500/30 bg-black/50 px-3 py-1.5 text-xs text-cyan-200">
-            <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
-            Synchronization Stable
-          </div>
-        </div>
-
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* Header */}
+      <div className="mb-6">
         <Button
           variant="ghost"
           onClick={() => router.push('/profile')}
-          className="mb-5 text-slate-200 hover:text-white hover:bg-white/10"
+          className="mb-3 text-gray-500 hover:bg-gray-100 hover:text-gray-900"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Profile
         </Button>
+        <h1 className="text-2xl font-bold text-gray-900">Edit Profile</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Update your profile information
+        </p>
+      </div>
 
-      <div className="grid gap-6 lg:grid-cols-12">
-        <Card className="h-fit border-white/15 bg-black/60 text-slate-100 lg:col-span-4">
-          <CardHeader>
-            <CardTitle className={`${orbitron.className} text-lg`}>Learner Preview</CardTitle>
-            <CardDescription className="text-slate-400">Live profile panel with realtime values.</CardDescription>
+      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        {/* Preview sidebar */}
+        <Card className="h-fit border-gray-200 bg-white">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base text-gray-900">Preview</CardTitle>
+            <CardDescription className="text-gray-400">
+              Live preview of your profile
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="relative flex justify-center rounded-xl border border-purple-500/25 bg-slate-950/80 py-8">
-              <div className="pointer-events-none absolute inset-x-10 top-4 h-px bg-gradient-to-r from-transparent via-purple-500/60 to-transparent" />
-              <Avatar className="h-36 w-36 border border-purple-400/40 shadow-[0_0_24px_rgba(127,13,242,0.35)]">
-                <AvatarImage src={avatarPreview} onError={() => setFormData((prev) => ({ ...prev, avatar_url: generateHunterAvatarUrl(`${user?.id || 'hunter'}-${formData.full_name || user?.email || 'hunter'}`) }))} />
-                <AvatarFallback className="bg-slate-900 text-slate-200">
+            <div className="flex justify-center">
+              <Avatar className="h-28 w-28 border-2 border-purple-200">
+                <AvatarImage
+                  src={avatarPreview}
+                  onError={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      avatar_url: generateHunterAvatarUrl(
+                        `${user?.id || 'user'}-${formData.full_name || user?.email || 'user'}`
+                      ),
+                    }))
+                  }
+                />
+                <AvatarFallback className="bg-purple-50 text-xl text-purple-600">
                   {formData.full_name
                     .split(' ')
                     .map((n) => n[0])
@@ -207,166 +204,211 @@ export default function EditProfilePage() {
                 </AvatarFallback>
               </Avatar>
             </div>
-            <div className="rounded border border-white/10 bg-slate-900/70 p-4">
-              <p className={`${orbitron.className} text-lg text-white`}>{formData.full_name || 'Unknown Learner'}</p>
-              <p className="mt-1 text-xs uppercase tracking-wider text-purple-300">{user?.role || 'user'} profile</p>
-              <p className="mt-3 line-clamp-5 text-sm text-slate-300">{formData.bio || 'Add your bio to complete the profile.'}</p>
+            <div className="text-center">
+              <p className="text-lg font-semibold text-gray-900">
+                {formData.full_name || 'Your Name'}
+              </p>
+              <p className="text-xs text-gray-500">{user?.role || 'user'}</p>
             </div>
-            <div className="space-y-2 rounded border border-white/10 bg-slate-900/60 p-3 text-xs text-slate-300">
-              <div className="flex items-center gap-2"><Shield className="h-3.5 w-3.5 text-purple-300" /> Profile Integrity: Active</div>
-              <div className="flex items-center gap-2"><UserRound className="h-3.5 w-3.5 text-cyan-300" /> Identity: {user?.email || 'loading...'}</div>
-              <div className="flex items-center gap-2"><CalendarDays className="h-3.5 w-3.5 text-cyan-300" /> Member Since: {joinedAt}</div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="rounded border border-purple-500/20 bg-slate-900/80 px-2 py-3">
-                <p className="text-[10px] uppercase tracking-wide text-slate-400">Level</p>
-                <p className={`${orbitron.className} text-lg text-white`}>{Number(user?.level ?? 1)}</p>
+            <p className="line-clamp-4 text-sm text-gray-500">
+              {formData.bio || 'Add a bio to complete your profile.'}
+            </p>
+            <div className="space-y-1 text-xs text-gray-400">
+              <div className="flex justify-between">
+                <span>Email</span>
+                <span className="text-gray-900">{user?.email || '...'}</span>
               </div>
-              <div className="rounded border border-cyan-500/20 bg-slate-900/80 px-2 py-3">
-                <p className="text-[10px] uppercase tracking-wide text-slate-400">XP</p>
-                <p className={`${orbitron.className} text-lg text-white`}>{Number(user?.total_xp ?? user?.xp ?? user?.total_points ?? 0).toLocaleString()}</p>
-              </div>
-              <div className="rounded border border-indigo-500/20 bg-slate-900/80 px-2 py-3">
-                <p className="text-[10px] uppercase tracking-wide text-slate-400">XP (Synced)</p>
-                <p className={`${orbitron.className} text-lg text-white`}>{Number(user?.total_xp ?? user?.xp ?? user?.total_points ?? 0).toLocaleString()}</p>
+              <div className="flex justify-between">
+                <span>Joined</span>
+                <span className="text-gray-900">{joinedAt}</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-white/15 bg-black/60 text-slate-100 lg:col-span-8">
+        {/* Edit form */}
+        <Card className="border-gray-200 bg-white">
           <CardHeader>
-            <CardTitle className={orbitron.className}>Edit Learner Profile</CardTitle>
-            <CardDescription className="text-slate-400">Update your profile and portrait with realtime preview sync.</CardDescription>
+            <CardTitle className="text-gray-900">Profile Information</CardTitle>
+            <CardDescription className="text-gray-400">
+              Update your details and save changes.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="rounded-lg border border-purple-500/20 bg-slate-950/60 p-4">
-              <p className="mb-3 text-xs uppercase tracking-[0.14em] text-purple-300">Portrait Protocol</p>
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-              <Avatar className="h-20 w-20 shrink-0">
-                <AvatarImage src={avatarPreview} onError={() => setFormData((prev) => ({ ...prev, avatar_url: generateHunterAvatarUrl(`${user?.id || 'hunter'}-${formData.full_name || user?.email || 'hunter'}`) }))} />
-                <AvatarFallback>
-                  {formData.full_name
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')
-                    .toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 w-full">
-                <Label htmlFor="avatar">Avatar URL</Label>
-                <div className="flex gap-2 mt-1">
+              {/* Avatar section */}
+              <div className="space-y-3">
+                <Label>Avatar</Label>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <Avatar className="h-16 w-16 shrink-0">
+                    <AvatarImage
+                      src={avatarPreview}
+                      onError={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          avatar_url: generateHunterAvatarUrl(
+                            `${user?.id || 'user'}-${formData.full_name || user?.email || 'user'}`
+                          ),
+                        }))
+                      }
+                    />
+                    <AvatarFallback className="bg-purple-50 text-purple-600">
+                      {formData.full_name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')
+                        .toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 space-y-2">
+                    <Input
+                      value={formData.avatar_url}
+                      onChange={(e) =>
+                        setFormData({ ...formData, avatar_url: e.target.value })
+                      }
+                      placeholder="https://example.com/avatar.jpg"
+                      className="border-gray-200 bg-white text-gray-900 placeholder:text-gray-400"
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="border-gray-200 text-gray-600 hover:bg-gray-100"
+                        onClick={() =>
+                          document.getElementById('avatar-file')?.click()
+                        }
+                      >
+                        <Upload className="mr-2 h-4 w-4" /> Upload
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="border-gray-200 text-gray-600 hover:bg-gray-100"
+                        onClick={handleGenerateAvatar}
+                      >
+                        <Sparkles className="mr-2 h-4 w-4" /> Generate
+                      </Button>
+                    </div>
+                    <input
+                      id="avatar-file"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarUpload}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Name & Email */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
                   <Input
-                    id="avatar"
-                    value={formData.avatar_url}
-                    onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
-                    placeholder="https://example.com/avatar.jpg"
-                    className="bg-black/60 border-white/15 text-slate-100"
+                    id="name"
+                    value={formData.full_name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, full_name: e.target.value })
+                    }
+                    placeholder="John Doe"
+                    required
+                    className="border-gray-200 bg-white text-gray-900 placeholder:text-gray-400"
                   />
-                  <Button type="button" variant="outline" size="icon" className="shrink-0" onClick={() => document.getElementById('avatar-file')?.click()}>
-                    <Upload className="h-4 w-4" />
-                  </Button>
                 </div>
-                <input id="avatar-file" type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('avatar-file')?.click()}>
-                    <Upload className="mr-2 h-4 w-4" /> Upload Portrait
-                  </Button>
-                  <Button type="button" variant="outline" size="sm" onClick={handleGenerateAvatar}>
-                    <Sparkles className="mr-2 h-4 w-4" /> Auto-Generate Avatar
-                  </Button>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="email"
+                    className="flex items-center gap-1.5"
+                  >
+                    <Mail className="h-3.5 w-3.5 text-gray-500" /> Email
+                  </Label>
+                  <Input
+                    id="email"
+                    value={user?.email || ''}
+                    readOnly
+                    disabled
+                    className="border-gray-200 bg-gray-50 text-gray-400"
+                  />
+                  <p className="text-xs text-gray-400">
+                    Email cannot be changed.
+                  </p>
                 </div>
-                <p className="mt-2 text-xs text-slate-400">Upload your own image or auto-generate a unique avatar.</p>
               </div>
-            </div>
-            </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2 rounded-lg border border-white/10 bg-slate-950/60 p-4">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                value={formData.full_name}
-                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                placeholder="John Doe"
-                className="bg-black/60 border-white/15 text-slate-100"
-                required
-              />
-            </div>
-
-            <div className="space-y-2 rounded-lg border border-white/10 bg-slate-950/60 p-4">
-              <Label htmlFor="email" className="flex items-center gap-2"><Mail className="h-4 w-4 text-cyan-300" /> Email</Label>
-              <Input
-                id="email"
-                value={user?.email || ''}
-                readOnly
-                disabled
-                className="bg-black/40 border-white/10 text-slate-400"
-              />
-              <p className="text-xs text-slate-400">
-                Email cannot be changed
-              </p>
-            </div>
-            </div>
-
-            <div className="space-y-2 rounded-lg border border-white/10 bg-slate-950/60 p-4">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                value={formData.bio}
-                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                placeholder="Write your bio..."
-                rows={4}
-                className="bg-black/60 border-white/15 text-slate-100"
-              />
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2 rounded-lg border border-white/10 bg-slate-950/60 p-4">
-                <Label htmlFor="github" className="flex items-center gap-2"><AtSign className="h-4 w-4 text-purple-300" /> GitHub Username</Label>
-                <Input
-                  id="github"
-                  value={formData.github_username}
-                  onChange={(e) => setFormData({ ...formData, github_username: e.target.value })}
-                  placeholder="johndoe"
-                  className="bg-black/60 border-white/15 text-slate-100"
+              {/* Bio */}
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea
+                  id="bio"
+                  value={formData.bio}
+                  onChange={(e) =>
+                    setFormData({ ...formData, bio: e.target.value })
+                  }
+                  placeholder="Write a short bio..."
+                  rows={3}
+                  className="border-gray-200 bg-white text-gray-900 placeholder:text-gray-400"
                 />
               </div>
 
-              <div className="space-y-2 rounded-lg border border-white/10 bg-slate-950/60 p-4">
-                <Label htmlFor="linkedin" className="flex items-center gap-2"><Link2 className="h-4 w-4 text-cyan-300" /> LinkedIn URL</Label>
-                <Input
-                  id="linkedin"
-                  value={formData.linkedin_url}
-                  onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
-                  placeholder="https://linkedin.com/in/johndoe"
-                  className="bg-black/60 border-white/15 text-slate-100"
-                />
+              {/* Social links */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="github">GitHub Username</Label>
+                  <Input
+                    id="github"
+                    value={formData.github_username}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        github_username: e.target.value,
+                      })
+                    }
+                    placeholder="johndoe"
+                    className="border-gray-200 bg-white text-gray-900 placeholder:text-gray-400"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="linkedin">LinkedIn URL</Label>
+                  <Input
+                    id="linkedin"
+                    value={formData.linkedin_url}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        linkedin_url: e.target.value,
+                      })
+                    }
+                    placeholder="https://linkedin.com/in/johndoe"
+                    className="border-gray-200 bg-white text-gray-900 placeholder:text-gray-400"
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Submit Button */}
-            <div className="flex justify-end gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.push('/profile')}
-                disabled={saving}
-                className="border-white/20 bg-transparent text-slate-200 hover:bg-white/10"
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={saving} className="btn-hunter border border-purple-400/40 bg-gradient-to-r from-purple-700/80 to-indigo-700/80 text-white hover:from-purple-600 hover:to-indigo-600">
-                <Save className="mr-2 h-4 w-4" />
-                {saving ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </div>
-          </form>
+              {/* Actions */}
+              <div className="flex justify-end gap-3 border-t border-gray-200 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push('/profile')}
+                  disabled={saving}
+                  className="border-gray-200 text-gray-600 hover:bg-gray-100"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={saving}
+                  className="bg-purple-600 text-white hover:bg-purple-500"
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </form>
           </CardContent>
         </Card>
-      </div>
       </div>
     </div>
   );
