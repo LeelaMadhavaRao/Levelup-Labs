@@ -42,8 +42,24 @@ export default function PracticePage() {
         void loadData();
       }
     };
+
+    const handleFocus = () => {
+      void loadData();
+    };
+
+    const handlePageShow = () => {
+      void loadData();
+    };
+
     document.addEventListener('visibilitychange', handleVisibility);
-    return () => document.removeEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('pageshow', handlePageShow);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
   }, []);
 
   const loadData = async () => {

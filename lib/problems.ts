@@ -11,6 +11,31 @@ export interface CodingProblem {
   created_at: string
 }
 
+const STATUS_PRIORITY: Record<string, number> = {
+  completed: 5,
+  code_failed: 4,
+  algorithm_approved: 3,
+  attempted: 2,
+  algorithm_submitted: 1,
+}
+
+function getBestSolutionStatus(
+  solutions: Array<{ status?: string | null; updated_at?: string | null }> | null | undefined
+): string | null {
+  if (!solutions || solutions.length === 0) return null
+
+  const sorted = [...solutions].sort((a, b) => {
+    const priorityDiff = (STATUS_PRIORITY[b.status || ''] || 0) - (STATUS_PRIORITY[a.status || ''] || 0)
+    if (priorityDiff !== 0) return priorityDiff
+
+    const aTime = a.updated_at ? new Date(a.updated_at).getTime() : 0
+    const bTime = b.updated_at ? new Date(b.updated_at).getTime() : 0
+    return bTime - aTime
+  })
+
+  return sorted[0]?.status || null
+}
+
 // Get topic problems with user status
 export async function getTopicProblems(topicId: string, userId?: string) {
   const supabase = createClient()
@@ -27,12 +52,12 @@ export async function getTopicProblems(topicId: string, userId?: string) {
 
   // Flatten: extract the current user's solution status to a top-level 'status' field
   return (data || []).map((problem: any) => {
-    const userSolution = userId
-      ? problem.problem_solutions?.find((s: any) => s.user_id === userId)
-      : null
+    const userSolutions = userId
+      ? (problem.problem_solutions || []).filter((s: any) => s.user_id === userId)
+      : []
     return {
       ...problem,
-      status: userSolution?.status || null,
+      status: getBestSolutionStatus(userSolutions),
     }
   })
 }
@@ -423,14 +448,25 @@ export async function getAllProblems(filters?: {
     const problemIds = data.map(p => p.id)
     const { data: solutions } = await supabase
       .from('problem_solutions')
-      .select('problem_id, status')
+      .select('problem_id, status, updated_at')
       .eq('user_id', filters.userId)
       .in('problem_id', problemIds)
+
+    const statusesByProblem = new Map<string, string | null>()
+    for (const solution of solutions || []) {
+      const problemId = solution.problem_id as string
+      const existingStatus = statusesByProblem.get(problemId)
+      const bestStatus = getBestSolutionStatus([
+        { status: existingStatus, updated_at: null },
+        { status: solution.status, updated_at: solution.updated_at },
+      ])
+      statusesByProblem.set(problemId, bestStatus)
+    }
     
     // Merge solution status
     return data.map(problem => ({
       ...problem,
-      user_status: solutions?.find(s => s.problem_id === problem.id)?.status || null
+      user_status: statusesByProblem.get(problem.id) || null
     }))
   }
   
