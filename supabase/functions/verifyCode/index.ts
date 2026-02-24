@@ -270,6 +270,14 @@ Be strict - even one failing test case means allTestsPassed should be false.`
       }
     }
 
+    const wasCompleted = existingSolution?.status === 'completed'
+    const nextStatus = allPassed
+      ? 'completed'
+      : (wasCompleted ? 'completed' : 'code_failed')
+    const nextPointsAwarded = allPassed
+      ? points
+      : (wasCompleted ? Number(existingSolution?.points_awarded ?? points) : 0)
+
     // Now upsert the solution row — handles both insert (no prior algorithm step)
     // and update (row already exists) in a single atomic operation.
     const { error: upsertError } = await supabaseAdmin
@@ -278,9 +286,9 @@ Be strict - even one failing test case means allTestsPassed should be false.`
         user_id: user.id,
         problem_id: problemId,
         code_solution: code,
-        status: allPassed ? 'completed' : 'code_failed',
+        status: nextStatus,
         code_verified_at: new Date().toISOString(),
-        points_awarded: allPassed ? points : 0,
+        points_awarded: nextPointsAwarded,
         updated_at: new Date().toISOString(),
       }, {
         onConflict: 'user_id,problem_id',
@@ -290,7 +298,7 @@ Be strict - even one failing test case means allTestsPassed should be false.`
     if (upsertError) {
       console.error('Failed to upsert solution:', upsertError)
     } else {
-      console.log(`✅ Solution upserted with status: ${allPassed ? 'completed' : 'code_failed'}`)
+      console.log(`✅ Solution upserted with status: ${nextStatus}`)
     }
 
     // Update problems_solved count on users table
