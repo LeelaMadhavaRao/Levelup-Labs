@@ -23,6 +23,57 @@ const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash'] // Primary -> Fallback
 
 let currentKeyIndex = 0
 
+function normalizeTestCases(rawTestCases: any): Array<{ expectedOutput: string }> {
+  if (!Array.isArray(rawTestCases)) return []
+  return rawTestCases.map((testCase: any) => ({
+    expectedOutput: String(
+      testCase?.expectedOutput ??
+      testCase?.expected_output ??
+      ''
+    ),
+  }))
+}
+
+function parseValidationResponse(rawText: string, rawTestCases: any) {
+  const normalizedCases = normalizeTestCases(rawTestCases)
+
+  try {
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/)
+    const jsonStr = jsonMatch ? jsonMatch[0] : rawText
+    const parsed = JSON.parse(jsonStr)
+
+    const testResults = Array.isArray(parsed?.testResults)
+      ? parsed.testResults
+      : normalizedCases.map((testCase, index) => ({
+          testCase: index + 1,
+          passed: false,
+          expectedOutput: testCase.expectedOutput,
+          actualOutput: 'No output from validator',
+          error: 'Validator did not return test results',
+        }))
+
+    return {
+      allTestsPassed: Boolean(parsed?.allTestsPassed),
+      testResults,
+      feedback: typeof parsed?.feedback === 'string'
+        ? parsed.feedback
+        : 'Validation completed with partial response.',
+    }
+  } catch {
+    return {
+      allTestsPassed: false,
+      testResults: normalizedCases.map((testCase, index) => ({
+        testCase: index + 1,
+        passed: false,
+        expectedOutput: testCase.expectedOutput,
+        actualOutput: 'Unable to validate output',
+        error: 'Validator response format error',
+      })),
+      feedback: `Validation service returned an unexpected format. Raw response: ${rawText.slice(0, 500)}`,
+    }
+  }
+}
+
 async function callGeminiAPI(prompt: string): Promise<string> {
   let lastError: Error | null = null
 
@@ -152,9 +203,7 @@ Respond in JSON format:
 Be strict - even one failing test case means allTestsPassed should be false.`
 
     const response = await callGeminiAPI(prompt)
-    const jsonMatch = response.match(/\{[\s\S]*\}/)
-    const jsonStr = jsonMatch ? jsonMatch[0] : response
-    const validation = JSON.parse(jsonStr)
+    const validation = parseValidationResponse(response, problem.test_cases)
 
     const allPassed = validation.allTestsPassed
 

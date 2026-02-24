@@ -104,7 +104,11 @@ export default function CodeProblemPage() {
       const result = await submitCode(user.id, problemId, code, problem.language || 'javascript');
       if (result.error) {
         toast.error(result.error);
-        return testCases.map((tc: any) => ({ ...tc, passed: false, actual_output: 'Verification failed' }));
+        return testCases.map((tc: any) => ({
+          ...tc,
+          passed: false,
+          actual_output: result.error || 'Verification failed',
+        }));
       }
 
       if (result.allTestsPassed) {
@@ -194,7 +198,7 @@ export default function CodeProblemPage() {
     d === 'easy' ? 'text-green-600' : d === 'medium' ? 'text-yellow-600' : 'text-red-600';
 
   return (
-    <div className="flex flex-col h-screen text-gray-700">
+    <div className="flex h-[calc(100vh-4rem)] flex-col text-gray-700">
       {/* Header */}
       <header className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 shrink-0">
         <div className="flex items-center gap-3">
