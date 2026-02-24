@@ -248,7 +248,7 @@ export default function CreateCoursePage() {
           </div>
           <div className="rounded-lg border border-gray-200 bg-white px-4 py-2">
             <p className="text-xs text-gray-400">Reward XP</p>
-            <p className="text-xl font-bold text-gray-900">{course.completion_reward_points}</p>
+            <p className="text-xl font-bold text-gray-900">{Number(course.completion_reward_points) || 0}</p>
           </div>
         </div>
       </div>
@@ -304,7 +304,7 @@ export default function CreateCoursePage() {
                   id="points"
                   type="number"
                   value={course.completion_reward_points}
-                  onChange={(e) => setCourse({ ...course, completion_reward_points: parseInt(e.target.value) })}
+                  onChange={(e) => setCourse({ ...course, completion_reward_points: parseInt(e.target.value) || 0 })}
                   className="border-gray-200 bg-gray-100 text-gray-900"
                   min={0}
                 />
