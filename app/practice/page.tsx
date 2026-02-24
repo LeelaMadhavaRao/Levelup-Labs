@@ -35,6 +35,17 @@ export default function PracticePage() {
     loadData();
   }, []);
 
+  // Reload data when the user returns to this page (e.g., after solving a problem)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        void loadData();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
   const loadData = async () => {
     const currentUser = await getCurrentUser();
     if (!currentUser) {

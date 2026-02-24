@@ -140,6 +140,7 @@ export default function CodeProblemPage() {
     const allPassed = results.every((r) => r.passed);
     if (allPassed) {
       setIsSolved(true);
+      router.refresh(); // Invalidate Next.js router cache so practice/problems pages reload fresh data
       if (user && problem?.topic_id) {
         const progressResult = await updateProblemsCompleted(user.id, problem.topic_id);
         if (progressResult.allSolved) {
