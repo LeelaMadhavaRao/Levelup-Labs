@@ -202,8 +202,32 @@ Respond in JSON format:
 
 Be strict - even one failing test case means allTestsPassed should be false.`
 
-    const response = await callGeminiAPI(prompt)
-    const validation = parseValidationResponse(response, problem.test_cases)
+    let validation: {
+      allTestsPassed: boolean
+      testResults: any[]
+      feedback: string
+    }
+
+    try {
+      const response = await callGeminiAPI(prompt)
+      validation = parseValidationResponse(response, problem.test_cases)
+    } catch (aiError) {
+      const aiErrorMessage = aiError instanceof Error
+        ? aiError.message
+        : 'Validation service is temporarily unavailable.'
+
+      validation = {
+        allTestsPassed: false,
+        testResults: normalizeTestCases(problem.test_cases).map((testCase, index) => ({
+          testCase: index + 1,
+          passed: false,
+          expectedOutput: testCase.expectedOutput,
+          actualOutput: 'Validation service unavailable',
+          error: aiErrorMessage,
+        })),
+        feedback: `Could not validate code right now. ${aiErrorMessage}`,
+      }
+    }
 
     const allPassed = validation.allTestsPassed
 
@@ -215,14 +239,15 @@ Be strict - even one failing test case means allTestsPassed should be false.`
     }
     const points = allPassed ? (difficultyPoints[problem.difficulty] || 0) : 0
 
-    // Use service role client to bypass RLS for points operations
+    // Service role client — used ONLY for users/leaderboard/point_events (bypasses RLS)
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
     // Check if solution already exists (for idempotency)
-    const { data: existingSolution } = await supabaseAdmin
+    // Use the user's own client — RLS "Users can read their own solutions" is sufficient here
+    const { data: existingSolution } = await supabaseClient
       .from('problem_solutions')
       .select('points_awarded, status')
       .eq('user_id', user.id)
@@ -327,9 +352,10 @@ Be strict - even one failing test case means allTestsPassed should be false.`
       ? points
       : (wasCompleted ? Number(existingSolution?.points_awarded ?? points) : 0)
 
-    // Now upsert the solution row — handles both insert (no prior algorithm step)
-    // and update (row already exists) in a single atomic operation.
-    const { error: upsertError } = await supabaseAdmin
+    // Now upsert the solution row using the user's own client (RLS owner policy covers this).
+    // Using supabaseClient here is more reliable than supabaseAdmin because it doesn't
+    // depend on SUPABASE_SERVICE_ROLE_KEY being configured in function secrets.
+    const { error: upsertError } = await supabaseClient
       .from('problem_solutions')
       .upsert({
         user_id: user.id,
@@ -358,8 +384,8 @@ Be strict - even one failing test case means allTestsPassed should be false.`
       // Check if this problem was already completed before (to avoid double-counting in topic_progress)
       const wasAlreadyCompleted = existingSolution?.status === 'completed'
 
-      // Count actual completed problems to be accurate
-      const { data: allSolved } = await supabaseAdmin
+      // Count actual completed problems to be accurate (use user client — RLS owner policy)
+      const { data: allSolved } = await supabaseClient
         .from('problem_solutions')
         .select('id')
         .eq('user_id', user.id)
@@ -383,7 +409,7 @@ Be strict - even one failing test case means allTestsPassed should be false.`
 
           const topicProblemIds = topicProblems?.map((p: any) => p.id) || []
 
-          const { data: completedInTopic } = await supabaseAdmin
+          const { data: completedInTopic } = await supabaseClient
             .from('problem_solutions')
             .select('id')
             .eq('user_id', user.id)
@@ -427,9 +453,42 @@ Be strict - even one failing test case means allTestsPassed should be false.`
   } catch (error) {
     console.error('Error verifying code:', error)
     const errorMessage = error instanceof Error ? error.message : 'Failed to verify code'
+
+    let testCases: any[] = []
+    try {
+      const { problemId } = await req.clone().json()
+      if (problemId) {
+        const supabaseClient = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+        )
+        const { data: problem } = await supabaseClient
+          .from('coding_problems')
+          .select('test_cases')
+          .eq('id', problemId)
+          .single()
+        testCases = normalizeTestCases(problem?.test_cases).map((testCase, index) => ({
+          testCase: index + 1,
+          passed: false,
+          expectedOutput: testCase.expectedOutput,
+          actualOutput: 'Validation failed',
+          error: errorMessage,
+        }))
+      }
+    } catch {
+      testCases = []
+    }
+
     return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
+      JSON.stringify({
+        allTestsPassed: false,
+        testResults: testCases,
+        feedback: `Code validation could not be completed: ${errorMessage}`,
+        pointsAwarded: 0,
+        xpAwarded: 0,
+        rewardApplied: false,
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
     )
   }
 })

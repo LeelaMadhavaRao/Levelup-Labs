@@ -69,8 +69,8 @@ export function CodeEditor({
   const totalCount = results.length;
 
   return (
-    <div className="space-y-4">
-      <Card className="p-4">
+    <div className="flex h-full min-h-0 flex-col gap-4 p-4">
+      <Card className="flex min-h-0 flex-1 flex-col p-4">
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge variant="secondary">{language}</Badge>
@@ -103,13 +103,13 @@ export function CodeEditor({
           value={code}
           onChange={(e) => setCode(e.target.value)}
           placeholder={`Write your ${language} code here...`}
-          className="min-h-[400px] font-mono text-sm"
+          className="flex-1 min-h-0 font-mono text-sm"
           readOnly={readOnly}
         />
       </Card>
 
       {results.length > 0 && (
-        <div className="space-y-2">
+        <div className="max-h-64 space-y-2 overflow-y-auto pb-1">
           <h3 className="text-lg font-semibold">Test Results</h3>
           {results.map((result, index) => (
             <Card key={index} className="p-4">
