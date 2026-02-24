@@ -6,6 +6,7 @@ import {
   getLeaderboard,
   getLeaderboardAroundMe,
   getTopMovers,
+  getUserRank,
 } from '@/lib/leaderboard';
 import { generateHunterAvatarUrl, getCurrentUser } from '@/lib/auth';
 import { subscribeToLeaderboard } from '@/lib/realtime';
@@ -21,6 +22,7 @@ export default function LeaderboardPage() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [aroundMe, setAroundMe] = useState<any[]>([]);
   const [movers, setMovers] = useState<any[]>([]);
+  const [myStats, setMyStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -52,15 +54,19 @@ export default function LeaderboardPage() {
           typeof getTopMovers === 'function'
             ? getTopMovers(5, 7).catch(() => [])
             : Promise.resolve([]);
-        const [windowRanks, topMovers] = await Promise.all([
+        const userStatsPromise = getUserRank(currentUser.id).catch(() => null);
+        const [windowRanks, topMovers, userStats] = await Promise.all([
           aroundMePromise,
           topMoversPromise,
+          userStatsPromise,
         ]);
         setAroundMe(windowRanks);
         setMovers(topMovers);
+        setMyStats(userStats);
       } else {
         setAroundMe([]);
         setMovers([]);
+        setMyStats(null);
       }
     } catch (error) {
       console.error('Failed to load leaderboard:', error);
@@ -405,7 +411,7 @@ export default function LeaderboardPage() {
                     Problems Solved
                   </span>
                   <span className="text-lg font-bold text-purple-600">
-                    {myProfileEntry?.problems_solved ?? 0}
+                    {myStats?.problems_solved ?? myProfileEntry?.problems_solved ?? 0}
                   </span>
                 </div>
                 <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 p-3">
@@ -413,13 +419,13 @@ export default function LeaderboardPage() {
                     Courses Completed
                   </span>
                   <span className="text-lg font-bold text-purple-600">
-                    {myProfileEntry?.courses_completed ?? 0}
+                    {myStats?.courses_completed ?? myProfileEntry?.courses_completed ?? 0}
                   </span>
                 </div>
                 <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 p-3">
                   <span className="text-xs text-gray-500">Current Tier</span>
                   <span className="text-lg font-bold text-gray-900">
-                    {getTier(myProfileEntry?.rank)}
+                    {getTier(myStats?.rank ?? myProfileEntry?.rank)}
                   </span>
                 </div>
               </div>
